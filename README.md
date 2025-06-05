@@ -52,10 +52,10 @@ A comprehensive, professional screenplay analysis application with 27 analysis s
 
 ### Installation
 
-1. **Clone the repository**
+1. **Clone this repository**
    ```bash
    git clone <repository-url>
-   cd site2data-v3
+   cd site2data-v3-standalone
    ```
 
 2. **Install dependencies**
@@ -74,14 +74,19 @@ A comprehensive, professional screenplay analysis application with 27 analysis s
    VITE_GEMINI_API_KEY=your_gemini_api_key
    ```
 
-4. **Start development server**
+4. **Get your Gemini API Key**
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a new API key
+   - Copy it to your `.env.local` file
+
+5. **Start development server**
    ```bash
    npm run dev
    # or
    pnpm dev
    ```
 
-5. **Open application**
+6. **Open application**
    - Navigate to `http://localhost:5173`
    - Login with password: `test123`
 
@@ -115,7 +120,7 @@ A comprehensive, professional screenplay analysis application with 27 analysis s
 ## 📁 Project Structure
 
 ```
-site2data-v3/
+site2data-v3-standalone/
 ├── src/
 │   ├── components/          # React components
 │   │   ├── visualizations/  # Charts and graphs
