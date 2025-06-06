@@ -129,7 +129,7 @@ const AnalysisDisplay: React.FC = () => {
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Prześlij plik PDF scenariusza, aby rozpocząć analizę 27 sekcji
-              </Typography>
+          </Typography>
             </Box>
           </Stack>
         </CardContent>
@@ -145,10 +145,10 @@ const AnalysisDisplay: React.FC = () => {
   const safetyLevel = analysis.safety?.overallAssessment?.overallRiskLevel || 'UNKNOWN';
 
   return (
-    <Box>
+    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
       {/* Nagłówek z podsumowaniem */}
       <Paper elevation={2} sx={{ mb: 3 }}>
-        <CardContent>
+      <CardContent>
           <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
             <AnalyticsIcon color="primary" sx={{ fontSize: 32 }} />
             <Box sx={{ flexGrow: 1 }}>
@@ -157,7 +157,7 @@ const AnalysisDisplay: React.FC = () => {
               </Typography>
               <Typography variant="subtitle1" color="text.secondary">
                 {analysis.filename}
-              </Typography>
+          </Typography>
             </Box>
             
             {/* Akcje */}
@@ -173,7 +173,7 @@ const AnalysisDisplay: React.FC = () => {
                 </IconButton>
               </Tooltip>
             </Stack>
-          </Stack>
+        </Stack>
 
           {/* Szybkie statystyki */}
           <Grid container spacing={2}>
@@ -186,7 +186,7 @@ const AnalysisDisplay: React.FC = () => {
                   Sceny
                 </Typography>
               </Box>
-            </Grid>
+          </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
                 <Typography variant="h5" color="primary.main" fontWeight="bold">
@@ -196,7 +196,7 @@ const AnalysisDisplay: React.FC = () => {
                   Postacie
                 </Typography>
               </Box>
-            </Grid>
+          </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
                 <Typography variant="h5" color="primary.main" fontWeight="bold">
@@ -206,7 +206,7 @@ const AnalysisDisplay: React.FC = () => {
                   Lokacje
                 </Typography>
               </Box>
-            </Grid>
+          </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
                 <Chip 
@@ -218,7 +218,7 @@ const AnalysisDisplay: React.FC = () => {
                   Budżet
                 </Typography>
               </Box>
-            </Grid>
+          </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
                 <Chip 
@@ -230,7 +230,7 @@ const AnalysisDisplay: React.FC = () => {
                   Bezpieczeństwo
                 </Typography>
               </Box>
-            </Grid>
+        </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
                 <Typography variant="h6" color="primary.main" fontWeight="bold">
@@ -246,10 +246,10 @@ const AnalysisDisplay: React.FC = () => {
           {/* Filtr roli */}
           {selectedRole && (
             <Box sx={{ mt: 2 }}>
-              <Chip 
+                  <Chip 
                 label={`Widok: ${selectedRole}`}
-                color="primary"
-                variant="outlined"
+                    color="primary"
+                    variant="outlined"
                 size="small"
               />
             </Box>
@@ -335,7 +335,7 @@ const AnalysisDisplay: React.FC = () => {
           />
         </TabPanel>
       </Paper>
-    </Box>
+        </Box>
   );
 };
 

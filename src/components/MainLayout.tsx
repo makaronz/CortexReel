@@ -157,7 +157,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 0,
+          p: { xs: 2, md: 3 },
           width: sidebarOpen ? `calc(100% - ${drawerWidth}px)` : '100%',
           transition: (theme) => theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,

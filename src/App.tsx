@@ -203,7 +203,7 @@ function App() {
 // Dashboard View Component
 const DashboardView: React.FC = () => {
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       {/* Progress Bar - shows when analyzing */}
       <ProgressBar />
       
