@@ -1,170 +1,341 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Box, 
   Card, 
   CardContent, 
   Typography, 
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Tabs,
+  Tab,
+  Grid,
   Chip,
   Stack,
-  Grid,
-  useTheme
+  useTheme,
+  IconButton,
+  Tooltip,
+  Paper,
+  Divider
 } from '@mui/material';
 import { 
+  Analytics as AnalyticsIcon,
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  LocationOn as LocationIcon,
+  Build as PropsIcon,
+  DirectionsCar as VehicleIcon,
+  Security as SafetyIcon,
+  Lightbulb as LightingIcon,
+  Timeline as TimelineIcon,
+  Psychology as PsychologyIcon,
+  AttachMoney as BudgetIcon,
+  ChecklistRtl as ChecklistIcon,
   ExpandMore as ExpandMoreIcon,
-  Analytics as AnalyticsIcon 
+  ExpandLess as ExpandLessIcon,
+  Download as DownloadIcon,
+  Share as ShareIcon
 } from '@mui/icons-material';
-import { useCurrentAnalysis } from '@/store/analysisStore';
+
+import { useCurrentAnalysis, useSelectedRole } from '@/store/analysisStore';
+import { FilmRole } from '@/types/analysis';
+
+// Import komponenty wizualizacyjne
+import OverviewDashboard from '@/components/dashboards/OverviewDashboard';
+import SceneVisualization from '@/components/visualizations/SceneVisualization';
+import CharacterVisualization from '@/components/visualizations/CharacterVisualization';
+import LocationVisualization from '@/components/visualizations/LocationVisualization';
+import EmotionalArcChart from '@/components/visualizations/EmotionalArcChart';
+import BudgetBreakdown from '@/components/visualizations/BudgetBreakdown';
+import SafetyDashboard from '@/components/dashboards/SafetyDashboard';
+import ProductionDashboard from '@/components/dashboards/ProductionDashboard';
+import RelationshipNetwork from '@/components/visualizations/RelationshipNetwork';
+import TechnicalRequirements from '@/components/visualizations/TechnicalRequirements';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`analysis-tabpanel-${index}`}
+      aria-labelledby={`analysis-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
 
 const AnalysisDisplay: React.FC = () => {
   const analysis = useCurrentAnalysis();
+  const selectedRole = useSelectedRole();
   const theme = useTheme();
+  const [tabValue, setTabValue] = useState(0);
+
+  // Konfiguracja tabów na podstawie roli użytkownika
+  const tabsConfig = useMemo(() => {
+    const baseTabs = [
+      { label: 'Przegląd', icon: <DashboardIcon />, id: 'overview' },
+      { label: 'Sceny', icon: <TimelineIcon />, id: 'scenes' },
+      { label: 'Postacie', icon: <PeopleIcon />, id: 'characters' },
+      { label: 'Lokacje', icon: <LocationIcon />, id: 'locations' },
+      { label: 'Emocje', icon: <PsychologyIcon />, id: 'emotions' },
+      { label: 'Relacje', icon: <PeopleIcon />, id: 'relationships' },
+      { label: 'Produkcja', icon: <AnalyticsIcon />, id: 'production' },
+      { label: 'Bezpieczeństwo', icon: <SafetyIcon />, id: 'safety' },
+      { label: 'Budżet', icon: <BudgetIcon />, id: 'budget' },
+      { label: 'Techniczne', icon: <AnalyticsIcon />, id: 'technical' }
+    ];
+
+    // Filtrowanie tabów na podstawie roli
+    if (selectedRole === FilmRole.DIRECTOR) {
+      return baseTabs.filter(tab => 
+        ['overview', 'scenes', 'characters', 'emotions', 'relationships'].includes(tab.id)
+      );
+    } else if (selectedRole === FilmRole.PRODUCER) {
+      return baseTabs.filter(tab => 
+        ['overview', 'production', 'budget', 'safety', 'locations'].includes(tab.id)
+      );
+    } else if (selectedRole === FilmRole.CINEMATOGRAPHER) {
+      return baseTabs.filter(tab => 
+        ['overview', 'scenes', 'locations', 'technical', 'emotions'].includes(tab.id)
+      );
+    } else if (selectedRole === FilmRole.SAFETY_COORDINATOR) {
+      return baseTabs.filter(tab => 
+        ['overview', 'safety', 'production', 'scenes'].includes(tab.id)
+      );
+    }
+    
+    return baseTabs; // Wszystkie taby dla pozostałych ról
+  }, [selectedRole]);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   if (!analysis) {
     return (
       <Card>
         <CardContent>
-          <Typography variant="h6" color="text.secondary" textAlign="center">
-            No analysis available. Upload a screenplay to get started.
-          </Typography>
+          <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ py: 8 }}>
+            <AnalyticsIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
+            <Box textAlign="center">
+              <Typography variant="h5" color="text.secondary" gutterBottom>
+                Brak analizy scenariusza
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Prześlij plik PDF scenariusza, aby rozpocząć analizę 27 sekcji
+              </Typography>
+            </Box>
+          </Stack>
         </CardContent>
       </Card>
     );
   }
 
-  const sections = [
-    { key: 'metadata', title: 'Script Metadata', data: analysis.metadata },
-    { key: 'scenes', title: 'Scene Structure', data: analysis.scenes, count: analysis.scenes?.length },
-    { key: 'characters', title: 'Character Details', data: analysis.characters, count: analysis.characters?.length },
-    { key: 'locations', title: 'Location Analysis', data: analysis.locations, count: analysis.locations?.length },
-    { key: 'props', title: 'Props Management', data: analysis.props, count: analysis.props?.length },
-    { key: 'vehicles', title: 'Vehicle Coordination', data: analysis.vehicles, count: analysis.vehicles?.length },
-    { key: 'weapons', title: 'Weapon Management', data: analysis.weapons, count: analysis.weapons?.length },
-    { key: 'lighting', title: 'Lighting Schemes', data: analysis.lighting, count: analysis.lighting?.length },
-    { key: 'difficultScenes', title: 'Difficult Scenes', data: analysis.difficultScenes, count: analysis.difficultScenes?.length },
-    { key: 'permits', title: 'Permit Requirements', data: analysis.permits, count: analysis.permits?.length },
-    { key: 'equipment', title: 'Equipment Planning', data: analysis.equipment, count: analysis.equipment?.length },
-    { key: 'risks', title: 'Production Risks', data: analysis.risks, count: analysis.risks?.length },
-    { key: 'relationships', title: 'Character Relationships', data: analysis.relationships, count: analysis.relationships?.length },
-    { key: 'themes', title: 'Theme Analysis', data: analysis.themes },
-    { key: 'emotionalArcs', title: 'Emotional Arcs', data: analysis.emotionalArcs },
-    { key: 'psychology', title: 'Psychological Analysis', data: analysis.psychology },
-    { key: 'resources', title: 'Resource Planning', data: analysis.resources },
-    { key: 'pacing', title: 'Pacing Analysis', data: analysis.pacing },
-    { key: 'technical', title: 'Technical Requirements', data: analysis.technical, count: analysis.technical?.length },
-    { key: 'budget', title: 'Budget Analysis', data: analysis.budget },
-    { key: 'checklist', title: 'Production Checklist', data: analysis.checklist },
-    { key: 'extras', title: 'Extra Requirements', data: analysis.extras },
-    { key: 'safety', title: 'Comprehensive Safety', data: analysis.safety },
-    { key: 'intimacy', title: 'Intimacy Coordination', data: analysis.intimacy },
-    { key: 'animals', title: 'Animal Coordination', data: analysis.animals },
-    { key: 'stunts', title: 'Stunt Coordination', data: analysis.stunts },
-    { key: 'postProduction', title: 'Post-Production Notes', data: analysis.postProduction },
-  ];
+  // Statystyki ogólne
+  const totalScenes = analysis.scenes?.length || 0;
+  const totalCharacters = analysis.characters?.length || 0;
+  const totalLocations = analysis.locations?.length || 0;
+  const budgetComplexity = analysis.budget?.overallComplexity || 'UNKNOWN';
+  const safetyLevel = analysis.safety?.overallAssessment?.overallRiskLevel || 'UNKNOWN';
 
   return (
-    <Card>
-      <CardContent>
-        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-          <AnalyticsIcon color="primary" />
-          <Typography variant="h5">
-            Analysis Results
-          </Typography>
-          <Chip 
-            label={`${analysis.filename}`}
-            color="primary" 
-            variant="outlined"
-          />
-          <Chip 
-            label="27 Sections"
-            color="success"
-          />
-        </Stack>
+    <Box>
+      {/* Nagłówek z podsumowaniem */}
+      <Paper elevation={2} sx={{ mb: 3 }}>
+        <CardContent>
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <AnalyticsIcon color="primary" sx={{ fontSize: 32 }} />
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography variant="h4" component="h1" gutterBottom>
+                Analiza Scenariusza
+              </Typography>
+              <Typography variant="subtitle1" color="text.secondary">
+                {analysis.filename}
+              </Typography>
+            </Box>
+            
+            {/* Akcje */}
+            <Stack direction="row" spacing={1}>
+              <Tooltip title="Pobierz raport">
+                <IconButton>
+                  <DownloadIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Udostępnij">
+                <IconButton>
+                  <ShareIcon />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          </Stack>
 
-        {/* Analysis Overview */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={3}>
-            <Card variant="outlined">
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h6" color="primary">
-                  {analysis.metadata?.pageCount || 0}
+          {/* Szybkie statystyki */}
+          <Grid container spacing={2}>
+            <Grid item xs={6} sm={3} md={2}>
+              <Box textAlign="center" sx={{ p: 1 }}>
+                <Typography variant="h5" color="primary.main" fontWeight="bold">
+                  {totalScenes}
                 </Typography>
-                <Typography variant="caption">Pages</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card variant="outlined">
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h6" color="primary">
-                  {analysis.scenes?.length || 0}
+                <Typography variant="caption" color="text.secondary">
+                  Sceny
                 </Typography>
-                <Typography variant="caption">Scenes</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card variant="outlined">
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h6" color="primary">
-                  {analysis.characters?.length || 0}
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3} md={2}>
+              <Box textAlign="center" sx={{ p: 1 }}>
+                <Typography variant="h5" color="primary.main" fontWeight="bold">
+                  {totalCharacters}
                 </Typography>
-                <Typography variant="caption">Characters</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card variant="outlined">
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h6" color="primary">
-                  {analysis.locations?.length || 0}
+                <Typography variant="caption" color="text.secondary">
+                  Postacie
                 </Typography>
-                <Typography variant="caption">Locations</Typography>
-              </CardContent>
-            </Card>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3} md={2}>
+              <Box textAlign="center" sx={{ p: 1 }}>
+                <Typography variant="h5" color="primary.main" fontWeight="bold">
+                  {totalLocations}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Lokacje
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3} md={2}>
+              <Box textAlign="center" sx={{ p: 1 }}>
+                <Chip 
+                  label={budgetComplexity}
+                  color={budgetComplexity === 'LOW' ? 'success' : budgetComplexity === 'HIGH' ? 'warning' : 'error'}
+                  size="small"
+                />
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Budżet
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3} md={2}>
+              <Box textAlign="center" sx={{ p: 1 }}>
+                <Chip 
+                  label={safetyLevel}
+                  color={safetyLevel === 'LOW' ? 'success' : safetyLevel === 'MEDIUM' ? 'warning' : 'error'}
+                  size="small"
+                />
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Bezpieczeństwo
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3} md={2}>
+              <Box textAlign="center" sx={{ p: 1 }}>
+                <Typography variant="h6" color="primary.main" fontWeight="bold">
+                  27
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Sekcji analizy
+                </Typography>
+              </Box>
+            </Grid>
           </Grid>
-        </Grid>
 
-        {/* Analysis Sections */}
-        <Box>
-          {sections.map((section) => (
-            <Accordion key={section.key} sx={{ mb: 1 }}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                  {section.title}
-                </Typography>
-                {section.count !== undefined && (
-                  <Chip 
-                    label={section.count}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                    sx={{ mr: 1 }}
-                  />
-                )}
-              </AccordionSummary>
-              <AccordionDetails>
-                <Box sx={{ 
-                  bgcolor: 'grey.50', 
-                  p: 2, 
-                  borderRadius: 1,
-                  fontFamily: 'monospace',
-                  fontSize: '0.875rem',
-                  maxHeight: 400,
-                  overflow: 'auto'
-                }}>
-                  <pre style={{ color: theme.palette.mode === 'dark' ? '#000' : undefined }}>
-                    {JSON.stringify(section.data, null, 2)}
-                  </pre>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
+          {/* Filtr roli */}
+          {selectedRole && (
+            <Box sx={{ mt: 2 }}>
+              <Chip 
+                label={`Widok: ${selectedRole}`}
+                color="primary"
+                variant="outlined"
+                size="small"
+              />
+            </Box>
+          )}
+        </CardContent>
+      </Paper>
+
+      {/* Taby z analizą */}
+      <Paper elevation={2}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{ 
+            borderBottom: 1, 
+            borderColor: 'divider',
+            '& .MuiTab-root': { minHeight: 64 }
+          }}
+        >
+          {tabsConfig.map((tab, index) => (
+            <Tab
+              key={tab.id}
+              icon={tab.icon}
+              label={tab.label}
+              id={`analysis-tab-${index}`}
+              aria-controls={`analysis-tabpanel-${index}`}
+              sx={{ fontSize: '0.875rem' }}
+            />
           ))}
-        </Box>
-      </CardContent>
-    </Card>
+        </Tabs>
+
+        {/* Zawartość tabów */}
+        <TabPanel value={tabValue} index={0}>
+          <OverviewDashboard analysis={analysis} />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={1}>
+          <SceneVisualization scenes={analysis.scenes} />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={2}>
+          <CharacterVisualization characters={analysis.characters} />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={3}>
+          <LocationVisualization locations={analysis.locations} />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={4}>
+          <EmotionalArcChart emotionalArcs={analysis.emotionalArcs} />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={5}>
+          <RelationshipNetwork relationships={analysis.relationships} />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={6}>
+          <ProductionDashboard 
+            resources={analysis.resources}
+            equipment={analysis.equipment}
+            checklist={analysis.checklist}
+          />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={7}>
+          <SafetyDashboard 
+            safety={analysis.safety}
+            risks={analysis.risks}
+            stunts={analysis.stunts}
+          />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={8}>
+          <BudgetBreakdown budget={analysis.budget} />
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={9}>
+          <TechnicalRequirements 
+            technical={analysis.technical}
+            lighting={analysis.lighting}
+            equipment={analysis.equipment}
+          />
+        </TabPanel>
+      </Paper>
+    </Box>
   );
 };
 
