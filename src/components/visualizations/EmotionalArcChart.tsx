@@ -11,9 +11,7 @@ import {
   MenuItem,
   Chip,
   Stack,
-  Paper,
   LinearProgress,
-  Divider,
   Table,
   TableBody,
   TableCell,
@@ -33,12 +31,7 @@ import {
   SentimentNeutral as NeutralIcon,
   EmojiEmotions as JoyIcon,
   PsychologyAlt as SurpriseIcon,
-  ThumbDown as DisgustIcon,
-  Timeline as TimelineIcon,
-  TrendingUp as IntensityIcon,
-  Speed as PaceIcon,
-  Waves as FlowIcon
-} from '@mui/icons-material';
+  ThumbDown as DisgustIcon} from '@mui/icons-material';
 import { EmotionalArcData } from '@/types/analysis';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar } from 'recharts';
 
@@ -90,8 +83,8 @@ const EmotionalArcChart: React.FC<EmotionalArcChartProps> = ({ emotionalArcs }) 
       dominantEmotion: dominantEmotion.name,
       dominantValue: dominantEmotion.value,
       dominantColor: dominantEmotion.color,
-      intensity: point.intensity,
-      tension: point.tension
+      intensity: point.intensity || 0,
+      tension: point.tension || 0
     };
   });
 
@@ -131,8 +124,8 @@ const EmotionalArcChart: React.FC<EmotionalArcChartProps> = ({ emotionalArcs }) 
     if (index === 0) return { scene: point.scene, change: 0, momentum: 0 };
     
     const prevPoint = emotionData[index - 1];
-    const emotionChange = Math.abs(point.averageEmotion - prevPoint.averageEmotion);
-    const intensityChange = point.intensity - prevPoint.intensity;
+    const emotionChange = Math.abs((point.averageEmotion || 0) - (prevPoint.averageEmotion || 0));
+    const intensityChange = (point.intensity || 0) - (prevPoint.intensity || 0);
     
     return {
       scene: point.scene,
@@ -497,27 +490,27 @@ const EmotionalArcChart: React.FC<EmotionalArcChartProps> = ({ emotionalArcs }) 
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <LinearProgress
                             variant="determinate"
-                            value={moment.intensity * 10}
+                            value={(moment.intensity || 0) * 10}
                             sx={{ width: 60, height: 6 }}
-                            color={getIntensityLevel(moment.intensity).color as any}
+                            color={getIntensityLevel(moment.intensity || 0).color as any}
                           />
-                          <Typography variant="body2">{moment.intensity.toFixed(1)}</Typography>
+                          <Typography variant="body2">{(moment.intensity || 0).toFixed(1)}</Typography>
                         </Stack>
                       </TableCell>
                       <TableCell>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <LinearProgress
                             variant="determinate"
-                            value={moment.tension * 10}
+                            value={(moment.tension || 0) * 10}
                             sx={{ width: 60, height: 6 }}
                             color="error"
                           />
-                          <Typography variant="body2">{moment.tension.toFixed(1)}</Typography>
+                          <Typography variant="body2">{(moment.tension || 0).toFixed(1)}</Typography>
                         </Stack>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {getIntensityLevel(moment.intensity).level} natężenie emocjonalne
+                          {getIntensityLevel(moment.intensity || 0).level} natężenie emocjonalne
                           {moment.description && ` - ${moment.description}`}
                         </Typography>
                       </TableCell>
@@ -560,7 +553,7 @@ const EmotionalArcChart: React.FC<EmotionalArcChartProps> = ({ emotionalArcs }) 
                       secondary={
                         <Box sx={{ mt: 1 }}>
                           <Typography variant="body2" color="text.secondary">
-                            Zmiana emocjonalna: {dynamic.change.toFixed(2)} | Momentum: {dynamic.momentum.toFixed(2)}
+                            Zmiana emocjonalna: {(dynamic.change || 0).toFixed(2)} | Momentum: {(dynamic.momentum || 0).toFixed(2)}
                           </Typography>
                           <LinearProgress
                             variant="determinate"

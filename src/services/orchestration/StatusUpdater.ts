@@ -28,6 +28,16 @@ export class StatusUpdater {
     // this.listenToQueueEvents();
   }
 
+  /**
+   * (PRIVATE) Example of how to listen to BullMQ queue events and relay job status updates.
+   *
+   * Example usage:
+   *   this.listenToQueueEvents();
+   *
+   * Common pitfalls:
+   * - This is a placeholder; in production, ensure BullMQ is properly configured and event listeners are cleaned up.
+   * - Make sure to avoid memory leaks by removing listeners when not needed.
+   */
   // private listenToQueueEvents(): void {
   //   Object.values(BULLMQ_QUEUES).forEach(queueName => {
   //     const queueEvents = new BullMQRealQueueEvents(queueName, { connection: { host: 'localhost', port: 6379 }});
@@ -47,11 +57,30 @@ export class StatusUpdater {
 
   /**
    * Sends a job status update to the user via the ChatAssistantOrchestrator.
+   *
+   * This method constructs a job status message and (in production) would relay it
+   * to the user via a WebSocket connection managed by ChatAssistantOrchestrator.
+   *
+   * Example usage:
+   *   statusUpdater.sendJobStatusUpdate(
+   *     'job-123',
+   *     'FULL_ANALYSIS',
+   *     'progress',
+   *     'user-456',
+   *     50,
+   *     'Processing section 14/27'
+   *   );
+   *
+   * Common pitfalls:
+   * - Ensure `userId` is valid and mapped to an active WebSocket connection.
+   * - If used in a simulated/frontend context, this only logs to console.
+   * - In production, make sure ChatAssistantOrchestrator is properly injected and used.
+   *
    * @param jobId The ID of the job.
    * @param queueName The name of the queue the job belongs to.
-   * @param status The current status of the job.
-   * @param progress Optional progress percentage (0-100).
+   * @param status The current status of the job ('queued', 'processing', 'completed', 'failed', 'progress').
    * @param userId The ID of the user to notify.
+   * @param progress Optional progress percentage (0-100).
    * @param message Optional message or error detail.
    * @param result Optional result data on completion.
    */

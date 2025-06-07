@@ -148,3 +148,5 @@ Thumbs.db
 # Vite
 dist-ssr
 *.local 
+src/services/orchestration/qdr.py
+.cursor/rules/lang.mdc

@@ -39,6 +39,19 @@ export class ChatAssistantOrchestrator {
     // IMPORTANT: WebSocket connections must be authenticated (e.g., via token).
   }
 
+  /**
+   * Handles a new WebSocket connection from a user.
+   *
+   * Example usage:
+   *   chatOrchestrator.handleNewConnection('user-123', wsConnection);
+   *
+   * Common pitfalls:
+   * - In production, ensure authentication is performed before accepting the connection.
+   * - The `connection` object must support event listeners for 'message' and 'close'.
+   *
+   * @param userId The ID of the connecting user.
+   * @param connection The WebSocket connection object.
+   */
   public handleNewConnection(userId: string, connection: any): void {
     console.log(`New connection from user: ${userId}`);
     this.activeConnections.set(userId, connection);
@@ -48,11 +61,37 @@ export class ChatAssistantOrchestrator {
     // connection.on('close', () => this.handleDisconnection(userId));
   }
 
+  /**
+   * (PRIVATE) Handles user disconnection and cleans up the connection map.
+   *
+   * Example usage:
+   *   this.handleDisconnection('user-123');
+   *
+   * Common pitfalls:
+   * - Always ensure this is called on every connection close event to avoid memory leaks.
+   * - If not called, stale connections may remain in memory.
+   *
+   * @param userId The ID of the disconnecting user.
+   */
   private handleDisconnection(userId: string): void {
     console.log(`User disconnected: ${userId}`);
     this.activeConnections.delete(userId);
   }
 
+  /**
+   * (PRIVATE) Handles incoming messages from a user, including validation and routing.
+   *
+   * Example usage:
+   *   await this.handleIncomingMessage('user-123', '{"content":"Hello"}');
+   *
+   * Common pitfalls:
+   * - Always validate and sanitize input to prevent injection attacks.
+   * - Use Zod or similar for schema validation.
+   * - Handle JSON parsing errors gracefully.
+   *
+   * @param userId The ID of the user sending the message.
+   * @param rawMessage The raw message string received.
+   */
   private async handleIncomingMessage(userId: string, rawMessage: string): Promise<void> {
     console.log(`Received message from ${userId}: ${rawMessage}`);
     // SECURITY: Validate and sanitize rawMessage before parsing or processing.
@@ -115,6 +154,24 @@ export class ChatAssistantOrchestrator {
     }
   }
 
+  /**
+   * Sends a chat message to a specific user via their WebSocket connection.
+   *
+   * Example usage:
+   *   chatOrchestrator.sendMessageToUser('user-123', {
+   *     userId: 'ASSISTANT',
+   *     content: 'Analysis complete.',
+   *     timestamp: new Date().toISOString(),
+   *     type: 'assistant'
+   *   });
+   *
+   * Common pitfalls:
+   * - If the user is not connected, a warning is logged and the message is not sent.
+   * - The `connection` object must have a `send` method that accepts a stringified message.
+   *
+   * @param userId The ID of the user to send the message to.
+   * @param message The ChatMessage object to send.
+   */
   public sendMessageToUser(userId: string, message: ChatMessage): void {
     const connection = this.activeConnections.get(userId);
     if (connection) {

@@ -47,9 +47,25 @@ export class JobOrchestrator {
   //   });
   // }
 
+  /**
+   * (PRIVATE) Adds a job to the specified BullMQ queue.
+   *
+   * Example usage:
+   *   await this.addJobToQueue('FULL_ANALYSIS', 'process-full-script', { scriptId, scriptText, userId });
+   *
+   * Common pitfalls:
+   * - In this simulated version, no real queueing occurs; in production, ensure the queue exists and is connected.
+   * - Always handle errors and null returns.
+   *
+   * @param queueName The name of the queue.
+   * @param jobName The name of the job (for categorization).
+   * @param data The job data payload.
+   * @param options Optional job options.
+   * @returns The job ID if successfully queued, or null on error.
+   */
   private async addJobToQueue<T>(
     queueName: BullMQQueueName,
-    jobName: string, // For BullMQ, jobs can have names for better categorization
+    jobName: string,
     data: T,
     options?: any
   ): Promise<string | null> {
@@ -71,11 +87,42 @@ export class JobOrchestrator {
     }
   }
 
+  /**
+   * Queues a full screenplay analysis job for background processing.
+   *
+   * Example usage:
+   *   await jobOrchestrator.queueFullAnalysis('script-123', scriptText, 'user-456');
+   *
+   * Common pitfalls:
+   * - This method simulates queueing in the frontend; in production, ensure BullMQ is properly configured.
+   * - Returns a simulated job ID in the current implementation.
+   *
+   * @param scriptId The unique identifier for the screenplay.
+   * @param scriptText The full text of the screenplay.
+   * @param userId The user requesting the analysis.
+   * @returns The job ID if successfully queued, or null on error.
+   */
   public async queueFullAnalysis(scriptId: string, scriptText: string, userId: string): Promise<string | null> {
     const jobData: JobDataFullAnalysis = { scriptId, scriptText, userId };
     return this.addJobToQueue(BULLMQ_QUEUES.FULL_ANALYSIS, 'process-full-script', jobData);
   }
 
+  /**
+   * Queues a partial validation job for a specific scene, typically after user feedback or edits.
+   *
+   * Example usage:
+   *   await jobOrchestrator.queuePartialValidation('script-123', 'scene-4', ['location', 'timeOfDay'], currentAnalysis);
+   *
+   * Common pitfalls:
+   * - Ensure `updatedFields` accurately reflects the fields that changed.
+   * - Returns a simulated job ID in the current implementation.
+   *
+   * @param scriptId The screenplay ID.
+   * @param sceneId The scene to validate.
+   * @param updatedFields Array of field names that were updated.
+   * @param currentAnalysis Optional current analysis context for the scene.
+   * @returns The job ID if successfully queued, or null on error.
+   */
   public async queuePartialValidation(
     scriptId: string,
     sceneId: string,
@@ -86,6 +133,22 @@ export class JobOrchestrator {
     return this.addJobToQueue(BULLMQ_QUEUES.PARTIAL_VALIDATION, `validate-scene-${sceneId}`, jobData);
   }
 
+  /**
+   * Queues an emotion recheck job for a specific scene, typically after narrative or emotional edits.
+   *
+   * Example usage:
+   *   await jobOrchestrator.queueEmotionRecheck('script-123', 'scene-4', sceneText, currentNarrativeValidation);
+   *
+   * Common pitfalls:
+   * - Returns a simulated job ID in the current implementation.
+   * - In production, ensure the queue and job types are properly set up.
+   *
+   * @param scriptId The screenplay ID.
+   * @param sceneId The scene to recheck.
+   * @param sceneText The text of the scene.
+   * @param currentNarrativeValidation Optional current narrative validation data.
+   * @returns The job ID if successfully queued, or null on error.
+   */
   public async queueEmotionRecheck(
     scriptId: string,
     sceneId: string,
