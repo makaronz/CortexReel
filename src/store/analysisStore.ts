@@ -22,6 +22,7 @@ interface AppState {
   currentFile: File | null;
   extractedText: string | null;
   extractionMethod: 'DIRECT' | 'OCR' | 'MIXED' | null;
+  isProcessing: boolean;
   
   // History
   analysisHistory: AnalysisHistoryEntry[];
@@ -34,7 +35,9 @@ interface AppState {
   
   // Analysis Actions
   setCurrentFile: (file: File | null) => void;
-  setExtractedText: (text: string, method: 'DIRECT' | 'OCR' | 'MIXED') => void;
+  setExtractedText: (text: string, method: 'DIRECT' | 'OCR' | 'MIXED' | null) => void;
+  startProcessing: () => void;
+  stopProcessing: () => void;
   startAnalysis: () => void;
   setAnalysisProgress: (progress: AnalysisProgress | null) => void;
   setAnalysisResult: (analysis: CompleteAnalysis) => void;
@@ -67,6 +70,7 @@ const initialState = {
   currentFile: null,
   extractedText: null,
   extractionMethod: null,
+  isProcessing: false,
   analysisHistory: [],
   selectedRole: null,
   collapsedSections: new Set<string>(),
@@ -91,16 +95,20 @@ export const useAnalysisStore = create<AppState>()(
           analysisError: null,
           currentAnalysis: null,
           extractedText: null,
-          extractionMethod: null
+          extractionMethod: null,
+          isProcessing: false
         });
       },
       
-      setExtractedText: (text: string, method: 'DIRECT' | 'OCR' | 'MIXED') => {
+      setExtractedText: (text: string, method: 'DIRECT' | 'OCR' | 'MIXED' | null) => {
         set({ 
           extractedText: text,
           extractionMethod: method
         });
       },
+      
+      startProcessing: () => set({ isProcessing: true, analysisError: null }),
+      stopProcessing: () => set({ isProcessing: false }),
       
       // Analysis Actions
       startAnalysis: () => {
@@ -161,7 +169,8 @@ export const useAnalysisStore = create<AppState>()(
           analysisError: null,
           currentFile: null,
           extractedText: null,
-          extractionMethod: null
+          extractionMethod: null,
+          isProcessing: false
         });
       },
       
@@ -292,6 +301,9 @@ export const useFileProcessing = () => useAnalysisStore(state => ({
   currentFile: state.currentFile,
   extractedText: state.extractedText,
   extractionMethod: state.extractionMethod,
+  isProcessing: state.isProcessing,
   setCurrentFile: state.setCurrentFile,
-  setExtractedText: state.setExtractedText
+  setExtractedText: state.setExtractedText,
+  startProcessing: state.startProcessing,
+  stopProcessing: state.stopProcessing
 })); 

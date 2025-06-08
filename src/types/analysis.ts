@@ -29,6 +29,7 @@ export interface SceneStructure {
   estimatedDuration: number; // in minutes
   pageNumber: number;
   complexity: 'LOW' | 'MEDIUM' | 'HIGH';
+  estimatedShootingDays?: number;
   emotions: EmotionalData;
   technicalRequirements: TechnicalRequirement[];
   safetyConsiderations: SafetyNote[];
@@ -121,6 +122,7 @@ export interface CharacterRelationship {
   strength: number; // 0-10
   sentiment: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL' | 'COMPLEX';
   evolution: 'IMPROVING' | 'DETERIORATING' | 'STABLE' | 'VOLATILE';
+  emotionalIntensity: 'LOW' | 'MEDIUM' | 'HIGH' | 'VOLATILE';
   keyScenes: number[];
   description: string;
   conflictLevel: number; // 0-10
@@ -235,14 +237,15 @@ export interface EquipmentRequirement {
   duration: string; // rental period
   alternatives: string[];
   cost: 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH';
+  leadTimeDays?: number;
 }
 
 export interface ProductionRisk {
   id: string;
   category: 'SAFETY' | 'WEATHER' | 'PERMIT' | 'TALENT' | 'EQUIPMENT' | 'LOCATION' | 'BUDGET';
   description: string;
-  probability: 'LOW' | 'MEDIUM' | 'HIGH';
-  impact: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  likelihood: number; // 1-5
+  severity: number; // 1-5
   scenes: number[];
   mitigation: string[];
   contingency: string[];
@@ -310,6 +313,20 @@ export interface BudgetAnalysis {
   costDrivers: string[];
   savingOpportunities: string[];
   riskFactors: string[];
+  targetBudget?: number;
+  currency: string; // e.g., 'USD', 'EUR'
+}
+
+export interface ProductionScheduleEntry {
+  id: string;
+  taskName: string;
+  start: string; // ISO Date string
+  end: string; // ISO Date string
+  progress: number; // 0-100
+  dependencies?: string[]; // array of task ids
+  type: 'task' | 'milestone';
+  department: string;
+  scenes: number[];
 }
 
 export interface ProductionChecklist {
@@ -450,6 +467,7 @@ export interface CompleteAnalysis {
   animals: AnimalCoordination;
   stunts: StuntCoordination;
   postProduction: PostProductionNotes;
+  productionSchedule?: ProductionScheduleEntry[];
 }
 
 // Analysis Progress Tracking

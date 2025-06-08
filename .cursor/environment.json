@@ -1,0 +1,23 @@
+{
+  "snapshot": "POPULATED_FROM_SETTINGS",
+  "install": "npm install --legacy-peer-deps",
+  "start": "echo 'Starting CortexReel development environment...'",
+  "terminals": [
+    {
+      "name": "Dev Server",
+      "command": "npm run dev"
+    },
+    {
+      "name": "Type Check",
+      "command": "npm run type-check -- --watch"
+    },
+    {
+      "name": "Linter",
+      "command": "npm run lint -- --watch"
+    },
+    {
+      "name": "Build Monitor",
+      "command": "npm run build -- --watch"
+    }
+  ]
+}

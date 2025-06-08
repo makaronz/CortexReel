@@ -53,18 +53,40 @@ Please respond with ONLY valid JSON, no additional text or formatting.`;
     const text = response.text();
     
     // Clean up response to ensure it's valid JSON
-    const cleanedText = text.replace(/```json\n?/g, '').replace(/\n?```/g, '').trim();
+    let cleanedText = text.replace(/```json\n?/g, '').replace(/\n?```/g, '').trim();
+    
+    // Remove any trailing non-JSON content that might be after the valid JSON
+    const firstBraceIndex = cleanedText.indexOf('{');
+    const lastBraceIndex = cleanedText.lastIndexOf('}');
+    
+    if (firstBraceIndex !== -1 && lastBraceIndex !== -1 && lastBraceIndex > firstBraceIndex) {
+      cleanedText = cleanedText.substring(firstBraceIndex, lastBraceIndex + 1);
+    }
     
     try {
       return JSON.parse(cleanedText);
     } catch (parseError) {
       console.error('Failed to parse Gemini response as JSON:', parseError);
-      console.error('Response text:', cleanedText);
+      console.error('Response text:', cleanedText.substring(0, 500) + '...');
       
-      // Try to extract JSON from the response if it's wrapped in other text
-      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+      // Try to extract the first valid JSON object from the response
+      const jsonMatches = cleanedText.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g);
+      if (jsonMatches && jsonMatches.length > 0) {
+        try {
+          return JSON.parse(jsonMatches[0]);
+        } catch (innerError) {
+          console.error('Failed to parse extracted JSON:', innerError);
+        }
+      }
+      
+      // Try array format as well
+      const arrayMatch = cleanedText.match(/\[[^\[\]]*(?:\[[^\[\]]*\][^\[\]]*)*\]/);
+      if (arrayMatch) {
+        try {
+          return JSON.parse(arrayMatch[0]);
+        } catch (innerError) {
+          console.error('Failed to parse array JSON:', innerError);
+        }
       }
       
       // If still can't parse, return a basic structure based on what was expected

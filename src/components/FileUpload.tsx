@@ -1,11 +1,15 @@
-import React, { useCallback, useState } from 'react';
+import {
+  useState,
+  useCallback,
+  FC,
+} from 'react';
 import { useDropzone } from 'react-dropzone';
-import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
-  Button, 
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Button,
   LinearProgress,
   Alert,
   Chip,
@@ -15,106 +19,95 @@ import {
   CloudUpload as CloudUploadIcon,
   Description as DescriptionIcon,
   CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon
 } from '@mui/icons-material';
 
-import { useAnalysisStore, useFileProcessing, useIsAnalyzing } from '@/store/analysisStore';
+import { useAnalysisStore } from '@/store/analysisStore';
 import { PDFParserService } from '@/services/pdfParser';
 import { GeminiAnalysisService } from '@/services/geminiService';
 
-const FileUpload: React.FC = () => {
-  const { 
-    currentFile, 
-    extractedText, 
+const FileUpload: FC = () => {
+  const {
+    currentFile,
+    extractedText,
     extractionMethod,
-    setCurrentFile, 
-    setExtractedText 
-  } = useFileProcessing();
-  
-  const { 
-    startAnalysis, 
-    setAnalysisProgress, 
-    setAnalysisResult, 
-    setAnalysisError 
+    setCurrentFile,
+    setExtractedText,
+    isProcessing,
+    isAnalyzing,
+    startProcessing,
+    stopProcessing,
   } = useAnalysisStore();
-  
-  const isAnalyzing = useIsAnalyzing();
-  
-  // Local state
+
+  const {
+    startAnalysis,
+    setAnalysisProgress,
+    setAnalysisResult,
+    setAnalysisError
+  } = useAnalysisStore();
+
+  const [localError, setLocalError] = useState<string | null>(null);
   const [parseProgress, setParseProgress] = useState<{
     current: number;
     total: number;
     stage: string;
   } | null>(null);
-  
-  const [isDragActive, setIsDragActive] = useState(false);
-  const [parseError, setParseError] = useState<string | null>(null);
 
-  // File drop handler
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
+    setLocalError(null);
+    startProcessing();
+    setCurrentFile(file);
+
     try {
-      setParseError(null);
-      setCurrentFile(file);
-      
-      // Start PDF parsing
-      const parser = new PDFParserService((progress) => {
-        setParseProgress(progress);
-      });
-      
+      const parser = new PDFParserService(setParseProgress);
       const parsedContent = await parser.parseFile(file);
-      
-      // Set extracted text
       setExtractedText(parsedContent.text, parsedContent.extractionMethod);
-      setParseProgress(null);
-      
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to parse file';
+      setLocalError(errorMessage);
       console.error('File parsing error:', error);
-      setParseError(error instanceof Error ? error.message : 'Failed to parse file');
+      setCurrentFile(null); // Clear the failed file
+    } finally {
+      stopProcessing();
       setParseProgress(null);
     }
-  }, [setCurrentFile, setExtractedText]);
+  }, [setCurrentFile, setExtractedText, startProcessing, stopProcessing]);
 
-  // Dropzone configuration
-  const { getRootProps, getInputProps, isDragActive: dropzoneActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      'application/pdf': ['.pdf']
-    },
+    accept: { 'application/pdf': ['.pdf'] },
     maxFiles: 1,
     maxSize: 10 * 1024 * 1024, // 10MB
-    disabled: isAnalyzing || !!parseProgress,
-    onDragEnter: () => setIsDragActive(true),
-    onDragLeave: () => setIsDragActive(false),
-    onError: (error) => {
-      setParseError(error.message);
-      setIsDragActive(false);
-    }
+    disabled: isProcessing || isAnalyzing,
   });
 
-  // Start analysis handler
   const handleStartAnalysis = async () => {
     if (!extractedText || !currentFile) return;
 
     try {
       startAnalysis();
-      
       const analysisService = new GeminiAnalysisService();
       const result = await analysisService.analyzeScreenplay(
         extractedText,
         currentFile.name,
         setAnalysisProgress
       );
-      
       setAnalysisResult(result);
-      
     } catch (error) {
       console.error('Analysis error:', error);
       setAnalysisError(error instanceof Error ? error.message : 'Analysis failed');
     }
   };
+
+  const handleRemoveFile = () => {
+    setCurrentFile(null);
+    setExtractedText('', null);
+    setLocalError(null);
+  };
+  
+  const isActionDisabled = isProcessing || isAnalyzing;
 
   return (
     <Card>
@@ -124,37 +117,36 @@ const FileUpload: React.FC = () => {
           Upload Screenplay
         </Typography>
 
-        {/* Error Display */}
-        {parseError && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setParseError(null)}>
-            {parseError}
+        {localError && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setLocalError(null)}>
+            {localError}
           </Alert>
         )}
 
-        {/* File Upload Area */}
         {!currentFile && (
           <Box
             {...getRootProps()}
             sx={{
               border: 2,
               borderStyle: 'dashed',
-              borderColor: isDragActive || dropzoneActive ? 'primary.main' : 'grey.300',
+              borderColor: isDragActive ? 'primary.main' : 'grey.300',
               borderRadius: 2,
               p: 4,
               textAlign: 'center',
-              cursor: 'pointer',
-              bgcolor: isDragActive || dropzoneActive ? 'action.hover' : 'transparent',
+              cursor: isActionDisabled ? 'not-allowed' : 'pointer',
+              bgcolor: isDragActive ? 'action.hover' : 'transparent',
+              opacity: isActionDisabled ? 0.6 : 1,
               transition: 'all 0.2s ease',
               '&:hover': {
                 borderColor: 'primary.main',
-                bgcolor: 'action.hover'
-              }
+                bgcolor: 'action.hover',
+              },
             }}
           >
             <input {...getInputProps()} />
             <CloudUploadIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
-              {isDragActive || dropzoneActive ? 'Drop the file here' : 'Drag & drop a PDF screenplay'}
+              {isDragActive ? 'Drop the file here' : 'Drag & drop a PDF screenplay'}
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               Or click to browse files
@@ -165,7 +157,6 @@ const FileUpload: React.FC = () => {
           </Box>
         )}
 
-        {/* File Info */}
         {currentFile && (
           <Box sx={{ mb: 2 }}>
             <Card variant="outlined">
@@ -173,29 +164,36 @@ const FileUpload: React.FC = () => {
                 <Stack direction="row" alignItems="center" spacing={2}>
                   <DescriptionIcon color="primary" />
                   <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="subtitle1">{currentFile.name}</Typography>
+                    <Typography variant="subtitle1" noWrap>{currentFile.name}</Typography>
                     <Typography variant="caption" color="text.secondary">
                       {(currentFile.size / 1024 / 1024).toFixed(1)} MB
                     </Typography>
                   </Box>
-                  
-                  {extractedText && extractionMethod && (
+
+                  {isProcessing && parseProgress && (
+                    <Box sx={{ width: '100px' }}>
+                      <Typography variant="caption">{parseProgress.stage}</Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={(parseProgress.current / parseProgress.total) * 100}
+                      />
+                    </Box>
+                  )}
+
+                  {extractedText && extractionMethod && !isProcessing && (
                     <Chip
                       icon={<CheckCircleIcon />}
-                      label={`Extracted (${extractionMethod})`}
+                      label={`Parsed (${extractionMethod})`}
                       color="success"
                       variant="outlined"
                     />
                   )}
-                  
+
                   <Button
                     variant="outlined"
                     size="small"
-                    onClick={() => {
-                      setCurrentFile(null);
-                      setExtractedText('', 'DIRECT');
-                      setParseError(null);
-                    }}
+                    onClick={handleRemoveFile}
+                    disabled={isActionDisabled}
                   >
                     Remove
                   </Button>
@@ -205,24 +203,6 @@ const FileUpload: React.FC = () => {
           </Box>
         )}
 
-        {/* Parse Progress */}
-        {parseProgress && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body2" gutterBottom>
-              {parseProgress.stage}
-            </Typography>
-            <LinearProgress 
-              variant="determinate" 
-              value={(parseProgress.current / parseProgress.total) * 100}
-              sx={{ mb: 1 }}
-            />
-            <Typography variant="caption" color="text.secondary">
-              {parseProgress.current}/{parseProgress.total}
-            </Typography>
-          </Box>
-        )}
-
-        {/* Text Preview */}
         {extractedText && (
           <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle2" gutterBottom>
@@ -230,36 +210,36 @@ const FileUpload: React.FC = () => {
             </Typography>
             <Box
               sx={{
-                bgcolor: 'grey.50',
+                bgcolor: 'grey.900',
+                color: 'grey.200',
                 border: 1,
-                borderColor: 'grey.300',
+                borderColor: 'grey.700',
                 borderRadius: 1,
                 p: 2,
-                maxHeight: 200,
+                maxHeight: 150,
                 overflow: 'auto',
                 fontFamily: 'monospace',
-                fontSize: '0.875rem'
+                fontSize: '0.8rem'
               }}
             >
-              {extractedText.substring(0, 500)}
-              {extractedText.length > 500 && '...'}
+              {extractedText.substring(0, 1000)}
+              {extractedText.length > 1000 && '...'}
             </Box>
-            <Typography variant="caption" color="text.secondary">
-              {extractedText.length} characters extracted
-              {extractionMethod && ` using ${extractionMethod} method`}
+             <Typography variant="caption" color="text.secondary">
+              {extractedText.length.toLocaleString()} characters extracted
+              {extractionMethod && ` via ${extractionMethod}`}
             </Typography>
           </Box>
         )}
 
-        {/* Action Buttons */}
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <Button
             variant="contained"
             onClick={handleStartAnalysis}
-            disabled={!extractedText || isAnalyzing || !!parseProgress}
-            sx={{ minWidth: 200 }}
+            disabled={!extractedText || isActionDisabled}
+            sx={{ minWidth: 220 }}
           >
-            {isAnalyzing ? 'Analyzing...' : 'Start Analysis (27 Sections)'}
+            {isAnalyzing ? 'Analyzing...' : 'Start Full Analysis'}
           </Button>
         </Stack>
       </CardContent>

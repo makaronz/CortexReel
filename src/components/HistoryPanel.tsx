@@ -127,6 +127,7 @@ const HistoryPanel: React.FC = () => {
                     </Stack>
                   </Box>
                 }
+                secondaryTypographyProps={{ component: 'div' }}
               />
               <ListItemSecondaryAction>
                 <Stack direction="row" spacing={0.5}>

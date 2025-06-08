@@ -26,19 +26,26 @@ export class GeminiAnalysisService {
       });
 
       this.worker.onmessage = (event: MessageEvent) => {
-        const { type, payload } = event.data;
-        console.log('Message from Gemini Analysis Worker:', type, payload ? Object.keys(payload) : 'No payload');
-        if (type === 'success') {
-          resolve(payload as CompleteAnalysis);
-          this.cleanupWorker();
-        } else if (type === 'error') {
-          console.error('Error message from Gemini Analysis Worker:', payload);
-          reject(new Error(payload as string));
-          this.cleanupWorker();
-        } else if (type === 'progress') {
-          if (this.onProgress) {
-            this.onProgress(payload as AnalysisProgress);
+        try {
+          const { type, payload } = event.data;
+          console.log('Message from Gemini Analysis Worker:', type, payload ? Object.keys(payload) : 'No payload');
+          
+          if (type === 'success') {
+            resolve(payload as CompleteAnalysis);
+            this.cleanupWorker();
+          } else if (type === 'error') {
+            console.error('Error message from Gemini Analysis Worker:', payload);
+            reject(new Error(payload as string));
+            this.cleanupWorker();
+          } else if (type === 'progress') {
+            if (this.onProgress) {
+              this.onProgress(payload as AnalysisProgress);
+            }
           }
+        } catch (error) {
+          console.error('Failed to process worker message:', error, event.data);
+          reject(new Error('Failed to process worker message'));
+          this.cleanupWorker();
         }
       };
 
