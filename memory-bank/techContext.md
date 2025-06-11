@@ -1,4 +1,4 @@
-# Tech Context - Site2Data v3 Standalone
+# Tech Context - CortexReel Standalone
 
 ## Core Technologies Stack
 
@@ -116,7 +116,7 @@
 VITE_GEMINI_API_KEY=your_gemini_api_key
 
 # Optional
-VITE_APP_NAME="Site2Data v3"
+VITE_APP_NAME="CortexReel"
 VITE_MAX_FILE_SIZE=10485760
 VITE_DEBUG_MODE=false
 VITE_ENABLE_OCR=true

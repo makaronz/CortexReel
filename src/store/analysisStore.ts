@@ -255,7 +255,7 @@ export const useAnalysisStore = create<AppState>()(
       }
     }),
     {
-      name: 'site2data-analysis-store',
+      name: 'cortex-reel-analysis-store',
       partialize: (state) => ({
         // Persist only these fields
         isAuthenticated: state.isAuthenticated,

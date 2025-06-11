@@ -1,7 +1,7 @@
 {
   "snapshot": "POPULATED_FROM_SETTINGS",
-  "install": "npm install --legacy-peer-deps",
-  "start": "echo 'Starting CortexReel development environment...'",
+  "install": "npm ci --legacy-peer-deps",
+  "start": "echo 'CortexReel development environment ready' && node --version && npm --version",
   "terminals": [
     {
       "name": "Dev Server",
@@ -14,6 +14,10 @@
     {
       "name": "Linter",
       "command": "npm run lint -- --watch"
+    },
+    {
+      "name": "Test Runner",
+      "command": "npm run test -- --watch"
     },
     {
       "name": "Build Monitor",

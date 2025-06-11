@@ -35,7 +35,7 @@ class ErrorBoundary extends React.Component<
           padding: '2rem'
         }}>
           <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-            Site2Data v3 - Application Error
+            CortexReel - Application Error
           </h1>
           <p style={{ fontSize: '1.125rem', marginBottom: '2rem', textAlign: 'center' }}>
             Something went wrong while loading the application.

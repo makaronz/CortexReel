@@ -1,4 +1,4 @@
-# Audit and optimize Site2Data v3 architecture
+# Audit and optimize CortexReel architecture
 _Exported on 03/06/2025 at 8:26:42 CEST from Cursor (0.51.1)_
 
 ---
@@ -7,7 +7,7 @@ _Exported on 03/06/2025 at 8:26:42 CEST from Cursor (0.51.1)_
 
 > **Act like a senior full-stack software auditor and architecture visualization expert with over 15 years of experience in React, TypeScript, AI systems, and large-scale design. You specialize in analyzing complex applications, identifying architectural issues, and generating detailed system diagrams.**
 >
-> **Objective:** Perform a deep code and architecture audit of **only the Site2Data v3** application — a professional screenplay analysis platform with 27 analysis sections. Your goal is to identify logic issues, architectural flaws, performance bottlenecks, and security concerns. Additionally, generate visual diagrams (in `mermaid`, `PlantUML`, or `draw.io` format) that document the system's structure, data flow, and feature flows.
+> **Objective:** Perform a deep code and architecture audit of **only the CortexReel** application — a professional screenplay analysis platform with 27 analysis sections. Your goal is to identify logic issues, architectural flaws, performance bottlenecks, and security concerns. Additionally, generate visual diagrams (in `mermaid`, `PlantUML`, or `draw.io` format) that document the system's structure, data flow, and feature flows.
 >
 > ---
 >
@@ -16,7 +16,7 @@ _Exported on 03/06/2025 at 8:26:42 CEST from Cursor (0.51.1)_
 > #### 1. **System Architecture Mapping**
 >
 > * Identify the main modules: AI analysis engine, PDF/OCR processor, visualization components, dashboards, file handling, and export system.
-> * Provide a **system-level component diagram** showing how those modules interact within **Site2Data v3 only**.
+> * Provide a **system-level component diagram** showing how those modules interact within **CortexReel only**.
 >
 > #### 2. **Feature Flow Diagrams**
 >
@@ -77,7 +77,7 @@ _Exported on 03/06/2025 at 8:26:42 CEST from Cursor (0.51.1)_
 >
 > ---
 >
-> Take a deep breath and work on this problem step-by-step. Analyze **only the Site2Data v3 application**.
+> Take a deep breath and work on this problem step-by-step. Analyze **only the CortexReel application**.
 
 ---
 
@@ -88,27 +88,27 @@ Doskonale. Zanim rozpocznę audyt, wykonam obowiązkowe kroki zgodnie z ustalony
 Zgodnie z "Automatic File Tracking & Documentation Update Rule", najpierw sprawdzę ostatnią aktywność w projekcie.
 
 
-Widzę, że ostatnio modyfikowano kilka plików, w tym pliki konfiguracyjne projektu i dokumentację w `site2data-v3`. Pliki `memory-bank` również były ostatnio aktualizowane.
+Widzę, że ostatnio modyfikowano kilka plików, w tym pliki konfiguracyjne projektu i dokumentację w `cortex-reel`. Pliki `memory-bank` również były ostatnio aktualizowane.
 
 Teraz, zgodnie z regułą "Cursor's Memory Bank", przeczytam wszystkie pliki z katalogu `memory-bank`, aby mieć pełny kontekst.
 
 
 Zapoznałem się ze wszystkimi plikami z `memory-bank`. Mam teraz pełniejszy obraz projektu, jego stanu, celów i kontekstu technologicznego.
 
-Zgodnie z Twoim zleceniem, przystępuję do audytu aplikacji **Site2Data v3**. Skupię się wyłącznie na kodzie i architekturze w katalogu `site2data-v3/`.
+Zgodnie z Twoim zleceniem, przystępuję do audytu aplikacji **CortexReel**. Skupię się wyłącznie na kodzie i architekturze w katalogu `cortex-reel/`.
 
-Pierwszym krokiem będzie zmapowanie struktury katalogu `site2data-v3`, aby zidentyfikować kluczowe moduły.
+Pierwszym krokiem będzie zmapowanie struktury katalogu `cortex-reel`, aby zidentyfikować kluczowe moduły.
 
 
-Wygląda na to, że katalogi `site2data-v3/src/components/dashboards/` oraz `site2data-v3/src/components/visualizations/` są obecnie puste. To oznacza, że albo te funkcjonalności nie są jeszcze zaimplementowane w tej strukturze, albo są zrealizowane w inny sposób (np. bezpośrednio w `AnalysisDisplay.tsx` lub innych ogólnych komponentach). Na potrzeby diagramu założę, że `AnalysisDisplay.tsx` i potencjalnie inne komponenty w `components/` pełnią rolę wyświetlania danych, co jest bliskie funkcjom dashboardu i wizualizacji.
+Wygląda na to, że katalogi `cortex-reel/src/components/dashboards/` oraz `cortex-reel/src/components/visualizations/` są obecnie puste. To oznacza, że albo te funkcjonalności nie są jeszcze zaimplementowane w tej strukturze, albo są zrealizowane w inny sposób (np. bezpośrednio w `AnalysisDisplay.tsx` lub innych ogólnych komponentach). Na potrzeby diagramu założę, że `AnalysisDisplay.tsx` i potencjalnie inne komponenty w `components/` pełnią rolę wyświetlania danych, co jest bliskie funkcjom dashboardu i wizualizacji.
 
 Eksport również nie jest jasno zlokalizowany.
 
-Przystępuję do stworzenia **system-level component diagram** w Mermaid. Będzie to diagram wysokopoziomowy, pokazujący główne zidentyfikowane moduły i ich interakcje w obrębie `site2data-v3`.
+Przystępuję do stworzenia **system-level component diagram** w Mermaid. Będzie to diagram wysokopoziomowy, pokazujący główne zidentyfikowane moduły i ich interakcje w obrębie `cortex-reel`.
 
-### 1. System Architecture Mapping (Site2Data v3)
+### 1. System Architecture Mapping (CortexReel)
 
-Oto diagram komponentów systemu Site2Data v3:
+Oto diagram komponentów systemu CortexReel:
 
 ```mermaid
 graph TD
@@ -316,11 +316,11 @@ sequenceDiagram
     FU->>ST: Updates store with parsed text or error
 ```
 
-Zakończyłem audyt aplikacji **Site2Data v3**. Poniżej przedstawiam podsumowanie w języku polskim, natomiast wszystkie diagramy i raport problemów zostały już przygotowane w formacie odpowiednim do potencjalnego użycia w dokumentacji (Mermaid, Markdown).
+Zakończyłem audyt aplikacji **CortexReel**. Poniżej przedstawiam podsumowanie w języku polskim, natomiast wszystkie diagramy i raport problemów zostały już przygotowane w formacie odpowiednim do potencjalnego użycia w dokumentacji (Mermaid, Markdown).
 
-**Podsumowanie Audytu Site2Data v3**
+**Podsumowanie Audytu CortexReel**
 
-Aplikacja `site2data-v3` jest zbudowana jako Single Page Application (SPA) przy użyciu React, Vite, TypeScript, Zustand do zarządzania stanem oraz Material-UI do komponentów interfejsu. Główna funkcjonalność opiera się na parsowaniu plików PDF (scenariuszy) i następnie przeprowadzaniu wieloetapowej analizy (27 sekcji) przy użyciu API Gemini.
+Aplikacja `cortex-reel` jest zbudowana jako Single Page Application (SPA) przy użyciu React, Vite, TypeScript, Zustand do zarządzania stanem oraz Material-UI do komponentów interfejsu. Główna funkcjonalność opiera się na parsowaniu plików PDF (scenariuszy) i następnie przeprowadzaniu wieloetapowej analizy (27 sekcji) przy użyciu API Gemini.
 
 **Kluczowe Obserwacje i Rekomendacje:**
 
@@ -355,7 +355,7 @@ Szczegółowa tabela z problemami, ich lokalizacją, poziomem krytyczności i su
 Wszystkie wymagane diagramy (architektury systemu, przepływu funkcji, cyklu życia promptu) zostały wygenerowane w poprzednich krokach w formacie Mermaid.
 
 **Zalecenia Ogólne:**
-Projekt `site2data-v3` ma solidne podstawy w postaci zdefiniowanych serwisów i struktury stanu. Jednakże, aby stał się bezpieczną i wydajną aplikacją produkcyjną, konieczne jest zaadresowanie przede wszystkim krytycznych problemów bezpieczeństwa oraz przeniesienie ciężaru obliczeniowego z klienta na stronę serwerową lub do Web Workers. Rozbudowa interfejsu o dedykowane wizualizacje znacznie podniesie jego wartość użytkową.
+Projekt `cortex-reel` ma solidne podstawy w postaci zdefiniowanych serwisów i struktury stanu. Jednakże, aby stał się bezpieczną i wydajną aplikacją produkcyjną, konieczne jest zaadresowanie przede wszystkim krytycznych problemów bezpieczeństwa oraz przeniesienie ciężaru obliczeniowego z klienta na stronę serwerową lub do Web Workers. Rozbudowa interfejsu o dedykowane wizualizacje znacznie podniesie jego wartość użytkową.
 
 Jeśli potrzebujesz dalszych wyjaśnień lub bardziej szczegółowej analizy konkretnych fragmentów kodu, daj mi znać.
 

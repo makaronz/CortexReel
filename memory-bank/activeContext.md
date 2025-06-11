@@ -1,4 +1,4 @@
-# Active Context - Site2Data v3 Standalone
+# Active Context - CortexReel Standalone
 
 *Last Updated: 2025-01-15T16:30:00Z*
 
@@ -181,6 +181,6 @@ File Validation  OCR Fallback  27 Sections  Progress Track  Persist  Charts
 ### Development Notes
 - Respond w Polish dla user communication
 - All documentation i code comments w English dla GitHub
-- Use "site2data" terminology (not "pixelpasta")
+- Use "cortex-reel" terminology (not "pixelpasta")
 - Follow established component patterns dla consistency
 - Prioritize user experience i professional aesthetics 

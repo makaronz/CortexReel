@@ -1,4 +1,4 @@
-# Product Context - Site2Data v3 Standalone
+# Product Context - CortexReel Standalone
 
 ## Problem do Rozwiązania
 

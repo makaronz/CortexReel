@@ -1,6 +1,6 @@
-# Memory Bank - Site2Data v3 Standalone
+# Memory Bank - CortexReel Standalone
 
-This Memory Bank system provides comprehensive documentation and context for the **site2data-v3-standalone** project - a professional React TypeScript screenplay analysis platform designed for film industry professionals.
+This Memory Bank system provides comprehensive documentation and context for the **cortex-reel-standalone** project - a professional React TypeScript screenplay analysis platform designed for film industry professionals.
 
 ## 📖 Purpose
 
@@ -42,7 +42,7 @@ The AI assistant's memory resets completely between sessions. This Memory Bank s
 
 ## 🎯 Project Overview
 
-**Site2Data v3 Standalone** is a React TypeScript Single Page Application that enables film industry professionals to upload PDF screenplays and receive comprehensive AI-powered analysis across 27 different analytical dimensions.
+**CortexReel Standalone** is a React TypeScript Single Page Application that enables film industry professionals to upload PDF screenplays and receive comprehensive AI-powered analysis across 27 different analytical dimensions.
 
 ### Key Features
 - **PDF Processing**: Direct text extraction + OCR fallback
@@ -159,8 +159,8 @@ The AI assistant's memory resets completely between sessions. This Memory Bank s
 
 - **User Communication**: Polish language
 - **Code/Documentation**: English for GitHub
-- **Terminology**: Use "site2data" (not "pixelpasta")
+- **Terminology**: Use "cortex-reel" (not "pixelpasta")
 - **Tone**: Professional, appropriate for film industry
 - **Technical Accuracy**: Critical - no assumptions
 
-This Memory Bank ensures project continuity and maintains high development standards across all AI assistant sessions working on the site2data-v3-standalone project. 
+This Memory Bank ensures project continuity and maintains high development standards across all AI assistant sessions working on the cortex-reel-standalone project. 

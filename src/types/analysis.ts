@@ -1,4 +1,4 @@
-// Core Analysis Types for Site2Data v3
+// Core Analysis Types for CortexReel
 
 export interface ScriptMetadata {
   title: string;

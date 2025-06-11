@@ -1,4 +1,4 @@
-# Site2Data v3 - Professional Screenplay Analysis Platform
+# CortexReel - Professional Screenplay Analysis Platform
 
 A comprehensive, professional screenplay analysis application with 27 analysis sections, built with React, TypeScript, and Google Gemini AI. Designed specifically for film industry professionals including directors, producers, cinematographers, and production teams.
 
@@ -55,7 +55,7 @@ A comprehensive, professional screenplay analysis application with 27 analysis s
 1. **Clone this repository**
    ```bash
    git clone <repository-url>
-   cd site2data-v3-standalone
+   cd CortexReel
    ```
 
 2. **Install dependencies**
@@ -120,7 +120,7 @@ A comprehensive, professional screenplay analysis application with 27 analysis s
 ## 📁 Project Structure
 
 ```
-site2data-v3-standalone/
+CortexReel/
 ├── src/
 │   ├── components/          # React components
 │   │   ├── visualizations/  # Charts and graphs
@@ -338,4 +338,4 @@ MIT License - see LICENSE file for details.
 
 ---
 
-**Site2Data v3** - Transforming screenplay analysis for the modern film industry. Built with precision, designed for professionals. 
+**CortexReel** - Transforming screenplay analysis for the modern film industry. Built with precision, designed for professionals. 

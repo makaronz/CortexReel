@@ -1,4 +1,4 @@
-## 🏛️ **Wybrany Stack Backendowy `site2data-v3`: Skalowalny, Bezpieczny, Modułowy**
+## 🏛️ **Wybrany Stack Backendowy `cortex-reel`: Skalowalny, Bezpieczny, Modułowy**
 
 | Warstwa                   | Technologia                                       | Uzasadnienie                                                                                                                 |
 | ------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -81,7 +81,7 @@ packages/
 
 ## 📘 **VOLUME I – Design Bible: Modular Backend for AI-Driven Screenplay Analysis**
 
-> ✨ *Cel:* Zdefiniować kompletną, testowalną, w pełni modularną architekturę backendową `site2data-v3` – gotową do obsługi:
+> ✨ *Cel:* Zdefiniować kompletną, testowalną, w pełni modularną architekturę backendową `cortex-reel` – gotową do obsługi:
 >
 > * wieloetapowej analizy LLM
 > * czatowego feedbacku użytkownika

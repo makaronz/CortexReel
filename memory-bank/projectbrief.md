@@ -1,8 +1,8 @@
-# Site2Data v3 Standalone - Project Brief
+# CortexReel - Project Brief
 
 ## Podstawowe Informacje
 
-**Nazwa projektu:** Site2Data v3 Standalone  
+**Nazwa projektu:** CortexReel  
 **Typ aplikacji:** React TypeScript SPA  
 **Główny cel:** Profesjonalna platforma analizy scenariuszy filmowych z 27 sekcjami analizy  
 **Grupa docelowa:** Profesjonaliści branży filmowej (reżyserzy, producenci, operatorzy kamery, koordynatorzy bezpieczeństwa)

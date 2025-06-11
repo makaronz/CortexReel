@@ -53,7 +53,7 @@ const LoginScreen: React.FC = () => {
         <Card sx={{ width: '100%', maxWidth: 400 }}>
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom textAlign="center">
-              Site2Data v3
+              CortexReel
             </Typography>
             <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
               Professional Screenplay Analysis Platform

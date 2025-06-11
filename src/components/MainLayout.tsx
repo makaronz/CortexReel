@@ -76,7 +76,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </IconButton>
           
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Site2Data v3 - Professional Screenplay Analysis
+            CortexReel - Professional Screenplay Analysis
           </Typography>
           
           <FormControlLabel

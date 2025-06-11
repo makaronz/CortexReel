@@ -1,4 +1,4 @@
-# System Patterns - Site2Data v3 Standalone
+# System Patterns - CortexReel Standalone
 
 ## Architektura Ogólna
 
@@ -74,7 +74,7 @@ const tabsConfig = useMemo(() => {
 persist(
   (set, get) => ({ /* state */ }),
   {
-    name: 'site2data-analysis-store',
+    name: 'cortex-reel-analysis-store',
     partialize: (state) => ({
       isAuthenticated: state.isAuthenticated,
       analysisHistory: state.analysisHistory,
