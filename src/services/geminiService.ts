@@ -3,11 +3,18 @@ import { AdminConfigService } from './AdminConfigService';
 
 export class GeminiAnalysisService {
   private onProgress?: (progress: AnalysisProgress) => void;
+  private onPartialResult?: (section: string, data: any) => void;
   private worker: Worker | null = null;
 
-  constructor(progressCallback?: (progress: AnalysisProgress) => void) {
+  constructor(
+    progressCallback?: (progress: AnalysisProgress) => void,
+    partialResultCallback?: (section: string, data: any) => void
+  ) {
     if (progressCallback) {
       this.onProgress = progressCallback;
+    }
+    if (partialResultCallback) {
+      this.onPartialResult = partialResultCallback;
     }
   }
 
@@ -34,6 +41,10 @@ export class GeminiAnalysisService {
           if (type === 'success') {
             resolve(payload as CompleteAnalysis);
             this.cleanupWorker();
+          } else if (type === 'partial_result') {
+            if (this.onPartialResult) {
+              this.onPartialResult(payload.section, payload.data);
+            }
           } else if (type === 'error') {
             console.error('Error message from Gemini Analysis Worker:', payload);
             reject(new Error(payload as string));
@@ -62,17 +73,23 @@ export class GeminiAnalysisService {
         const llmConfig = await adminConfigService.getLLMConfig();
         const promptConfig = await adminConfigService.getPromptConfig();
         
+        // Forcefully use the user-provided API key
+        const finalLlmConfig = {
+          ...llmConfig,
+          apiKey: 'AIzaSyAbEQqwe1IVLr-Q-k88p4Onha2rS7o3LKA',
+        };
+        
         console.log('Posting message to Gemini Analysis Worker:', { 
           scriptTextLength: scriptText.length, 
           filename,
-          llmConfig: llmConfig.model,
+          llmConfig: finalLlmConfig.model,
           promptsCount: Object.keys(promptConfig).length
         });
         
         this.worker.postMessage({ 
           scriptText, 
           filename,
-          llmConfig,
+          llmConfig: finalLlmConfig,
           promptConfig
         });
       } catch (error) {

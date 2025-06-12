@@ -6,6 +6,7 @@ import type {
   AnalysisHistoryEntry,
   FilmRole 
 } from '@/types/analysis';
+import { ChatMessage } from '@/types/ChatMessage';
 
 interface AppState {
   // Authentication
@@ -33,12 +34,16 @@ interface AppState {
   darkMode: boolean;
   sidebarOpen: boolean;
   
+  // Chat State
+  chatMessages: { [jobId: string]: ChatMessage[] };
+  
   // Analysis Actions
   setCurrentFile: (file: File | null) => void;
   setExtractedText: (text: string, method: 'DIRECT' | 'OCR' | 'MIXED' | null) => void;
   startProcessing: () => void;
   stopProcessing: () => void;
   startAnalysis: () => void;
+  updatePartialAnalysis: (section: string, data: any) => void;
   setAnalysisProgress: (progress: AnalysisProgress | null) => void;
   setAnalysisResult: (analysis: CompleteAnalysis) => void;
   setAnalysisError: (error: string | null) => void;
@@ -56,6 +61,10 @@ interface AppState {
   setSectionCollapsed: (sectionId: string, collapsed: boolean) => void;
   toggleDarkMode: () => void;
   setSidebarOpen: (open: boolean) => void;
+  
+  // Chat Actions
+  addChatMessage: (jobId: string, message: ChatMessage) => void;
+  clearChatMessages: (jobId: string) => void;
   
   // Utility
   reset: () => void;
@@ -75,7 +84,8 @@ const initialState = {
   selectedRole: null,
   collapsedSections: new Set<string>(),
   darkMode: true, // Default to dark mode for film industry
-  sidebarOpen: true
+  sidebarOpen: true,
+  chatMessages: {},
 };
 
 export const useAnalysisStore = create<AppState>()(
@@ -123,6 +133,31 @@ export const useAnalysisStore = create<AppState>()(
             estimatedTimeRemaining: 60000,
             errors: []
           }
+        });
+      },
+      
+      updatePartialAnalysis: (section: string, data: any) => {
+        set(state => {
+          if (!state.currentAnalysis) {
+            // Initialize with the first partial result if it doesn't exist
+            return { 
+              currentAnalysis: { 
+                id: crypto.randomUUID(),
+                filename: state.currentFile?.name || 'Untitled',
+                createdAt: new Date().toISOString(),
+                lastModified: new Date().toISOString(),
+                [section]: data 
+              } as Partial<CompleteAnalysis> as CompleteAnalysis
+            };
+          }
+          
+          return {
+            currentAnalysis: {
+              ...state.currentAnalysis,
+              [section]: data,
+              lastModified: new Date().toISOString(),
+            }
+          };
         });
       },
       
@@ -249,9 +284,26 @@ export const useAnalysisStore = create<AppState>()(
         set({ sidebarOpen: open });
       },
       
+      // Chat Actions
+      addChatMessage: (jobId: string, message: ChatMessage) => {
+        set(state => {
+          const newChatMessages = { ...state.chatMessages };
+          const history = newChatMessages[jobId] || [];
+          newChatMessages[jobId] = [...history, message];
+          return { chatMessages: newChatMessages };
+        });
+      },
+      clearChatMessages: (jobId: string) => {
+        set(state => {
+          const newChatMessages = { ...state.chatMessages };
+          delete newChatMessages[jobId];
+          return { chatMessages: newChatMessages };
+        });
+      },
+      
       // Utility Actions
       reset: () => {
-        set(initialState);
+        set({...initialState, chatMessages: {}});
       }
     }),
     {
@@ -263,7 +315,8 @@ export const useAnalysisStore = create<AppState>()(
         selectedRole: state.selectedRole,
         collapsedSections: Array.from(state.collapsedSections), // Convert Set to Array for storage
         darkMode: state.darkMode,
-        sidebarOpen: state.sidebarOpen
+        sidebarOpen: state.sidebarOpen,
+        chatMessages: state.chatMessages, // Persist chat messages
       }),
       onRehydrateStorage: () => (state) => {
         // Convert collapsedSections back to Set after loading from storage
@@ -306,4 +359,6 @@ export const useFileProcessing = () => useAnalysisStore(state => ({
   setExtractedText: state.setExtractedText,
   startProcessing: state.startProcessing,
   stopProcessing: state.stopProcessing
-})); 
+}));
+
+export const useChatMessages = (jobId: string) => useAnalysisStore(state => state.chatMessages[jobId] || []); 

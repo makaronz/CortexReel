@@ -11,6 +11,7 @@ import {
   TableRow,
   Chip,
   Grid,
+  LinearProgress,
 } from '@mui/material';
 import { Chart } from 'react-google-charts';
 import { BudgetAnalysis } from '@/types/analysis';
@@ -34,6 +35,16 @@ const getPriorityChipColor = (priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') 
 };
 
 const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ budget }) => {
+  if (!budget) {
+    return (
+      <Paper elevation={3} sx={{ p: 2 }}>
+        <Typography variant="h6">Budget Breakdown</Typography>
+        <Typography>Waiting for budget data...</Typography>
+        <LinearProgress sx={{ mt: 2 }} />
+      </Paper>
+    );
+  }
+
   const chartData = useMemo(() => {
     if (!budget || !budget.costDrivers) return [['Driver', 'Count']];
     
@@ -44,15 +55,6 @@ const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ budget }) => {
 
     return [['Driver', 'Count'], ...Object.entries(counts)];
   }, [budget]);
-
-  if (!budget) {
-    return (
-      <Paper elevation={3} sx={{ p: 2 }}>
-        <Typography variant="h6">Budget Breakdown</Typography>
-        <Typography>No budget analysis data available.</Typography>
-      </Paper>
-    );
-  }
 
   return (
     <Paper elevation={3} sx={{ p: 2, backgroundColor: 'background.paper' }}>

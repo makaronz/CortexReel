@@ -52,6 +52,18 @@ const CharacterVisualization: React.FC<CharacterVisualizationProps> = ({ charact
   const [expandedCharacter, setExpandedCharacter] = useState<string | null>(null);
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterDetail | null>(null);
 
+  if (!characters) {
+    return (
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Character Analysis</Typography>
+          <Typography color="text.secondary">Waiting for character data...</Typography>
+          <LinearProgress sx={{ mt: 2 }} />
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Filtrowanie postaci
   const filteredCharacters = characters.filter(character => {
     if (selectedFilter === 'all') return true;

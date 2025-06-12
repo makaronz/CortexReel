@@ -60,6 +60,10 @@
 - **UUID 9.0.0** - Unique identifier generation
 - **Date-fns 2.30.0** - Date manipulation utilities
 
+## Backend Technologies
+
+- **LangChain (Node/TypeScript):** AI orchestration framework for Retrieval-Augmented Generation (RAG), semantic search, and multi-model prompt chaining. Integrates with Weaviate (vector DB), MongoDB (structured data), and all supported LLMs (Gemini, GPT, Claude). Enables modular, versioned, and context-aware analysis pipelines for all 27 screenplay sections.
+
 ## Development Environment
 
 ### Package Manager

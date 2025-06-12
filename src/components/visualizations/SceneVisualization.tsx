@@ -44,6 +44,19 @@ const SceneVisualization: React.FC<SceneVisualizationProps> = ({ scenes }) => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [expandedScene, setExpandedScene] = useState<string | null>(null);
 
+  // Add a guard clause to handle undefined scenes prop
+  if (!scenes) {
+    return (
+      <Card>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>Scene Analysis</Typography>
+          <Typography color="text.secondary">Waiting for scene data...</Typography>
+          <LinearProgress sx={{ mt: 2 }} />
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Filtrowanie scen
   const filteredScenes = scenes.filter(scene => {
     if (selectedFilter === 'all') return true;

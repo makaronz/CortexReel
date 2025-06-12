@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import ReactFlow, { MiniMap, Controls, Background, Node, Edge } from 'reactflow';
-import { Paper, Typography } from '@mui/material';
+import { Paper, Typography, LinearProgress } from '@mui/material';
 import { CharacterDetail, CharacterRelationship } from '@/types/analysis';
 
 import 'reactflow/dist/style.css';
@@ -28,6 +28,16 @@ const getEdgeStyle = (intensity: CharacterRelationship['emotionalIntensity'], st
 };
 
 const RelationshipNetwork: React.FC<RelationshipNetworkProps> = ({ characters, relationships }) => {
+  if (!characters || !relationships) {
+    return (
+      <Paper elevation={3} sx={{ p: 2 }}>
+        <Typography variant="h6">Character Relationships</Typography>
+        <Typography>Waiting for relationship data...</Typography>
+        <LinearProgress sx={{ mt: 2 }} />
+      </Paper>
+    );
+  }
+
   const { initialNodes, initialEdges } = useMemo(() => {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
@@ -67,15 +77,6 @@ const RelationshipNetwork: React.FC<RelationshipNetworkProps> = ({ characters, r
 
     return { initialNodes: nodes, initialEdges: edges };
   }, [characters, relationships]);
-
-  if (!characters || characters.length === 0) {
-    return (
-      <Paper elevation={3} sx={{ p: 2 }}>
-        <Typography variant="h6">Character Relationships</Typography>
-        <Typography>No character data available to build network.</Typography>
-      </Paper>
-    );
-  }
 
   return (
     <Paper elevation={3} sx={{ height: 500, p: 2, backgroundColor: 'background.paper' }}>

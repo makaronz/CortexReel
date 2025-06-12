@@ -40,6 +40,7 @@ const FileUpload: FC = () => {
 
   const {
     startAnalysis,
+    updatePartialAnalysis,
     setAnalysisProgress,
     setAnalysisResult,
     setAnalysisError
@@ -88,11 +89,10 @@ const FileUpload: FC = () => {
 
     try {
       startAnalysis();
-      const analysisService = new GeminiAnalysisService();
+      const analysisService = new GeminiAnalysisService(setAnalysisProgress, updatePartialAnalysis);
       const result = await analysisService.analyzeScreenplay(
         extractedText,
-        currentFile.name,
-        setAnalysisProgress
+        currentFile.name
       );
       setAnalysisResult(result);
     } catch (error) {

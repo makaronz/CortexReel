@@ -12,6 +12,7 @@ import {
   IconButton,
   Collapse,
   Chip,
+  LinearProgress,
 } from '@mui/material';
 import { EquipmentRequirement } from '@/types/analysis';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -80,6 +81,16 @@ const Row: React.FC<{ category: string; items: EquipmentRequirement[] }> = ({ ca
 
 const TechnicalRequirements: React.FC<TechnicalRequirementsProps> = ({ equipment }) => {
     
+  if (!equipment) {
+    return (
+      <Paper elevation={3} sx={{ p: 2 }}>
+        <Typography variant="h6">Technical Requirements</Typography>
+        <Typography>Waiting for equipment data...</Typography>
+        <LinearProgress sx={{ mt: 2 }} />
+      </Paper>
+    );
+  }
+
   const groupedEquipment = useMemo(() => {
     if (!equipment) return {};
     return equipment.reduce((acc, item) => {

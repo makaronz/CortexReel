@@ -1,0 +1,135 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Memory Bank Maintenance Protocol
+
+## Overview
+
+The Memory Bank system in [memory-bank/](mdc:memory-bank) is **CRITICAL** for project continuity. AI assistants must read ALL Memory Bank files at the start of EVERY session to understand project context, as memory resets completely between sessions.
+
+## Memory Bank Files Structure
+
+### Core Required Files
+1. **[memory-bank/projectbrief.md](mdc:memory-bank/projectbrief.md)** - Project foundation and requirements
+2. **[memory-bank/productContext.md](mdc:memory-bank/productContext.md)** - Problems solved and value proposition  
+3. **[memory-bank/systemPatterns.md](mdc:memory-bank/systemPatterns.md)** - Technical architecture patterns
+4. **[memory-bank/techContext.md](mdc:memory-bank/techContext.md)** - Technology stack and setup
+5. **[memory-bank/activeContext.md](mdc:memory-bank/activeContext.md)** - Current work status and priorities
+6. **[memory-bank/progress.md](mdc:memory-bank/progress.md)** - Implementation tracking and metrics
+
+### Documentation Index
+- **[memory-bank/README.md](mdc:memory-bank/README.md)** - Complete Memory Bank guide and usage protocol
+
+## Mandatory Session Protocol
+
+### 🚨 CRITICAL: Session Initialization
+**BEFORE any work on CortexReel:**
+1. Read [memory-bank/README.md](mdc:memory-bank/README.md) for overview
+2. Read [memory-bank/activeContext.md](mdc:memory-bank/activeContext.md) for current status
+3. Read [memory-bank/progress.md](mdc:memory-bank/progress.md) for implementation state
+4. Review relevant additional files based on task scope
+
+### Update Triggers
+Update Memory Bank when:
+- **New architectural patterns** discovered or implemented
+- **Significant features** completed (like admin dashboard implementation)
+- **Critical issues** identified or resolved
+- **User feedback** requiring pattern/approach changes
+- **Major technical decisions** made
+
+### Update Protocol
+```markdown
+## Memory Bank Update Checklist
+1. [ ] Identify which files need updates
+2. [ ] Update activeContext.md with latest changes
+3. [ ] Update progress.md with completion status
+4. [ ] Document new patterns in systemPatterns.md if applicable
+5. [ ] Maintain consistency across all documents
+6. [ ] Verify all cross-references remain accurate
+```
+
+## Current Project Status (Reference)
+
+### Recently Completed ✅
+- **Admin Dashboard System**: Complete three-tab configuration interface
+- **Configuration Management**: localStorage-based persistence with AdminConfigService
+- **Polish UI Implementation**: Professional film industry aesthetics
+- **Navigation Integration**: Seamless admin panel access
+
+### Current Priority 🔄
+- **Configuration Integration**: Connect admin settings to application behavior
+- **Dynamic LLM Switching**: Implement model changes from admin panel
+- **Feature Toggle Implementation**: Activate settings across components
+
+### Critical Issues ⚠️
+- **Configuration Integration Gap**: Settings saved but not applied to analysis pipeline
+- **API Key Security**: Client-side exposure in bundle and localStorage
+- **Performance Limitations**: Client-side processing constraints
+
+## Memory Bank Quality Standards
+
+### Documentation Requirements
+- **Precision**: Exact technical details and current status
+- **Clarity**: Clear explanations for effective handoff between sessions
+- **Completeness**: All architectural decisions and patterns documented
+- **Currency**: Regular updates to reflect current project state
+- **Consistency**: Aligned information across all Memory Bank files
+
+### File-Specific Guidelines
+
+#### activeContext.md Updates
+- Always update with latest completed work
+- Include specific next priorities and blockers
+- Document current technical state and known issues
+- Maintain timestamp for session tracking
+
+#### progress.md Updates  
+- Update completion percentages and status indicators
+- Document new achievements and milestones
+- Track quality metrics and technical debt
+- Record lessons learned and successful patterns
+
+#### systemPatterns.md Updates
+- Document new architectural patterns when discovered
+- Update existing patterns when they evolve
+- Include code examples for complex patterns
+- Maintain pattern relationships and dependencies
+
+## Integration with Development Workflow
+
+### Before Starting Work
+1. **Read Memory Bank** - Understand current context completely
+2. **Check Active Priorities** - Focus on documented next steps
+3. **Verify Current State** - Confirm understanding matches reality
+4. **Plan Updates** - Identify what documentation will need updating
+
+### After Completing Work
+1. **Update Active Context** - Document what was accomplished
+2. **Update Progress Tracking** - Mark completions and new status
+3. **Document New Patterns** - Record any architectural discoveries
+4. **Verify Consistency** - Ensure all files remain aligned
+
+### Emergency Situations
+If Memory Bank appears outdated or inconsistent:
+1. **Stop current work** - Investigate discrepancy first
+2. **Verify current state** - Check actual codebase against documentation
+3. **Update immediately** - Correct Memory Bank before proceeding
+4. **Document the gap** - Record what caused the inconsistency
+
+## Success Metrics
+
+### Memory Bank Effectiveness
+- **Session Handoff Success**: AI can immediately understand project context
+- **Development Continuity**: No lost architectural knowledge between sessions
+- **Decision Consistency**: Development follows documented patterns
+- **Progress Tracking**: Accurate status and completion metrics
+
+### Quality Indicators
+- Memory Bank matches actual codebase state
+- New team members can onboard from Memory Bank alone
+- No repeated architectural mistakes or forgotten decisions
+- Consistent development velocity across sessions
+
+**Remember**: The Memory Bank is the project's institutional memory. Maintain it with the same care and precision as the codebase itself.

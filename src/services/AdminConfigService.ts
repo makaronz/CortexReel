@@ -1,35 +1,4 @@
-interface LLMConfig {
-  apiKey: string;
-  model: string;
-  temperature: number;
-  maxTokens: number;
-  topP: number;
-  topK: number;
-  presencePenalty: number;
-  frequencyPenalty: number;
-}
-
-interface PromptConfig {
-  [key: string]: {
-    id: string;
-    name: string;
-    prompt: string;
-    version: string;
-    description: string;
-  };
-}
-
-interface AppConfig {
-  appName: string;
-  maxFileSize: number;
-  supportedFormats: string;
-  debugMode: boolean;
-  logLevel: string;
-  enableOCR: boolean;
-  enableAdvancedCharts: boolean;
-  enableExport: boolean;
-  enableCollaboration: boolean;
-}
+import type { LLMConfig, PromptConfig, AppConfig } from '@/types/analysis';
 
 export class AdminConfigService {
   private readonly CONFIG_STORAGE_KEY = 'cortexreel_admin_config';
@@ -48,9 +17,9 @@ export class AdminConfigService {
       // Return default configuration with current env values
       const defaultConfig = {
         apiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
-        model: 'gemini-1.5-pro',
+        model: 'google/gemini-1.5-pro-latest',
         temperature: 0.7,
-        maxTokens: 4096,
+        maxTokens: 8192,
         topP: 0.9,
         topK: 40,
         presencePenalty: 0,
@@ -65,9 +34,9 @@ export class AdminConfigService {
       // Return default configuration if fetch fails
       return {
         apiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
-        model: 'gemini-1.5-pro',
+        model: 'google/gemini-1.5-pro-latest',
         temperature: 0.7,
-        maxTokens: 4096,
+        maxTokens: 8192,
         topP: 0.9,
         topK: 40,
         presencePenalty: 0,

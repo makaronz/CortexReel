@@ -192,3 +192,27 @@ User Action → Service Call → Worker Processing → Store Update → UI Re-re
 - Tesseract.js dla OCR
 - Recharts dla data visualization
 - Material-UI z custom theming 
+
+## Configuration Integration Pattern
+- Admin dashboard settings (LLM, prompts, app config) are passed to the analysis pipeline via worker message, replacing hardcoded defaults.
+- Worker uses config for all analysis sections, enabling dynamic model switching and prompt customization.
+
+## Backend Monorepo Pattern
+- Structure: apps/api (Fastify backend), apps/worker (job processing), apps/frontend (React SPA), packages/shared-types, packages/database-schemas.
+- Enables shared types, modular services, and scalable deployment.
+
+## Semantic Search Pattern
+- Weaviate used for vector embeddings and semantic search of screenplay scenes.
+- MongoDB stores structured analysis data, MinIO for file storage, Redis for pub/sub, BullMQ for job queues.
+- **LangChain** orchestrates retrieval, prompt chaining, and LLM calls, enabling hybrid search (vector + keyword), context-aware analysis, and multi-step reasoning.
+
+## LangChain Orchestration Pattern
+- All AI analysis flows (scene, character, theme, etc.) are implemented as LangChain "chains":
+  - Document loaders ingest scripts and metadata.
+  - Text splitters chunk documents for granular retrieval.
+  - Embeddings generated via Gemini/OpenAI/Claude.
+  - Retrievers perform hybrid search (vector + keyword).
+  - Prompt templates are versioned and dynamic, loaded per analysis section.
+  - Chains combine retrieval, prompt, and LLM call, with validation and fallback.
+- Enables modular, testable, and extensible AI pipelines.
+- Future: LangChain agents for tool use, multi-hop reasoning, and collaborative workflows. 

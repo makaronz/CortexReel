@@ -1,0 +1,213 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Configuration Integration Guide
+
+## Critical Issue: Admin Dashboard Disconnection
+
+The **most urgent priority** for CortexReel is connecting the admin dashboard configuration to the actual analysis pipeline. Currently, users can save configuration changes in the admin panel, but these changes are not applied to the analysis process.
+
+## Problem Analysis
+
+### Current State
+- **AdminConfigService**: [src/services/AdminConfigService.ts](mdc:src/services/AdminConfigService.ts) - Saves/loads configuration from localStorage
+- **AdminDashboard**: [src/views/AdminDashboard.tsx](mdc:src/views/AdminDashboard.tsx) - Three-tab UI for configuration management
+- **Analysis Worker**: [src/workers/geminiAnalysis.worker.ts](mdc:src/workers/geminiAnalysis.worker.ts) - Performs actual AI analysis
+
+### Integration Gap
+The worker has `getLLMConfig()` and `getPromptConfig()` functions but they return hardcoded defaults instead of reading from AdminConfigService:
+
+```typescript
+// Current worker implementation (PROBLEM)
+const getLLMConfig = () => {
+  return {
+    model: 'gemini-1.5-pro', // Hardcoded!
+    temperature: 0.7,
+    // ... other hardcoded values
+  };
+};
+```
+
+## Solution Architecture
+
+### 1. Worker Configuration Loading
+**File**: [src/workers/geminiAnalysis.worker.ts](mdc:src/workers/geminiAnalysis.worker.ts)
+
+The worker needs to receive configuration as part of the input message:
+
+```typescript
+interface WorkerInput {
+  scriptText: string;
+  filename: string;
+  llmConfig: LLMConfig;    // Pass from main thread
+  promptConfig: PromptConfig; // Pass from main thread
+}
+```
+
+### 2. Main Thread Configuration Passing
+**File**: [src/services/geminiService.ts](mdc:src/services/geminiService.ts)
+
+Before starting analysis, load configuration and pass to worker:
+
+```typescript
+async analyzeScreenplay(scriptText: string, filename: string): Promise<CompleteAnalysis> {
+  // Load current configuration
+  const llmConfig = await AdminConfigService.getLLMConfig();
+  const promptConfig = await AdminConfigService.getPromptConfig();
+  
+  // Pass to worker
+  const workerInput: WorkerInput = {
+    scriptText,
+    filename,
+    llmConfig,
+    promptConfig
+  };
+  
+  this.worker.postMessage(workerInput);
+}
+```
+
+### 3. Worker Configuration Application
+**File**: [src/workers/geminiAnalysis.worker.ts](mdc:src/workers/geminiAnalysis.worker.ts)
+
+Update analysis functions to use passed configuration:
+
+```typescript
+// Use dynamic configuration instead of hardcoded values
+async function analyzeWithPrompt(prompt: string, scriptText: string, config: LLMConfig): Promise<any> {
+  const genAI = new GoogleGenerativeAI(config.apiKey);
+  const model = genAI.getGenerativeModel({ 
+    model: config.model,
+    generationConfig: {
+      temperature: config.temperature,
+      topP: config.topP,
+      topK: config.topK,
+      maxOutputTokens: config.maxTokens,
+    }
+  });
+  
+  const result = await model.generateContent(prompt);
+  return JSON.parse(result.response.text());
+}
+```
+
+## Implementation Steps
+
+### Step 1: Update Worker Interface
+1. Modify `WorkerInput` interface in [src/workers/geminiAnalysis.worker.ts](mdc:src/workers/geminiAnalysis.worker.ts)
+2. Update worker message handler to extract configuration
+3. Pass configuration to all analysis functions
+
+### Step 2: Update Service Layer
+1. Modify `analyzeScreenplay` in [src/services/geminiService.ts](mdc:src/services/geminiService.ts)
+2. Load configuration from AdminConfigService before starting analysis
+3. Pass configuration in worker message
+
+### Step 3: Dynamic Prompt Integration
+1. Update prompt functions to use custom prompts from configuration
+2. Fallback to defaults when custom prompts not available
+3. Apply prompt versioning and validation
+
+### Step 4: Model Switching Implementation
+1. Implement dynamic model selection based on configuration
+2. Handle different API endpoints for different providers (GPT, Claude, etc.)
+3. Add error handling for unsupported models
+
+## Key Files to Modify
+
+### Primary Integration Points
+- **[src/workers/geminiAnalysis.worker.ts](mdc:src/workers/geminiAnalysis.worker.ts)** - Core analysis logic
+- **[src/services/geminiService.ts](mdc:src/services/geminiService.ts)** - Analysis orchestration
+- **[src/services/AdminConfigService.ts](mdc:src/services/AdminConfigService.ts)** - Configuration management
+
+### Supporting Files
+- **[src/views/AdminDashboard.tsx](mdc:src/views/AdminDashboard.tsx)** - May need validation updates
+- **[src/types/analysis.ts](mdc:src/types/analysis.ts)** - Type definitions for configuration
+
+## Configuration Types Reference
+
+### LLMConfig Interface
+```typescript
+interface LLMConfig {
+  apiKey: string;
+  model: string; // 'gemini-1.5-pro', 'gpt-4o', 'claude-3-opus', etc.
+  temperature: number; // 0-2
+  maxTokens: number; // 1-32768
+  topP: number; // 0-1
+  topK: number; // 1-100
+  presencePenalty: number; // -2 to 2
+  frequencyPenalty: number; // -2 to 2
+}
+```
+
+### PromptConfig Interface
+```typescript
+interface PromptConfig {
+  [key: string]: {
+    id: string;
+    name: string;
+    prompt: string;
+    version: string;
+    description: string;
+  };
+}
+```
+
+## Testing Strategy
+
+### Manual Testing Steps
+1. Change LLM model in admin dashboard
+2. Start new analysis
+3. Verify worker uses new model (check network requests)
+4. Change analysis prompts in admin dashboard
+5. Start new analysis
+6. Verify custom prompts are used in API calls
+
+### Validation Points
+- Configuration loads correctly from localStorage
+- Worker receives configuration in message
+- API calls use configured model and parameters
+- Custom prompts replace default prompts
+- Error handling for invalid configurations
+
+## Error Handling Requirements
+
+### Configuration Validation
+- Validate API keys before starting analysis
+- Check model availability and compatibility
+- Validate prompt structure and content
+- Provide user feedback for configuration errors
+
+### Fallback Mechanisms
+- Use default configuration if admin config fails to load
+- Fallback to default prompts if custom prompts are malformed
+- Graceful degradation for unsupported models
+
+## Security Considerations
+
+### API Key Management
+- Current localStorage storage is temporary solution
+- Admin dashboard exposes API keys in client-side storage
+- Future: Move to secure backend proxy
+- Current: Validate API keys before use
+
+## Success Criteria
+
+### Integration Complete When:
+1. ✅ Admin dashboard model selection affects actual analysis
+2. ✅ Custom prompts from admin panel are used in analysis
+3. ✅ Configuration changes apply immediately to new analyses
+4. ✅ Error handling provides clear user feedback
+5. ✅ All 27 analysis sections respect configuration settings
+
+## Immediate Next Actions
+
+1. **Priority 1**: Update worker to accept configuration parameters
+2. **Priority 2**: Modify geminiService to pass configuration to worker
+3. **Priority 3**: Implement dynamic prompt loading
+4. **Priority 4**: Add configuration validation and error handling
+5. **Priority 5**: Test end-to-end configuration flow
+
+This integration is **critical** for user experience and the core value proposition of the admin dashboard feature.

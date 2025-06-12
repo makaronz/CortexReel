@@ -44,6 +44,18 @@ const EmotionalArcChart: React.FC<EmotionalArcChartProps> = ({ emotionalArcs }) 
   const [selectedEmotion, setSelectedEmotion] = useState('all');
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
 
+  if (!emotionalArcs) {
+    return (
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Emotional Arc Analysis</Typography>
+          <Typography color="text.secondary">Waiting for emotional arc data...</Typography>
+          <LinearProgress sx={{ mt: 2 }} />
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Przygotowanie danych dla wykresów
   const emotionData = emotionalArcs.overall?.map((point, index) => ({
     scene: index + 1,

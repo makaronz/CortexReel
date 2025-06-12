@@ -1,0 +1,156 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# CortexReel Project Guide
+
+## Project Overview
+
+CortexReel is a professional React TypeScript SPA designed for film industry professionals to analyze screenplays using AI. The application provides comprehensive 27-section analysis through Google Gemini AI with role-based visualizations for directors, producers, cinematographers, and safety coordinators.
+
+### Key Project Files
+- Main application entry: [index.html](mdc:index.html)
+- Core React app: [src/App.tsx](mdc:src/App.tsx)  
+- Package configuration: [package.json](mdc:package.json)
+- Build configuration: [vite.config.ts](mdc:vite.config.ts)
+- Memory Bank documentation: [memory-bank/README.md](mdc:memory-bank/README.md)
+
+## Critical Architecture Patterns
+
+### 🎛️ Admin Dashboard System (Recently Implemented)
+The admin dashboard provides professional configuration management through a three-tab Material-UI interface:
+
+**AdminConfigService Pattern:**
+- Centralized configuration management with localStorage persistence
+- TypeScript interfaces: LLMConfig, PromptConfig, AppConfig
+- Prefixed localStorage keys: `cortexreel_admin_config_*`
+- Default configuration fallbacks with professional film industry focus
+
+**Configuration Integration Priority:**
+- **CRITICAL ISSUE**: Admin settings not yet connected to application behavior
+- LLM model switching needs implementation in analysis pipeline
+- Feature toggles must be integrated across application components
+- Prompt configurations need integration with analysis service
+
+### 🧠 Memory Bank System
+**MANDATORY**: Always read ALL memory bank files at start of each session:
+- [memory-bank/projectbrief.md](mdc:memory-bank/projectbrief.md) - Project foundation
+- [memory-bank/productContext.md](mdc:memory-bank/productContext.md) - Problems solved and value prop
+- [memory-bank/systemPatterns.md](mdc:memory-bank/systemPatterns.md) - Technical architecture
+- [memory-bank/techContext.md](mdc:memory-bank/techContext.md) - Technology stack
+- [memory-bank/activeContext.md](mdc:memory-bank/activeContext.md) - Current work status
+- [memory-bank/progress.md](mdc:memory-bank/progress.md) - Implementation tracking
+
+### 🔧 Service Layer Architecture
+- **AdminConfigService**: Configuration CRUD operations with localStorage
+- **GeminiService**: AI analysis with multi-model support (Gemini/GPT/Claude)
+- **PDFParserService**: Multi-strategy text extraction (direct + OCR fallback)
+- **AnalysisService**: Orchestration of 27-section analysis pipeline
+
+### 📊 Visualization System
+Role-based filtering with 10 major visualization components:
+- OverviewDashboard, SceneVisualization, CharacterVisualization
+- LocationVisualization, EmotionalArcChart, BudgetBreakdown
+- RelationshipNetwork, TechnicalRequirements, SafetyDashboard, ProductionDashboard
+
+## Current Development Context
+
+### ✅ Recently Completed (2025-01-15)
+1. **Complete Admin Dashboard Implementation**
+   - Three-tab interface: LLM Config, Prompts Management, App Settings
+   - Professional Polish UI with Material-UI components
+   - Navigation integration in MainLayout and App.tsx
+   - Full localStorage persistence system
+
+2. **Configuration Management System**
+   - API key management for multiple LLM providers
+   - Editable analysis prompts with version control
+   - Feature toggles and application settings
+   - Default configurations for six analysis sections
+
+### 🔄 Current Priority: Configuration Integration
+**NEXT IMMEDIATE TASK**: Connect admin dashboard settings to actual application behavior
+- Implement dynamic LLM model switching in analysis pipeline
+- Integrate custom prompts from admin configuration
+- Activate feature toggles across application components
+- Add configuration validation and error handling
+
+### ⚠️ Known Critical Issues
+1. **Configuration Integration Gap** - Settings saved but not applied
+2. **API Key Security Risk** - Client-side exposure in bundle + localStorage
+3. **Client-Side Processing Limitations** - Scalability constraints
+
+## Development Guidelines
+
+### 🎯 Code Standards
+- **TypeScript Strict Mode**: 95%+ coverage required
+- **Component Pattern**: Atomic Design with Container/Presentational separation
+- **Error Handling**: Graceful degradation with user-friendly feedback
+- **State Management**: Zustand with selective persistence
+- **UI Language**: Polish for user interface, English for code/documentation
+
+### 🔧 Architecture Decisions
+- **Client-Side Only**: No backend currently (future migration planned)
+- **localStorage Strategy**: Temporary solution preparing for backend API
+- **Web Workers**: Background processing for heavy operations
+- **Role-Based UI**: Dynamic content filtering based on film industry role
+- **Material-UI**: Professional appearance for film industry professionals
+
+### 📝 Development Workflow
+1. **Always start by reading Memory Bank files** for session context
+2. **Check activeContext.md** for current work status and priorities
+3. **Follow established patterns** documented in systemPatterns.md
+4. **Update Memory Bank** when making significant architectural changes
+5. **Prioritize configuration integration** before new features
+
+### 🎬 Film Industry Focus
+- **Target Users**: Directors, producers, cinematographers, safety coordinators
+- **Professional Aesthetics**: Dark mode primary, technical precision over speed
+- **27-Section Analysis**: Comprehensive screenplay analysis pipeline
+- **Export Capabilities**: PDF, CSV, JSON for production workflows
+
+## Integration Points & Future Roadmap
+
+### 🔄 Configuration Integration (Immediate)
+```typescript
+// Connect AdminConfigService to analysis pipeline
+const config = AdminConfigService.getLLMConfig();
+await GeminiService.updateModel(config.model);
+await AnalysisService.updatePrompts(AdminConfigService.getPromptConfig());
+```
+
+### 🔒 Security Migration (Short Term)
+- Backend API proxy for secure LLM calls
+- Database integration replacing localStorage
+- Multi-user configuration management
+
+### 🚀 Advanced Features (Long Term)
+- Real-time collaboration capabilities
+- Integration with film production tools
+- Mobile application development
+- Enterprise security features
+
+## Memory Bank Update Protocol
+
+When significant changes are made:
+1. **Update activeContext.md** with current status
+2. **Document patterns** in systemPatterns.md if new patterns emerge
+3. **Update progress.md** with implementation status
+4. **Maintain documentation quality** for session continuity
+
+**Remember**: The Memory Bank is the ONLY source of truth for session continuity. Maintain it with precision and clarity as AI effectiveness depends entirely on its accuracy.
+
+## Emergency Troubleshooting
+
+### Common Issues
+- **429 API Errors**: Gemini quota exceeded, implement rate limiting
+- **Large PDF Processing**: OCR fallback may take 30+ seconds
+- **Memory Usage**: Browser limitations for large analysis results
+- **Configuration Not Applied**: Check integration between AdminConfigService and analysis pipeline
+
+### Quick Fixes
+- Clear localStorage: `localStorage.clear()` for fresh start
+- Reset admin config: Use reset-to-default functionality in admin dashboard
+- Check console errors: Browser dev tools for runtime issues
+- Verify API key: Test Gemini API connection in admin panel

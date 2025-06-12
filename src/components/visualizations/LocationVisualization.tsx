@@ -56,7 +56,18 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
   const [expandedLocation, setExpandedLocation] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<LocationDetail | null>(null);
 
-  // Funkcje pomocnicze - definicje na górze przed użyciem
+  if (!locations) {
+    return (
+      <Card>
+        <CardContent>
+          <Typography variant="h6">Location Analysis</Typography>
+          <Typography color="text.secondary">Waiting for location data...</Typography>
+          <LinearProgress sx={{ mt: 2 }} />
+        </CardContent>
+      </Card>
+    );
+  }
+
   const getCostValue = (cost: string) => {
     switch (cost) {
       case 'LOW': return 1;
@@ -76,7 +87,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
     }
   };
 
-  // Filtrowanie lokacji
   const filteredLocations = locations.filter(location => {
     if (selectedFilter === 'all') return true;
     if (selectedFilter === 'interior') return location.type === 'INTERIOR';
@@ -87,7 +97,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
     return true;
   });
 
-  // Statystyki
   const interiorCount = locations.filter(l => l.type === 'INTERIOR').length;
   const exteriorCount = locations.filter(l => l.type === 'EXTERIOR').length;
   const mixedCount = locations.filter(l => l.type === 'MIXED').length;
@@ -95,7 +104,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
   const highCostLocations = locations.filter(l => l.baseRentalCost === 'HIGH' || l.baseRentalCost === 'VERY_HIGH').length;
   const difficultAccess = locations.filter(l => l.accessibility === 'DIFFICULT').length;
 
-  // Dane dla wykresów
   const typeDistributionData = [
     { name: 'Wnętrza', value: interiorCount, color: '#2563eb' },
     { name: 'Zewnętrzne', value: exteriorCount, color: '#059669' },
@@ -116,7 +124,7 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
     name: location.name,
     cost: getCostValue(location.baseRentalCost),
     accessibility: getAccessibilityValue(location.accessibility),
-    scenes: location.scenes.length,
+    scenes: location.scenes?.length || 0,
     permits: location.requiresPermit ? 1 : 0
   }));
 
@@ -208,7 +216,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
 
   return (
     <Grid container spacing={3}>
-      {/* Statystyki główne */}
       <Grid item xs={12}>
         <Grid container spacing={2}>
           <Grid item xs={6} md={2}>
@@ -285,8 +292,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
           </Grid>
         </Grid>
       </Grid>
-
-      {/* Filtrowanie */}
       <Grid item xs={12} md={6}>
         <FormControl fullWidth>
           <InputLabel>Filtruj lokacje</InputLabel>
@@ -329,7 +334,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
           </Select>
         </FormControl>
       </Grid>
-
       <Grid item xs={12} md={6}>
         <Paper sx={{ p: 2 }}>
           <Typography variant="h6" gutterBottom>
@@ -343,14 +347,12 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
             <Grid item xs={6}>
               <Typography variant="caption" color="text.secondary">Średnio scen na lokację:</Typography>
               <Typography variant="h6">
-                {Math.round(locations.reduce((acc, loc) => acc + loc.scenes.length, 0) / locations.length)}
+                {locations.length > 0 ? Math.round(locations.reduce((acc, loc) => acc + (loc.scenes?.length || 0), 0) / locations.length) : 0}
               </Typography>
             </Grid>
           </Grid>
         </Paper>
       </Grid>
-
-      {/* Wykres typu lokacji */}
       <Grid item xs={12} md={6}>
         <Card>
           <CardContent>
@@ -377,8 +379,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
           </CardContent>
         </Card>
       </Grid>
-
-      {/* Wykres kategorii lokacji */}
       <Grid item xs={12} md={6}>
         <Card>
           <CardContent>
@@ -397,8 +397,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
           </CardContent>
         </Card>
       </Grid>
-
-      {/* Wykres koszt vs dostępność */}
       <Grid item xs={12}>
         <Card>
           <CardContent>
@@ -448,8 +446,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
           </CardContent>
         </Card>
       </Grid>
-
-      {/* Lista lokacji */}
       <Grid item xs={12} md={selectedLocation ? 8 : 12}>
         <Card>
           <CardContent>
@@ -511,7 +507,7 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
                             <Stack direction="row" spacing={2} sx={{ mt: 0.5 }} alignItems="center">
                               <Typography variant="caption" color="text.secondary">
                                 <TimeIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                {location.scenes.length} scen
+                                {location.scenes?.length || 0} scen
                               </Typography>
                               <Chip
                                 label={getCostName(location.baseRentalCost)}
@@ -539,16 +535,13 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
                         {expandedLocation === location.id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                       </IconButton>
                     </ListItem>
-
                     <Collapse in={expandedLocation === location.id}>
                       <Card variant="outlined" sx={{ ml: 2, mb: 1 }}>
                         <CardContent>
                           <Typography variant="subtitle2" gutterBottom>
                             Szczegóły lokacji
                           </Typography>
-
                           <Grid container spacing={2}>
-                            {/* Podstawowe informacje */}
                             <Grid item xs={12} md={6}>
                               <Typography variant="caption" color="text.secondary" fontWeight="bold">
                                 Informacje podstawowe:
@@ -562,8 +555,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
                                 </Typography>
                               </Box>
                             </Grid>
-
-                            {/* Udogodnienia */}
                             <Grid item xs={12} md={6}>
                               <Typography variant="caption" color="text.secondary" fontWeight="bold">
                                 Udogodnienia:
@@ -582,14 +573,12 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
                                 )}
                               </Stack>
                             </Grid>
-
-                            {/* Sceny w lokacji */}
                             <Grid item xs={12}>
                               <Typography variant="caption" color="text.secondary" fontWeight="bold">
                                 Sceny w tej lokacji:
                               </Typography>
                               <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }} flexWrap="wrap">
-                                {location.scenes.map((sceneNumber, index) => (
+                                {location.scenes && location.scenes.map((sceneNumber, index) => (
                                   <Chip 
                                     key={index}
                                     label={`Scena ${sceneNumber}`} 
@@ -600,8 +589,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
                                 ))}
                               </Stack>
                             </Grid>
-
-                            {/* Wymagania specjalne */}
                             {location.specialRequirements && location.specialRequirements.length > 0 && (
                               <Grid item xs={12}>
                                 <Typography variant="caption" color="text.secondary" fontWeight="bold">
@@ -631,8 +618,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
           </CardContent>
         </Card>
       </Grid>
-
-      {/* Panel wybranej lokacji */}
       {selectedLocation && (
         <Grid item xs={12} md={4}>
           <Card>
@@ -658,14 +643,10 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
                   />
                 </Box>
               </Stack>
-
               <Divider sx={{ my: 2 }} />
-
-              {/* Informacje szczegółowe */}
               <Typography variant="subtitle2" gutterBottom>
                 Informacje szczegółowe
               </Typography>
-              
               <TableContainer>
                 <Table size="small">
                   <TableBody>
@@ -675,7 +656,7 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
                     </TableRow>
                     <TableRow>
                       <TableCell component="th">Liczba scen:</TableCell>
-                      <TableCell>{selectedLocation.scenes.length}</TableCell>
+                      <TableCell>{selectedLocation.scenes?.length || 0}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell component="th">Koszt wynajmu:</TableCell>
@@ -714,8 +695,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
                   </TableBody>
                 </Table>
               </TableContainer>
-
-              {/* Udogodnienia */}
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Dostępne udogodnienia
@@ -739,8 +718,6 @@ const LocationVisualization: React.FC<LocationVisualizationProps> = ({ locations
                   </Grid>
                 </Grid>
               </Box>
-
-              {/* Analiza ryzyka */}
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Analiza ryzyka lokacji

@@ -1,3 +1,38 @@
+// Admin and Configuration Types
+
+export interface LLMConfig {
+  apiKey: string;
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  topP: number;
+  topK: number;
+  presencePenalty: number;
+  frequencyPenalty: number;
+}
+
+export interface PromptConfig {
+  [key: string]: {
+    id: string;
+    name: string;
+    prompt: string;
+    version: string;
+    description: string;
+  };
+}
+
+export interface AppConfig {
+  appName: string;
+  maxFileSize: number;
+  supportedFormats: string;
+  debugMode: boolean;
+  logLevel: string;
+  enableOCR: boolean;
+  enableAdvancedCharts: boolean;
+  enableExport: boolean;
+  enableCollaboration: boolean;
+}
+
 // Core Analysis Types for CortexReel
 
 export interface ScriptMetadata {

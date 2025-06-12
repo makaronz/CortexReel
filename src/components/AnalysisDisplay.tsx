@@ -329,8 +329,6 @@ const AnalysisDisplay: React.FC = () => {
 
         <TabPanel value={tabValue} index={9}>
           <TechnicalRequirements 
-            technical={analysis.technical}
-            lighting={analysis.lighting}
             equipment={analysis.equipment}
           />
         </TabPanel>

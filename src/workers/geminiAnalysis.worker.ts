@@ -14,38 +14,45 @@ interface WorkerInput {
 
 // Initialize Gemini AI with dynamic configuration
 const getGeminiAPI = () => {
-  // Access environment variables as they are defined in vite.config.ts
-  const apiKey = (globalThis as any).process?.env?.GEMINI_API_KEY || 
+  const llmConfig = getLLMConfig();
+  
+  // Priority: 1. Configuration API key, 2. Environment fallback
+  const apiKey = llmConfig.apiKey || 
+                 (globalThis as any).process?.env?.GEMINI_API_KEY || 
                  (globalThis as any).process?.env?.API_KEY ||
                  (self as any).VITE_GEMINI_API_KEY;
   
   if (!apiKey) {
-    throw new Error('Gemini API key not found. Please set VITE_GEMINI_API_KEY in your environment variables.');
+    throw new Error('🚨 Gemini API key not found. Please set API key in Admin Dashboard → LLM Configuration.');
   }
+  
+  console.log('🔑 Using API key from:', llmConfig.apiKey ? 'admin configuration' : 'environment variables');
   return new GoogleGenerativeAI(apiKey);
 };
 
 // Get LLM configuration (passed from main thread)
 const getLLMConfig = () => {
   if (globalLLMConfig) {
+    console.log('✅ Using LLM configuration from main thread:', globalLLMConfig.model);
     return {
-      model: globalLLMConfig.model || 'google/gemini-1.5-pro',
-      apiKey: globalLLMConfig.apiKey,
-      temperature: globalLLMConfig.temperature || 0.7,
-      maxTokens: globalLLMConfig.maxTokens || 4096,
-      topP: globalLLMConfig.topP || 0.9,
-      topK: globalLLMConfig.topK || 40,
-      presencePenalty: globalLLMConfig.presencePenalty || 0,
-      frequencyPenalty: globalLLMConfig.frequencyPenalty || 0
+      model: globalLLMConfig.model || 'google/gemini-1.5-pro-latest',
+      apiKey: globalLLMConfig.apiKey || null,
+      temperature: globalLLMConfig.temperature ?? 0.7,
+      maxTokens: globalLLMConfig.maxTokens ?? 4096,
+      topP: globalLLMConfig.topP ?? 0.9,
+      topK: globalLLMConfig.topK ?? 40,
+      presencePenalty: globalLLMConfig.presencePenalty ?? 0,
+      frequencyPenalty: globalLLMConfig.frequencyPenalty ?? 0
     };
   }
   
-  // Default configuration
+  // EMERGENCY FALLBACK ONLY - Configuration should always be passed
+  console.warn('⚠️ No LLM configuration passed to worker - using emergency defaults');
   return {
-    model: 'google/gemini-1.5-pro',
+    model: 'google/gemini-1.5-pro-latest',
     apiKey: null,
     temperature: 0.7,
-    maxTokens: 4096,
+    maxTokens: 8192,
     topP: 0.9,
     topK: 40,
     presencePenalty: 0,
@@ -56,12 +63,23 @@ const getLLMConfig = () => {
 // Get prompt configuration (passed from main thread)
 const getPromptConfig = () => {
   if (globalPromptConfig) {
+    console.log('✅ Using custom prompts from admin configuration');
     return globalPromptConfig;
   }
   
-  // Default prompts (fallback)
+  // EMERGENCY FALLBACK ONLY - Prompts should always be passed
+  console.warn('⚠️ No prompt configuration passed to worker - using emergency defaults');
+  return getDefaultPrompts();
+};
+
+// Extract default prompts to separate function for reusability
+const getDefaultPrompts = () => {
   return {
     sceneStructure: {
+      id: 'sceneStructure',
+      name: 'Scene Structure Analysis',
+      version: '1.0.0',
+      description: 'Analyzes screenplay scenes for structure and metadata',
       prompt: `Analyze screenplay scenes. Return JSON array with scenes:
 [{
   "id": "unique_id",
@@ -95,6 +113,10 @@ const getPromptConfig = () => {
 }]`
     },
     characters: {
+      id: 'characters',
+      name: 'Character Analysis',
+      version: '1.0.0',
+      description: 'Analyzes characters and their development',
       prompt: `Analyze screenplay characters. Return JSON array:
 [{
   "id": "unique_id",
@@ -156,7 +178,9 @@ async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<an
     // Extract model name from the full model path (e.g., 'google/gemini-2.5-pro' -> 'gemini-2.5-pro')
     let modelName = llmConfig.model;
     if (modelName.includes('/')) {
-      modelName = modelName.split('/')[1];
+      const parts = modelName.split('/');
+      modelName = parts[parts.length - 1];
+      console.log(`Stripped provider prefix, using model name: ${modelName}`);
     }
     
     console.log(`Using LLM model: ${modelName} (from config: ${llmConfig.model})`);
@@ -197,30 +221,23 @@ Please respond with ONLY valid JSON, no additional text or formatting.`;
       return JSON.parse(cleanedText);
     } catch (parseError) {
       console.error('Failed to parse Gemini response as JSON:', parseError);
-      console.error('Response text:', cleanedText.substring(0, 500) + '...');
+      console.error('Raw response text for debugging:', cleanedText.substring(0, 1000) + '...');
       
-      // Try to extract the first valid JSON object from the response
-      const jsonMatches = cleanedText.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g);
-      if (jsonMatches && jsonMatches.length > 0) {
+      // Attempt to find a JSON object or array in the text
+      const jsonRegex = /({.*})|(\[.*\])/s;
+      const match = cleanedText.match(jsonRegex);
+      
+      if (match) {
+        const potentialJson = match[1] || match[2];
         try {
-          return JSON.parse(jsonMatches[0]);
+          console.warn("Attempting to parse extracted JSON from messy response...");
+          return JSON.parse(potentialJson);
         } catch (innerError) {
-          console.error('Failed to parse extracted JSON:', innerError);
+          console.error('Failed to parse extracted JSON:', innerError, 'Extracted text:', potentialJson);
         }
       }
       
-      // Try array format as well
-      const arrayMatch = cleanedText.match(/\[[^\[\]]*(?:\[[^\[\]]*\][^\[\]]*)*\]/);
-      if (arrayMatch) {
-        try {
-          return JSON.parse(arrayMatch[0]);
-        } catch (innerError) {
-          console.error('Failed to parse array JSON:', innerError);
-        }
-      }
-      
-      // If still can't parse, return a basic structure based on what was expected
-      throw new Error(`Invalid JSON response from Gemini API: ${cleanedText.substring(0, 200)}...`);
+      throw new Error(`Invalid JSON response from Gemini API, and no fallback JSON found. Response starts with: ${cleanedText.substring(0, 200)}...`);
     }
   } catch (error) {
     console.error('Gemini API call error in worker:', error);
@@ -229,6 +246,32 @@ Please respond with ONLY valid JSON, no additional text or formatting.`;
     }
     throw new Error('An unknown error occurred during Gemini API call in worker');
   }
+}
+
+function postPartialResult(sectionName: string, data: any) {
+  self.postMessage({
+    type: 'partial_result',
+    payload: {
+      section: sectionName,
+      data: data
+    }
+  });
+}
+
+function extractArrayFromResult(result: any): any[] {
+  if (Array.isArray(result)) {
+    return result;
+  }
+  if (result && typeof result === 'object' && !Array.isArray(result)) {
+    // Find the first property that is an array
+    const key = Object.keys(result).find(k => Array.isArray(result[k]));
+    if (key) {
+      console.warn(`LLM returned an object instead of an array. Using the array from key: "${key}"`);
+      return result[key];
+    }
+  }
+  console.warn(`Expected an array from LLM, but got something else. Returning empty array. Received:`, result);
+  return []; // Return empty array to prevent downstream errors
 }
 
 // --- Poszczególne metody analizy (skopiowane z GeminiAnalysisService z pełnymi promptami) ---
@@ -256,76 +299,18 @@ async function analyzeMetadata(scriptText: string, filename: string) {
 
 async function analyzeSceneStructure(scriptText: string) {
   const promptConfig = getPromptConfig();
-  const prompt = promptConfig.sceneStructure?.prompt || `Analyze screenplay scenes. Return JSON array with scenes:
-  [{
-    "id": "unique_id",
-    "number": scene_number,
-    "heading": "full scene heading",
-    "location": "location name",
-    "timeOfDay": "DAY|NIGHT|DAWN|DUSK|CONTINUOUS|MORNING|AFTERNOON|EVENING",
-    "sceneType": "INTERIOR|EXTERIOR",
-    "description": "scene description",
-    "characters": ["character1", "character2"],
-    "dialogueCount": number_of_dialogue_lines,
-    "actionLines": ["action1", "action2"],
-    "estimatedDuration": minutes,
-    "pageNumber": page,
-    "complexity": "LOW|MEDIUM|HIGH",
-    "emotions": {
-      "tension": 0-10,
-      "sadness": 0-10,
-      "hope": 0-10,
-      "anger": 0-10,
-      "fear": 0-10,
-      "joy": 0-10,
-      "dominantEmotion": "emotion_name",
-      "intensity": 0-10
-    },
-    "technicalRequirements": [],
-    "safetyConsiderations": [],
-    "props": ["prop1", "prop2"],
-    "vehicles": ["vehicle1"],
-    "specialEffects": ["effect1"]
-  }]`;
-  return await analyzeWithPrompt(prompt, scriptText);
+  const scenePrompt = promptConfig.sceneStructure?.prompt || getDefaultPrompts().sceneStructure.prompt;
+  
+  console.log('🎬 Analyzing scene structure with prompt version:', promptConfig.sceneStructure?.version || 'default');
+  return await analyzeWithPrompt(scenePrompt, scriptText);
 }
 
 async function analyzeCharacters(scriptText: string) {
   const promptConfig = getPromptConfig();
-  const prompt = promptConfig.characters?.prompt || `Analyze screenplay characters. Return JSON array:
-  [{
-    "id": "unique_id",
-    "name": "character name",
-    "role": "PROTAGONIST|ANTAGONIST|SUPPORTING|MINOR|EXTRA",
-    "firstAppearance": scene_number,
-    "lastAppearance": scene_number,
-    "totalScenes": count,
-    "dialogueLines": count,
-    "description": "character description",
-    "arc": "character arc description",
-    "age": "age range",
-    "gender": "gender",
-    "relationships": [],
-    "emotionalJourney": [],
-    "psychologicalProfile": {
-      "motivations": {
-        "primary": "main motivation",
-        "secondary": ["secondary motivations"]
-      },
-      "internalConflicts": ["conflicts"],
-      "personalityTraits": ["traits"],
-      "fears": ["fears"],
-      "strengths": ["strengths"],
-      "weaknesses": ["weaknesses"],
-      "backstory": "background",
-      "arcType": "HERO|VILLAIN|ANTI_HERO|MENTOR|SIDEKICK|LOVE_INTEREST|COMIC_RELIEF|OTHER"
-    },
-    "costumes": [],
-    "stuntsInvolved": false,
-    "intimacyInvolved": false,
-    "specialSkills": ["skills"]
-  }]`;
-  return await analyzeWithPrompt(prompt, scriptText);
+  const charactersPrompt = promptConfig.characters?.prompt || getDefaultPrompts().characters.prompt;
+  
+  console.log('👥 Analyzing characters with prompt version:', promptConfig.characters?.version || 'default');
+  return await analyzeWithPrompt(charactersPrompt, scriptText);
 }
 
 async function analyzeLocations(scriptText: string) {
@@ -759,94 +744,151 @@ async function analyzePostProduction(scriptText: string) {
 async function performFullAnalysis(scriptText: string, filename: string): Promise<CompleteAnalysis> {
   const startTime = Date.now();
   
+  let partialAnalysis: Partial<CompleteAnalysis> = {};
+  
   updateProgress('Script Metadata', 1, 27);
   const metadata = await analyzeMetadata(scriptText, filename);
+  partialAnalysis.metadata = metadata;
+  postPartialResult('metadata', metadata);
+  
   updateProgress('Scene Structure', 2, 27);
-  const scenes = await analyzeSceneStructure(scriptText);
+  const scenes = extractArrayFromResult(await analyzeSceneStructure(scriptText));
+  partialAnalysis.scenes = scenes;
+  postPartialResult('scenes', scenes);
+
   updateProgress('Character Details', 3, 27);
-  const characters = await analyzeCharacters(scriptText);
+  const characters = extractArrayFromResult(await analyzeCharacters(scriptText));
+  partialAnalysis.characters = characters;
+  postPartialResult('characters', characters);
+
   updateProgress('Location Details', 4, 27);
-  const locations = await analyzeLocations(scriptText);
+  const locations = extractArrayFromResult(await analyzeLocations(scriptText));
+  partialAnalysis.locations = locations;
+  postPartialResult('locations', locations);
+  
   updateProgress('Props Analysis', 5, 27);
-  const props = await analyzeProps(scriptText);
+  const props = extractArrayFromResult(await analyzeProps(scriptText));
+  partialAnalysis.props = props;
+  postPartialResult('props', props);
+
   updateProgress('Vehicle Requirements', 6, 27);
-  const vehicles = await analyzeVehicles(scriptText);
+  const vehicles = extractArrayFromResult(await analyzeVehicles(scriptText));
+  partialAnalysis.vehicles = vehicles;
+  postPartialResult('vehicles', vehicles);
+
   updateProgress('Weapon Management', 7, 27);
-  const weapons = await analyzeWeapons(scriptText);
+  const weapons = extractArrayFromResult(await analyzeWeapons(scriptText));
+  partialAnalysis.weapons = weapons;
+  postPartialResult('weapons', weapons);
+
   updateProgress('Lighting Schemes', 8, 27);
-  const lighting = await analyzeLighting(scriptText);
+  const lighting = extractArrayFromResult(await analyzeLighting(scriptText));
+  partialAnalysis.lighting = lighting;
+  postPartialResult('lighting', lighting);
+
   updateProgress('Difficult Scenes', 9, 27);
-  const difficultScenes = await analyzeDifficultScenes(scriptText);
+  const difficultScenes = extractArrayFromResult(await analyzeDifficultScenes(scriptText));
+  partialAnalysis.difficultScenes = difficultScenes;
+  postPartialResult('difficultScenes', difficultScenes);
+
   updateProgress('Permit Requirements', 10, 27);
-  const permits = await analyzePermits(scriptText);
+  const permits = extractArrayFromResult(await analyzePermits(scriptText));
+  partialAnalysis.permits = permits;
+  postPartialResult('permits', permits);
+
   updateProgress('Equipment Requirements', 11, 27);
-  const equipment = await analyzeEquipment(scriptText);
+  const equipment = extractArrayFromResult(await analyzeEquipment(scriptText));
+  partialAnalysis.equipment = equipment;
+  postPartialResult('equipment', equipment);
+
   updateProgress('Production Risks', 12, 27);
-  const risks = await analyzeRisks(scriptText);
+  const risks = extractArrayFromResult(await analyzeRisks(scriptText));
+  partialAnalysis.risks = risks;
+  postPartialResult('risks', risks);
+
   updateProgress('Character Relationships', 13, 27);
-  const relationships = await analyzeRelationships(scriptText);
+  const relationships = extractArrayFromResult(await analyzeRelationships(scriptText));
+  partialAnalysis.relationships = relationships;
+  postPartialResult('relationships', relationships);
+
   updateProgress('Theme Analysis', 14, 27);
   const themes = await analyzeThemes(scriptText);
+  partialAnalysis.themes = themes;
+  postPartialResult('themes', themes);
+
   updateProgress('Emotional Arcs', 15, 27);
   const emotionalArcs = await analyzeEmotionalArcs(scriptText);
+  partialAnalysis.emotionalArcs = emotionalArcs;
+  postPartialResult('emotionalArcs', emotionalArcs);
+
   updateProgress('Psychological Analysis', 16, 27);
   const psychology = await analyzePsychology(scriptText);
+  partialAnalysis.psychology = psychology;
+  postPartialResult('psychology', psychology);
+
   updateProgress('Resource Planning', 17, 27);
   const resources = await analyzeResources(scriptText);
+  partialAnalysis.resources = resources;
+  postPartialResult('resources', resources);
+
   updateProgress('Pacing Analysis', 18, 27);
   const pacing = await analyzePacing(scriptText);
+  partialAnalysis.pacing = pacing;
+  postPartialResult('pacing', pacing);
+
   updateProgress('Technical Requirements', 19, 27);
-  const technical = await analyzeTechnical(scriptText);
+  const technical = extractArrayFromResult(await analyzeTechnical(scriptText));
+  partialAnalysis.technical = technical;
+  postPartialResult('technical', technical);
+
   updateProgress('Budget Analysis', 20, 27);
   const budget = await analyzeBudget(scriptText);
+  partialAnalysis.budget = budget;
+  postPartialResult('budget', budget);
+
   updateProgress('Production Checklist', 21, 27);
   const checklist = await analyzeChecklist(scriptText);
+  partialAnalysis.checklist = checklist;
+  postPartialResult('checklist', checklist);
+
   updateProgress('Extra Requirements', 22, 27);
   const extras = await analyzeExtras(scriptText);
+  partialAnalysis.extras = extras;
+  postPartialResult('extras', extras);
+
   updateProgress('Comprehensive Safety', 23, 27);
   const safety = await analyzeSafety(scriptText);
+  partialAnalysis.safety = safety;
+  postPartialResult('safety', safety);
+
   updateProgress('Intimacy Coordination', 24, 27);
   const intimacy = await analyzeIntimacy(scriptText);
+  partialAnalysis.intimacy = intimacy;
+  postPartialResult('intimacy', intimacy);
+
   updateProgress('Animal Coordination', 25, 27);
   const animals = await analyzeAnimals(scriptText);
+  partialAnalysis.animals = animals;
+  postPartialResult('animals', animals);
+
   updateProgress('Stunt Coordination', 26, 27);
   const stunts = await analyzeStunts(scriptText);
+  partialAnalysis.stunts = stunts;
+  postPartialResult('stunts', stunts);
+
   updateProgress('Post-Production Notes', 27, 27);
   const postProduction = await analyzePostProduction(scriptText);
+  partialAnalysis.postProduction = postProduction;
+  postPartialResult('postProduction', postProduction);
+
 
   const analysis: CompleteAnalysis = {
     id: crypto.randomUUID(),
     filename,
     createdAt: new Date().toISOString(),
     lastModified: new Date().toISOString(),
-    metadata,
-    scenes,
-    characters,
-    locations,
-    props,
-    vehicles,
-    weapons,
-    lighting,
-    difficultScenes,
-    permits,
-    equipment,
-    risks,
-    relationships,
-    themes,
-    emotionalArcs,
-    psychology,
-    resources,
-    pacing,
-    technical,
-    budget,
-    checklist,
-    extras,
-    safety,
-    intimacy,
-    animals,
-    stunts,
-    postProduction,
-  };
+    ...partialAnalysis
+  } as CompleteAnalysis;
 
   console.log(`Worker analysis completed in ${Date.now() - startTime}ms`);
   return analysis;

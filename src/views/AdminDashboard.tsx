@@ -192,62 +192,27 @@ const AdminDashboard: React.FC = () => {
   };
 
   const availableModels = [
+    // Google Gemini Models
+    'google/gemini-1.5-pro-latest',
+    'google/gemini-1.5-flash-latest',
+    'google/gemini-pro',
+    
     // OpenAI Models
-    'openai/o3-pro',
     'openai/gpt-4o',
-    'openai/gpt-4o-mini',
     'openai/gpt-4-turbo',
     'openai/gpt-3.5-turbo',
     
-    // Google Gemini Models
-    'google/gemini-2.5-pro-preview',
-    'google/gemini-2.5-flash-preview-05-20',
-    'google/gemini-1.5-pro',
-    'google/gemini-1.5-flash',
-    'google/gemini-2.0-flash-exp',
-    'google/gemma-3n-e4b-it',
-    
     // Anthropic Claude Models
-    'anthropic/claude-opus-4',
-    'anthropic/claude-sonnet-4',
-    'anthropic/claude-3-opus',
-    'anthropic/claude-3-sonnet',
-    'anthropic/claude-3-haiku',
+    'anthropic/claude-3-opus-20240229',
+    'anthropic/claude-3-sonnet-20240229',
+    'anthropic/claude-3-haiku-20240307',
     
     // Mistral Models
-    'mistralai/magistral-medium-2506',
-    'mistralai/magistral-small-2506',
-    'mistralai/devstral-small',
-    'mistralai/mistral-large',
-    'mistralai/mistral-medium',
-    'mistralai/mistral-small',
+    'mistralai/mistral-large-latest',
+    'mistralai/mistral-small-latest',
     
-    // DeepSeek Models
-    'deepseek/deepseek-r1-0528',
-    'deepseek/deepseek-r1-distill-qwen-7b',
-    'deepseek/deepseek-r1-0528-qwen3-8b',
-    'deepseek/deepseek-coder',
-    
-    // Meta Llama Models
-    'meta-llama/llama-3.3-70b-instruct',
-    'meta-llama/llama-3.1-405b-instruct',
-    'meta-llama/llama-3.1-70b-instruct',
-    'meta-llama/llama-3.1-8b-instruct',
-    
-    // Specialized Models
-    'thedrummer/valkyrie-49b-v1',
-    'sarvamai/sarvam-m',
-    'sentientagi/dobby-mini-unhinged-plus-llama-3.1-8b',
-    
-    // Legacy Support (for backward compatibility)
+    // Legacy support for older saved configs
     'gemini-1.5-pro',
-    'gemini-1.5-flash',
-    'gemini-2.0-flash-exp',
-    'gpt-4o',
-    'gpt-4o-mini',
-    'claude-3-opus',
-    'claude-3-sonnet',
-    'claude-3-haiku'
   ];
 
   const logLevels = ['debug', 'info', 'warn', 'error'];
