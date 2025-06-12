@@ -201,28 +201,28 @@ graph TB
 ### 🚀 Installation
 
 #### 1. Clone the Repository
-```bash
+   ```bash
 git clone https://github.com/makaronz/CortexReel.git
-cd CortexReel
-```
+   cd CortexReel
+   ```
 
 #### 2. Install Dependencies
-```bash
+   ```bash
 # Using npm
-npm install
+   npm install
 
 # Using pnpm (recommended for faster installs)
-pnpm install
+   pnpm install
 
 # Using yarn
 yarn install
-```
+   ```
 
 #### 3. Environment Configuration
-```bash
+   ```bash
 # Copy the environment template
-cp env.example .env.local
-
+   cp env.example .env.local
+   
 # Edit .env.local with your configuration
 nano .env.local
 ```
@@ -247,16 +247,16 @@ VITE_ENABLE_COLLABORATION=false
 ```
 
 #### 5. Start Development Server
-```bash
+   ```bash
 # Development mode with hot reload
-npm run dev
+   npm run dev
 
 # Or with pnpm
-pnpm dev
+   pnpm dev
 
 # Or with yarn
 yarn dev
-```
+   ```
 
 #### 6. Access the Application
 - Open your browser to `http://localhost:5173`

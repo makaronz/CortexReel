@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Card, 
@@ -9,13 +9,23 @@ import {
   Alert,
   Container
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/analysisStore';
 
 const LoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { setAuthenticated } = useAuth();
+  const { isAuthenticated, setAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('User is authenticated, redirecting to dashboard...');
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,12 +42,12 @@ const LoginScreen: React.FC = () => {
       console.log('Password correct, setting authenticated...');
       setAuthenticated(true);
       setError('');
+      // Navigation will be handled by useEffect
     } else {
       console.log('Password incorrect');
       setError('Invalid password. Try "test123"');
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const isButtonDisabled = !password.trim() || isLoading;

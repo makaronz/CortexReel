@@ -1,35 +1,26 @@
 # Tech Context - CortexReel Standalone
 
+*Last Updated: 2025-01-15T20:45:00Z*
+
 ## Core Technologies Stack
 
 ### Frontend Framework
-- **React 19.1.0** - Latest React with concurrent features
-  - JSX automatic runtime
-  - Error boundaries z improved error handling
-  - Concurrent rendering dla better UX
-  
-- **TypeScript 5.7.2** - Strict typing
-  - Strict mode enabled
-  - Path aliases configured (`@/components/*`, `@/services/*`)
-  - Experimental decorators support
+- **React 19** - Latest stable version with concurrent features
+- **TypeScript 5.3+** - Strict mode enabled for type safety
+- **Vite 5.0** - Fast development server and optimized builds
+- **React Router DOM 6.8** - Client-side routing with protected routes
 
 ### State Management
-- **Zustand 4.4.0** - Lightweight alternative do Redux
-  - Persist middleware dla localStorage integration
-  - TypeScript-first design
-  - Selective persistence z `partialize`
-  - Custom selectors dla optimized re-renders
+- **Zustand 4.4** - Lightweight state management with persistence
+- **React Query/TanStack Query** - Server state management (planned)
+- **localStorage API** - Client-side persistence for configuration and history
+- **AdminConfigService** - Centralized configuration management service
 
 ### UI & Styling
-- **Material-UI 5.15.0** (@mui/material, @mui/icons-material)
-  - Custom dark/light theme implementation
-  - Responsive breakpoints
-  - Component style overrides
-  - Professional film industry color palette
-  
-- **Emotion** - CSS-in-JS dla Material-UI
-  - Runtime styling z theme integration
-  - Optimized bundle size
+- **Material-UI (MUI) 5.15** - Component library with custom theme
+- **@mui/icons-material** - Comprehensive icon set for professional UI
+- **@emotion/react & @emotion/styled** - CSS-in-JS styling solution
+- **Recharts 2.8** - Interactive data visualization library
 
 ### Build & Development
 - **Vite 6.2.0** - Modern build tool
@@ -40,15 +31,8 @@
   - TypeScript support out-of-the-box
 
 ### AI & Processing
-- **Google Generative AI 0.21.0** (@google/generative-ai)
-  - Gemini 1.5 Pro model integration
-  - Structured prompts dla 27 analysis sections
-  - Error handling i rate limiting
-  
-- **PDF Processing**
-  - **PDF.js 3.11.174** (pdfjs-dist) - Primary text extraction
-  - **Tesseract.js 5.0.0** - OCR fallback dla scanned documents
-  - Canvas API dla rendering pages do OCR
+- **Google Gemini API** - AI analysis and content generation
+- **Web Workers** - Background processing for heavy operations
 
 ### Data Visualization
 - **Recharts 2.8.0** - React chart library
@@ -113,10 +97,10 @@
 ### Required Environment Variables
 ```bash
 # Essential
-VITE_GEMINI_API_KEY=your_gemini_api_key
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
 
 # Optional
-VITE_APP_NAME="CortexReel"
+VITE_APP_NAME=CortexReel
 VITE_MAX_FILE_SIZE=10485760
 VITE_DEBUG_MODE=false
 VITE_ENABLE_OCR=true
@@ -151,10 +135,10 @@ VITE_ENABLE_OCR=true
 ## Performance Considerations
 
 ### Bundle Optimization
-- Code splitting z React Router
-- Lazy loading dla visualization components
-- Tree shaking dla unused code elimination
-- Optimized imports (`@mui/icons-material` specific imports)
+- **Code Splitting:** Route-based lazy loading
+- **Tree Shaking:** Unused code elimination
+- **Dynamic Imports:** On-demand component loading
+- **Asset Optimization:** Image compression and lazy loading
 
 ### Runtime Performance
 - React.memo dla stable components
@@ -229,3 +213,303 @@ VITE_ENABLE_OCR=true
 3. **Progressive Web App** - Add offline functionality
 4. **WebAssembly** - Faster PDF/OCR processing
 5. **Service Workers** - Background analysis processing 
+
+## Architecture Overview
+
+### Client-Side Architecture
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Browser Environment                      │
+├─────────────────────────────────────────────────────────────┤
+│  UI Layer (React Components)                               │
+│  ├── AdminDashboard (Configuration Management)             │
+│  ├── AnalysisDisplay (Results Visualization)               │
+│  ├── FileUpload (PDF Processing Interface)                 │
+│  └── Visualizations (Charts & Dashboards)                  │
+├─────────────────────────────────────────────────────────────┤
+│  Service Layer                                              │
+│  ├── AdminConfigService (Configuration CRUD)               │
+│  ├── GeminiService (AI Analysis)                           │
+│  ├── PDFParserService (Text Extraction)                    │
+│  └── AnalysisService (Orchestration)                       │
+├─────────────────────────────────────────────────────────────┤
+│  State Management                                           │
+│  ├── Zustand Store (Application State)                     │
+│  ├── localStorage (Configuration Persistence)              │
+│  └── Session Storage (Temporary Data)                      │
+├─────────────────────────────────────────────────────────────┤
+│  Processing Layer                                           │
+│  ├── Web Workers (Background Analysis)                     │
+│  ├── PDF.js (Document Processing)                          │
+│  └── Tesseract.js (OCR Processing)                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Admin Configuration Architecture
+```
+┌─────────────────────────────────────────────────────────────┐
+│                Admin Dashboard UI                           │
+│  ├── LLM Configuration Tab                                 │
+│  │   ├── API Key Management                                │
+│  │   ├── Model Selection (Gemini/GPT/Claude)               │
+│  │   └── Parameter Tuning (Temperature, TopP, TopK)       │
+│  ├── Prompts Management Tab                                │
+│  │   ├── Accordion Interface (6 Analysis Prompts)         │
+│  │   ├── Version Control Display                          │
+│  │   └── Reset to Default Functionality                   │
+│  └── App Settings Tab                                      │
+│      ├── Feature Toggles (OCR, Charts, Export)            │
+│      ├── File Size Limits                                 │
+│      └── Logging Configuration                            │
+├─────────────────────────────────────────────────────────────┤
+│                AdminConfigService                          │
+│  ├── getLLMConfig() / saveLLMConfig()                      │
+│  ├── getPromptConfig() / savePromptConfig()                │
+│  ├── getAppConfig() / saveAppConfig()                      │
+│  └── getDefaultPrompts() (6 Analysis Sections)             │
+├─────────────────────────────────────────────────────────────┤
+│                localStorage Persistence                    │
+│  ├── cortexreel_admin_config_llm                          │
+│  ├── cortexreel_admin_config_prompts                      │
+│  ├── cortexreel_admin_config_app                          │
+│  └── cortexreel_admin_config_env                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Configuration Management System
+
+### AdminConfigService Implementation
+```typescript
+interface LLMConfig {
+  apiKey: string;
+  model: string; // gemini-1.5-pro, gpt-4o, claude-3-opus, etc.
+  temperature: number; // 0-2
+  maxTokens: number; // 1-32768
+  topP: number; // 0-1
+  topK: number; // 1-100
+  presencePenalty: number; // -2 to 2
+  frequencyPenalty: number; // -2 to 2
+}
+
+interface PromptConfig {
+  [key: string]: {
+    id: string;
+    name: string;
+    prompt: string;
+    version: string;
+    description: string;
+  };
+}
+
+interface AppConfig {
+  appName: string;
+  maxFileSize: number; // bytes
+  supportedFormats: string; // comma-separated
+  debugMode: boolean;
+  logLevel: string; // debug, info, warn, error
+  enableOCR: boolean;
+  enableAdvancedCharts: boolean;
+  enableExport: boolean;
+  enableCollaboration: boolean;
+}
+```
+
+### Default Analysis Prompts
+1. **sceneStructure** - Scene analysis with emotions, complexity, technical requirements
+2. **characters** - Character analysis with psychological profiles and relationships
+3. **locations** - Location analysis with permits, accessibility, and costs
+4. **themes** - Thematic analysis with motifs, symbols, and narrative structure
+5. **emotionalArcs** - Emotional journey tracking with tension/sadness/hope metrics
+6. **safety** - Comprehensive safety analysis with risk assessment protocols
+
+### localStorage Strategy
+- **Key Prefix:** `cortexreel_admin_config_`
+- **Data Format:** JSON serialization
+- **Fallback Strategy:** Default configurations when localStorage is empty
+- **Future Migration:** Prepared for backend API integration
+
+## Development Environment
+
+### Local Development Setup
+```bash
+# Node.js version requirement
+node --version  # 18.0.0 or higher
+
+# Package manager
+npm --version   # 9.0.0 or higher
+
+# Development server
+npm run dev     # Starts Vite dev server on localhost:5173
+
+# Build process
+npm run build   # Creates optimized production build
+npm run preview # Preview production build locally
+```
+
+### Environment Variables
+```bash
+# .env.local (development)
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+VITE_APP_NAME=CortexReel
+VITE_MAX_FILE_SIZE=10485760
+
+# .env.production (production)
+VITE_GEMINI_API_KEY=production_api_key
+VITE_API_BASE_URL=https://api.cortexreel.com
+```
+
+### Project Structure
+```
+src/
+├── components/           # Reusable UI components
+│   ├── dashboards/      # Dashboard-specific components
+│   ├── visualizations/  # Chart and graph components
+│   ├── AuthGuard.tsx    # Route protection
+│   ├── FileUpload.tsx   # File processing interface
+│   ├── LoginScreen.tsx  # Authentication UI
+│   └── MainLayout.tsx   # Application layout
+├── services/            # Business logic services
+│   ├── AdminConfigService.ts  # Configuration management
+│   ├── GeminiService.ts      # AI analysis service
+│   ├── PDFParserService.ts   # Document processing
+│   └── AnalysisService.ts    # Analysis orchestration
+├── store/               # State management
+│   └── analysisStore.ts # Zustand store configuration
+├── types/               # TypeScript type definitions
+├── utils/               # Utility functions
+├── views/               # Page-level components
+│   └── AdminDashboard.tsx    # Admin configuration interface
+├── workers/             # Web Worker implementations
+└── App.tsx             # Main application component
+```
+
+## API Integration
+
+### Google Gemini API
+- **Model Support:** gemini-1.5-pro, gemini-1.5-flash, gemini-2.0-flash-exp
+- **Authentication:** API key-based (currently client-side)
+- **Rate Limiting:** Built-in retry mechanisms with exponential backoff
+- **Response Format:** Structured JSON for analysis results
+- **Configuration:** Dynamic model switching via admin dashboard
+
+### Future API Integrations
+- **OpenAI GPT Models:** gpt-4o, gpt-4o-mini
+- **Anthropic Claude:** claude-3-opus, claude-3-sonnet, claude-3-haiku
+- **Backend Proxy:** Secure API key management
+- **Configuration API:** Backend endpoints for admin settings
+
+## Testing Strategy
+
+### Current Testing Status
+- **Unit Tests:** Not implemented (planned)
+- **Integration Tests:** Not implemented (planned)
+- **E2E Tests:** Not implemented (planned)
+- **Manual Testing:** Comprehensive manual testing performed
+
+### Planned Testing Implementation
+```typescript
+// Jest + React Testing Library
+describe('AdminDashboard', () => {
+  test('loads configuration on mount', async () => {
+    // Test configuration loading
+  });
+  
+  test('saves LLM configuration', async () => {
+    // Test configuration persistence
+  });
+  
+  test('validates input parameters', () => {
+    // Test input validation
+  });
+});
+
+// Cypress E2E Tests
+describe('Admin Configuration Flow', () => {
+  it('should configure LLM settings', () => {
+    // Test complete admin workflow
+  });
+});
+```
+
+## Deployment Configuration
+
+### Development Deployment
+- **Local Server:** Vite dev server (localhost:5173)
+- **Hot Reload:** Instant updates during development
+- **Source Maps:** Full debugging support
+- **Environment:** Development environment variables
+
+### Production Deployment (Planned)
+- **Static Hosting:** Netlify, Vercel, or AWS S3
+- **CDN Distribution:** Global content delivery
+- **Environment Variables:** Production API keys and configuration
+- **Performance Monitoring:** Error tracking and analytics
+
+### Build Configuration
+```typescript
+// vite.config.ts
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    target: 'esnext',
+    minify: 'terser',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          mui: ['@mui/material', '@mui/icons-material'],
+          charts: ['recharts'],
+          admin: ['./src/views/AdminDashboard.tsx'],
+        },
+      },
+    },
+  },
+});
+```
+
+## Browser Compatibility
+
+### Supported Browsers
+- **Chrome:** 90+ (recommended)
+- **Firefox:** 88+
+- **Safari:** 14+
+- **Edge:** 90+
+
+### Required Browser Features
+- **ES2020 Support:** Modern JavaScript features
+- **Web Workers:** Background processing
+- **File API:** File upload and processing
+- **localStorage:** Data persistence
+- **Fetch API:** HTTP requests
+
+### Polyfills & Fallbacks
+- **PDF.js:** Cross-browser PDF processing
+- **Tesseract.js:** Universal OCR support
+- **Material-UI:** Consistent styling across browsers
+- **React:** Cross-browser component rendering
+
+## Future Technical Roadmap
+
+### Short Term (Next Month)
+- **Configuration Integration** - Connect admin settings to application behavior
+- **Schema Validation** - Zod validation for configurations and API responses
+- **Enhanced Error Handling** - Better user feedback and error recovery
+- **Performance Optimization** - Bundle size reduction and memory management
+
+### Medium Term (Next Quarter)
+- **Backend Integration** - Node.js/Express server with database
+- **API Security** - Secure proxy for external API calls
+- **Advanced Configuration** - More sophisticated configuration options
+- **Testing Implementation** - Comprehensive test suite
+
+### Long Term (Next Year)
+- **Multi-User Support** - Team-based configuration management
+- **Real-time Collaboration** - WebSocket-based live updates
+- **Mobile Application** - React Native or PWA implementation
+- **Enterprise Features** - Advanced security and compliance features 

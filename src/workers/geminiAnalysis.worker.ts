@@ -1,13 +1,18 @@
 import type { CompleteAnalysis, AnalysisProgress } from '@/types/analysis';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// --- Interfejsy dla komunikacji z workerem ---
+// Global configuration variables (passed from main thread)
+let globalLLMConfig: any = null;
+let globalPromptConfig: any = null;
+
 interface WorkerInput {
   scriptText: string;
   filename: string;
+  llmConfig?: any;
+  promptConfig?: any;
 }
 
-// Initialize Gemini AI
+// Initialize Gemini AI with dynamic configuration
 const getGeminiAPI = () => {
   // Access environment variables as they are defined in vite.config.ts
   const apiKey = (globalThis as any).process?.env?.GEMINI_API_KEY || 
@@ -18,6 +23,113 @@ const getGeminiAPI = () => {
     throw new Error('Gemini API key not found. Please set VITE_GEMINI_API_KEY in your environment variables.');
   }
   return new GoogleGenerativeAI(apiKey);
+};
+
+// Get LLM configuration (passed from main thread)
+const getLLMConfig = () => {
+  if (globalLLMConfig) {
+    return {
+      model: globalLLMConfig.model || 'google/gemini-1.5-pro',
+      apiKey: globalLLMConfig.apiKey,
+      temperature: globalLLMConfig.temperature || 0.7,
+      maxTokens: globalLLMConfig.maxTokens || 4096,
+      topP: globalLLMConfig.topP || 0.9,
+      topK: globalLLMConfig.topK || 40,
+      presencePenalty: globalLLMConfig.presencePenalty || 0,
+      frequencyPenalty: globalLLMConfig.frequencyPenalty || 0
+    };
+  }
+  
+  // Default configuration
+  return {
+    model: 'google/gemini-1.5-pro',
+    apiKey: null,
+    temperature: 0.7,
+    maxTokens: 4096,
+    topP: 0.9,
+    topK: 40,
+    presencePenalty: 0,
+    frequencyPenalty: 0
+  };
+};
+
+// Get prompt configuration (passed from main thread)
+const getPromptConfig = () => {
+  if (globalPromptConfig) {
+    return globalPromptConfig;
+  }
+  
+  // Default prompts (fallback)
+  return {
+    sceneStructure: {
+      prompt: `Analyze screenplay scenes. Return JSON array with scenes:
+[{
+  "id": "unique_id",
+  "number": scene_number,
+  "heading": "full scene heading",
+  "location": "location name",
+  "timeOfDay": "DAY|NIGHT|DAWN|DUSK|CONTINUOUS|MORNING|AFTERNOON|EVENING",
+  "sceneType": "INTERIOR|EXTERIOR",
+  "description": "scene description",
+  "characters": ["character1", "character2"],
+  "dialogueCount": number_of_dialogue_lines,
+  "actionLines": ["action1", "action2"],
+  "estimatedDuration": minutes,
+  "pageNumber": page,
+  "complexity": "LOW|MEDIUM|HIGH",
+  "emotions": {
+    "tension": 0-10,
+    "sadness": 0-10,
+    "hope": 0-10,
+    "anger": 0-10,
+    "fear": 0-10,
+    "joy": 0-10,
+    "dominantEmotion": "emotion_name",
+    "intensity": 0-10
+  },
+  "technicalRequirements": [],
+  "safetyConsiderations": [],
+  "props": ["prop1", "prop2"],
+  "vehicles": ["vehicle1"],
+  "specialEffects": ["effect1"]
+}]`
+    },
+    characters: {
+      prompt: `Analyze screenplay characters. Return JSON array:
+[{
+  "id": "unique_id",
+  "name": "character name",
+  "role": "PROTAGONIST|ANTAGONIST|SUPPORTING|MINOR|EXTRA",
+  "firstAppearance": scene_number,
+  "lastAppearance": scene_number,
+  "totalScenes": count,
+  "dialogueLines": count,
+  "description": "character description",
+  "arc": "character arc description",
+  "age": "age range",
+  "gender": "gender",
+  "relationships": [],
+  "emotionalJourney": [],
+  "psychologicalProfile": {
+    "motivations": {
+      "primary": "main motivation",
+      "secondary": ["secondary motivations"]
+    },
+    "internalConflicts": ["conflicts"],
+    "personalityTraits": ["traits"],
+    "fears": ["fears"],
+    "strengths": ["strengths"],
+    "weaknesses": ["weaknesses"],
+    "backstory": "background",
+    "arcType": "HERO|VILLAIN|ANTI_HERO|MENTOR|SIDEKICK|LOVE_INTEREST|COMIC_RELIEF|OTHER"
+  },
+  "costumes": [],
+  "stuntsInvolved": false,
+  "intimacyInvolved": false,
+  "specialSkills": ["skills"]
+}]`
+    }
+  };
 };
 
 // --- Funkcje pomocnicze i logika analizy (przeniesione z GeminiAnalysisService) ---
@@ -38,8 +150,26 @@ function updateProgress(section: string, current: number, total: number) {
 
 async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<any> {
   try {
+    const llmConfig = getLLMConfig();
     const genAI = getGeminiAPI();
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    
+    // Extract model name from the full model path (e.g., 'google/gemini-2.5-pro' -> 'gemini-2.5-pro')
+    let modelName = llmConfig.model;
+    if (modelName.includes('/')) {
+      modelName = modelName.split('/')[1];
+    }
+    
+    console.log(`Using LLM model: ${modelName} (from config: ${llmConfig.model})`);
+    
+    const model = genAI.getGenerativeModel({ 
+      model: modelName,
+      generationConfig: {
+        temperature: llmConfig.temperature,
+        maxOutputTokens: llmConfig.maxTokens,
+        topP: llmConfig.topP,
+        topK: llmConfig.topK
+      }
+    });
     
     const fullPrompt = `${prompt}
 
@@ -125,7 +255,8 @@ async function analyzeMetadata(scriptText: string, filename: string) {
 }
 
 async function analyzeSceneStructure(scriptText: string) {
-  const prompt = `Analyze screenplay scenes. Return JSON array with scenes:
+  const promptConfig = getPromptConfig();
+  const prompt = promptConfig.sceneStructure?.prompt || `Analyze screenplay scenes. Return JSON array with scenes:
   [{
     "id": "unique_id",
     "number": scene_number,
@@ -160,7 +291,8 @@ async function analyzeSceneStructure(scriptText: string) {
 }
 
 async function analyzeCharacters(scriptText: string) {
-  const prompt = `Analyze screenplay characters. Return JSON array:
+  const promptConfig = getPromptConfig();
+  const prompt = promptConfig.characters?.prompt || `Analyze screenplay characters. Return JSON array:
   [{
     "id": "unique_id",
     "name": "character name",
@@ -197,7 +329,8 @@ async function analyzeCharacters(scriptText: string) {
 }
 
 async function analyzeLocations(scriptText: string) {
-  const prompt = `Analyze screenplay locations. Return JSON array:
+  const promptConfig = getPromptConfig();
+  const prompt = promptConfig.locations?.prompt || `Analyze screenplay locations. Return JSON array:
   [{
     "id": "unique_id",
     "name": "location name",
@@ -370,7 +503,8 @@ async function analyzeRelationships(scriptText: string) {
 }
 
 async function analyzeThemes(scriptText: string) {
-  const prompt = `Analyze themes and narrative elements. Return JSON:
+  const promptConfig = getPromptConfig();
+  const prompt = promptConfig.themes?.prompt || `Analyze themes and narrative elements. Return JSON:
   {
     "primaryThemes": ["main themes"],
     "secondaryThemes": ["secondary themes"],
@@ -389,7 +523,8 @@ async function analyzeThemes(scriptText: string) {
 }
 
 async function analyzeEmotionalArcs(scriptText: string) {
-  const prompt = `Analyze emotional arcs throughout the screenplay. Return JSON:
+  const promptConfig = getPromptConfig();
+  const prompt = promptConfig.emotionalArcs?.prompt || `Analyze emotional arcs throughout the screenplay. Return JSON:
   {
     "overall": [{
       "sceneNumber": number,
@@ -533,7 +668,8 @@ async function analyzeExtras(scriptText: string) {
 }
 
 async function analyzeSafety(scriptText: string) {
-  const prompt = `Comprehensive safety analysis. Return JSON:
+  const promptConfig = getPromptConfig();
+  const prompt = promptConfig.safety?.prompt || `Comprehensive safety analysis. Return JSON:
   {
     "overallAssessment": {
       "overallRiskLevel": "LOW|MEDIUM|HIGH|EXTREME",
@@ -718,7 +854,7 @@ async function performFullAnalysis(scriptText: string, filename: string): Promis
 
 // --- Główna logika workera ---
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
-  const { scriptText, filename } = event.data;
+  const { scriptText, filename, llmConfig, promptConfig } = event.data;
 
   if (!scriptText || !filename) {
     self.postMessage({ type: 'error', payload: 'Missing scriptText or filename in worker input' });
@@ -726,6 +862,9 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   }
 
   try {
+    globalLLMConfig = llmConfig || null;
+    globalPromptConfig = promptConfig || null;
+
     const analysisResult = await performFullAnalysis(scriptText, filename);
     self.postMessage({ type: 'success', payload: analysisResult });
   } catch (error) {

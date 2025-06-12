@@ -23,7 +23,8 @@ import {
   Person as PersonIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAnalysisStore, useUIState, useAuth } from '@/store/analysisStore';
@@ -50,6 +51,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { icon: <AnalyticsIcon />, text: 'Analysis', path: '/analysis' },
     { icon: <HistoryIcon />, text: 'History', path: '/history' },
     { icon: <PersonIcon />, text: 'Role Selector', path: '/role-selector' },
+    { icon: <SettingsIcon />, text: 'Admin Panel', path: '/admin' },
   ];
 
   const drawerWidth = 240;

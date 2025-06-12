@@ -1,4 +1,5 @@
 import type { CompleteAnalysis, AnalysisProgress } from '@/types/analysis';
+import { AdminConfigService } from './AdminConfigService';
 
 export class GeminiAnalysisService {
   private onProgress?: (progress: AnalysisProgress) => void;
@@ -14,7 +15,7 @@ export class GeminiAnalysisService {
     scriptText: string,
     filename: string,
   ): Promise<CompleteAnalysis> {
-    return new Promise<CompleteAnalysis>((resolve, reject) => {
+    return new Promise<CompleteAnalysis>(async (resolve, reject) => {
       if (this.worker) {
         console.log('Terminating previous Gemini Analysis Worker...');
         this.worker.terminate();
@@ -55,8 +56,30 @@ export class GeminiAnalysisService {
         this.cleanupWorker();
       };
 
-      console.log('Posting message to Gemini Analysis Worker:', { scriptTextLength: scriptText.length, filename });
-      this.worker.postMessage({ scriptText, filename });
+      try {
+        // Get current configuration from AdminConfigService
+        const adminConfigService = new AdminConfigService();
+        const llmConfig = await adminConfigService.getLLMConfig();
+        const promptConfig = await adminConfigService.getPromptConfig();
+        
+        console.log('Posting message to Gemini Analysis Worker:', { 
+          scriptTextLength: scriptText.length, 
+          filename,
+          llmConfig: llmConfig.model,
+          promptsCount: Object.keys(promptConfig).length
+        });
+        
+        this.worker.postMessage({ 
+          scriptText, 
+          filename,
+          llmConfig,
+          promptConfig
+        });
+      } catch (error) {
+        console.error('Failed to load configuration:', error);
+        reject(new Error('Failed to load configuration'));
+        this.cleanupWorker();
+      }
     });
   }
 

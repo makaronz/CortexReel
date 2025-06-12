@@ -13,6 +13,7 @@ import ProgressBar from '@/components/ProgressBar';
 import HistoryPanel from '@/components/HistoryPanel';
 import RoleSelector from '@/components/RoleSelector';
 import ErrorDisplay from '@/components/ErrorDisplay';
+import AdminDashboard from '@/views/AdminDashboard';
 
 // Authentication Guard
 import AuthGuard from '@/components/AuthGuard';
@@ -189,6 +190,7 @@ function App() {
                     <Route path="/analysis" element={<AnalysisDisplay />} />
                     <Route path="/history" element={<HistoryPanel />} />
                     <Route path="/role-selector" element={<RoleSelector />} />
+                    <Route path="/admin" element={<AdminDashboard />} />
                   </Routes>
                 </MainLayout>
               </AuthGuard>
