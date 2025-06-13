@@ -1,6 +1,18 @@
 # Progress Tracking - CortexReel Standalone
 
-*Last Updated: 2025-01-15T20:45:00Z*
+*Last Updated: 2025-06-14T12:00:00Z*
+
+## 🚀 New Milestone – Backend Orchestration Kick-off
+
+### ✅ Newly Completed (since 2025-01-15)
+- **Backend Core Scaffold** – Fastify server with CORS/WS/multipart plugins
+- **BullMQ Job Queue** – Shared Redis connection & worker bootstrap
+- **Analysis Upload API** – `/analysis/upload | /:id/status | /:id/result`
+- **LangChain RAG Ingest** – PDF → chunk → embed → Weaviate pipeline in worker
+- **Docker-ready Services** – Redis & Weaviate local dev, env vars wired
+
+### 🔄 Items Moved to *In Development*
+Configuration → pipeline wiring, Prompt versioning, Real-time Chat WebSocket
 
 ## Implementation Status Overview
 

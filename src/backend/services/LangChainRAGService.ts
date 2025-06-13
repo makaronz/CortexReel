@@ -2,7 +2,7 @@ import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { WeaviateStore } from "@langchain/weaviate";
 import { ConversationalRetrievalQAChain } from "langchain/chains";
 import { BufferMemory } from "langchain/memory";
-import weaviate, { WeaviateClient } from 'weaviate-ts-client';
+import weaviate, { type WeaviateClient } from 'weaviate-ts-client';
 import { AdminConfigService } from '@/services/AdminConfigService';
 import { LLMConfig } from '@/types/analysis';
 
@@ -65,7 +65,8 @@ export class LangChainRAGService {
             // For now, we create a dummy vector store
             // this.vectorStore = await WeaviateStore.fromExistingIndex(...);
             this.vectorStore = new WeaviateStore(embeddings, {
-                client: this.weaviateClient,
+                // @ts-ignore - mismatch between langchain community typings and weaviate-ts-client
+                client: this.weaviateClient as any,
                 indexName: "SceneEmbedding",
                 textKey: "content",
                 metadataKeys: ["sceneId", "jobId", "sceneNumber"]
@@ -120,11 +121,67 @@ export class LangChainRAGService {
         }
     }
 
-    public async analyzeScreenplayFile(filepath: string, meta: { filename: string; userId?: string }) {
-        // Placeholder implementation: extract text, chunk, embed, store, run analysis
-        // TODO: integrate PDF parser, 27-section analysis pipeline
-        console.log(`Analyzing file ${meta.filename} for user ${meta.userId ?? 'anonymous'}`);
-        // For now return mock CompleteAnalysis
-        return { message: 'Analysis pending implementation', filepath, ...meta };
+    public async analyzeScreenplayFile(
+        filepath: string,
+        meta: { filename: string; userId?: string },
+    ): Promise<{ pages: number; chunks: number; filename: string }> {
+        console.log(`▶️  [RAG] Starting analysis for ${meta.filename}`);
+
+        // 1. Parse PDF (fallback to raw text if parsing fails)
+        let fullText = '';
+        let pageCount = 0;
+        try {
+            // Dynamically import to avoid bundling when not needed in frontend
+            const pdfParse = (await import('pdf-parse')).default;
+            const fs = await import('node:fs/promises');
+            const buffer = await fs.readFile(filepath);
+            const parsed = await pdfParse(buffer);
+            fullText = parsed.text;
+            pageCount = parsed.numpages || 0;
+        } catch (err) {
+            console.warn('[RAG] PDF parse failed, attempting raw read', err);
+            // fallback: read raw text file
+            const fs = await import('node:fs/promises');
+            fullText = await fs.readFile(filepath, 'utf-8');
+            pageCount = 1;
+        }
+
+        // 2. Chunk text for embeddings
+        const { RecursiveCharacterTextSplitter } = await import('langchain/text_splitter');
+        const splitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 2000,
+            chunkOverlap: 200,
+        });
+        const chunks = await splitter.splitText(fullText);
+
+        if (!chunks.length) {
+            throw new Error('No text extracted from screenplay');
+        }
+
+        // 3. Ensure vectorStore initialised
+        if (!this.vectorStore) {
+            await this.initialize();
+            if (!this.vectorStore) throw new Error('Vector store not initialised');
+        }
+
+        // 4. Embed & store documents
+        const docs = chunks.map((text, idx) => ({
+            pageContent: text,
+            metadata: {
+                chunkIndex: idx,
+                filename: meta.filename,
+                userId: meta.userId,
+            },
+        }));
+
+        try {
+            await this.vectorStore!.addDocuments(docs);
+            console.log(`[RAG] Stored ${docs.length} chunks in Weaviate`);
+        } catch (err) {
+            console.error('[RAG] Failed storing documents', err);
+            throw err;
+        }
+
+        return { pages: pageCount, chunks: docs.length, filename: meta.filename };
     }
 } 

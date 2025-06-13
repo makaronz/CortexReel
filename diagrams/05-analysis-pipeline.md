@@ -4,63 +4,74 @@ This diagram demonstrates the 27-section analysis engine, LLM integration with m
 
 ```mermaid
 graph TD
-    subgraph "Analysis Pipeline"
-        A[PDF Upload] --> B[Text Extraction]
-        B --> C{Extraction Success?}
-        C -->|Yes| D[Direct Text Processing]
-        C -->|No| E[OCR Fallback]
-        D --> F[Text Preprocessing]
-        E --> F
-        F --> G[Analysis Orchestration]
+    subgraph "Backend Orchestration"
+        A[Client PDF Upload] --> B[Fastify API /analysis/upload]
+        B --> C[BullMQ Queue]
+        C --> D[Worker Container]
+        D --> E[LangChain RAG Ingest\n(PDF → chunks → embeddings)]
+        E --> F[Weaviate Vector DB]
+        E --> G[MongoDB Analysis Meta]
+        D --> H[LangChain Section Chains (27)]
+        H --> I[LLM Providers]
+    end
+    
+    subgraph "Real-time Status"
+        C --> J[Job State /analysis/:id/status]
+        D --> J
+    end
+    
+    subgraph "Result Delivery"
+        G --> K[Fastify API /analysis/:id/result]
+        K --> L[Frontend Dashboards]
     end
     
     subgraph "27-Section Analysis Engine"
-        G --> H[Scene Structure Analysis]
-        G --> I[Character Development]
-        G --> J[Location Requirements]
-        G --> K[Themes & Motifs]
-        G --> L[Emotional Arcs]
-        G --> M[Safety Protocols]
-        G --> N[... 21 More Sections]
+        H --> M[Scene Structure Analysis]
+        H --> N[Character Development]
+        H --> O[Location Requirements]
+        H --> P[Themes & Motifs]
+        H --> Q[Emotional Arcs]
+        H --> R[Safety Protocols]
+        H --> S[... 21 More Sections]
     end
     
     subgraph "LLM Integration"
-        H --> O[LLM Service]
-        I --> O
-        J --> O
-        K --> O
-        L --> O
-        M --> O
-        N --> O
+        M --> T[LLM Service]
+        N --> T
+        O --> T
+        P --> T
+        Q --> T
+        R --> T
+        S --> T
         
-        O --> P{Model Selection}
-        P -->|OpenAI| Q[GPT-4/3.5]
-        P -->|Anthropic| R[Claude]
-        P -->|Google| S[Gemini]
-        P -->|Local| T[Local Models]
+        T --> U{Model Selection}
+        U -->|OpenAI| V[GPT-4/3.5]
+        U -->|Anthropic| W[Claude]
+        U -->|Google| X[Gemini]
+        U -->|Local| Y[Local Models]
     end
     
     subgraph "Results Processing"
-        Q --> U[Response Aggregation]
-        R --> U
-        S --> U
-        T --> U
-        U --> V[Data Validation]
-        V --> W[Results Storage]
-        W --> X[Visualization Engine]
+        V --> Z[Response Aggregation]
+        W --> Z
+        X --> Z
+        Y --> Z
+        Z --> AA[Data Validation]
+        AA --> AB[Results Storage]
+        AB --> AC[Visualization Engine]
     end
     
     subgraph "Role-Based Views"
-        X --> Y[Director Dashboard]
-        X --> Z[Producer Dashboard]
-        X --> AA[Cinematographer View]
-        X --> BB[Safety Coordinator View]
+        AC --> AD[Director Dashboard]
+        AC --> AE[Producer Dashboard]
+        AC --> AF[Cinematographer View]
+        AC --> AG[Safety Coordinator View]
     end
     
-    style G fill:#e3f2fd
-    style O fill:#f3e5f5
-    style U fill:#e8f5e8
-    style X fill:#fff3e0
+    style H fill:#e3f2fd
+    style T fill:#f3e5f5
+    style Z fill:#e8f5e8
+    style AC fill:#fff3e0
 ```
 
 ## Pipeline Stages
