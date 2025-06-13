@@ -119,4 +119,12 @@ export class LangChainRAGService {
             return "Sorry, I encountered an error while processing your request.";
         }
     }
+
+    public async analyzeScreenplayFile(filepath: string, meta: { filename: string; userId?: string }) {
+        // Placeholder implementation: extract text, chunk, embed, store, run analysis
+        // TODO: integrate PDF parser, 27-section analysis pipeline
+        console.log(`Analyzing file ${meta.filename} for user ${meta.userId ?? 'anonymous'}`);
+        // For now return mock CompleteAnalysis
+        return { message: 'Analysis pending implementation', filepath, ...meta };
+    }
 } 
