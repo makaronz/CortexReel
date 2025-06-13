@@ -73,23 +73,17 @@ export class GeminiAnalysisService {
         const llmConfig = await adminConfigService.getLLMConfig();
         const promptConfig = await adminConfigService.getPromptConfig();
         
-        // Forcefully use the user-provided API key
-        const finalLlmConfig = {
-          ...llmConfig,
-          apiKey: 'AIzaSyAbEQqwe1IVLr-Q-k88p4Onha2rS7o3LKA',
-        };
-        
-        console.log('Posting message to Gemini Analysis Worker:', { 
-          scriptTextLength: scriptText.length, 
+        console.log('Posting message to Gemini Analysis Worker:', {
+          scriptTextLength: scriptText.length,
           filename,
-          llmConfig: finalLlmConfig.model,
+          llmConfig: llmConfig.model,
           promptsCount: Object.keys(promptConfig).length
         });
-        
-        this.worker.postMessage({ 
-          scriptText, 
+
+        this.worker.postMessage({
+          scriptText,
           filename,
-          llmConfig: finalLlmConfig,
+          llmConfig,
           promptConfig
         });
       } catch (error) {
