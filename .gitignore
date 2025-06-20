@@ -7,18 +7,36 @@ node_modules/
 /dist
 /build
 
-# Environment variables
-.env
+# Environment files
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
+# CRITICAL SECURITY - Docker environment files
+.env.docker
+.env.production
+.env.staging
+
+# SSL certificates and keys
+ssl/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
 # Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
 lerna-debug.log*
 
 # Runtime data
@@ -160,3 +178,33 @@ scripts/KOLORY ZŁA - draft 2AP_06.03.2023 (2).pdf
 scripts/RUDA  scenariusz kwiecień 2025 - numeracja scen i korekty imion 08052025.pdf
 scripts/Script Wczoraj Było Piękne Niebo 11082020.pdf
 scripts/STEFAN_Scenariusz z zakończeniem.pdf
+
+# Docker volumes and data
+docker-volumes/
+data/
+uploads/
+temp/
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# AI/ML models and data
+models/
+*.model
+*.pkl
+*.joblib
+
+# Production configuration
+docker-compose.override.yml
+docker-compose.prod.yml
+
+# Sensitive development files
+.secrets
+*.secret
+credentials.json
+service-account.json
+
+# Memory bank - temporary exclusions
+# memory-bank/raw_reflection_log.md

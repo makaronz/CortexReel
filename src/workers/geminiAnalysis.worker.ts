@@ -12,6 +12,41 @@ interface WorkerInput {
   promptConfig?: any;
 }
 
+// Message handler to receive configuration and start analysis
+self.onmessage = async (event: MessageEvent<WorkerInput>) => {
+  try {
+    const { scriptText, filename, llmConfig, promptConfig } = event.data;
+    
+    // Store configuration globally for use in analysis functions
+    if (llmConfig) {
+      globalLLMConfig = llmConfig;
+      console.log('✅ Worker received LLM configuration:', llmConfig.model);
+    }
+    
+    if (promptConfig) {
+      globalPromptConfig = promptConfig;
+      console.log('✅ Worker received prompt configuration:', Object.keys(promptConfig));
+    }
+    
+    // Start the full analysis
+    console.log('🚀 Starting full analysis in worker...');
+    const result = await performFullAnalysis(scriptText, filename);
+    
+    // Send success result back to main thread
+    self.postMessage({
+      type: 'success',
+      payload: result
+    });
+    
+  } catch (error) {
+    console.error('❌ Worker analysis failed:', error);
+    self.postMessage({
+      type: 'error',
+      payload: error instanceof Error ? error.message : 'Unknown error in worker'
+    });
+  }
+};
+
 // Initialize Gemini AI with dynamic configuration
 const getGeminiAPI = () => {
   const llmConfig = getLLMConfig();
@@ -894,23 +929,4 @@ async function performFullAnalysis(scriptText: string, filename: string): Promis
   return analysis;
 }
 
-// --- Główna logika workera ---
-self.onmessage = async (event: MessageEvent<WorkerInput>) => {
-  const { scriptText, filename, llmConfig, promptConfig } = event.data;
-
-  if (!scriptText || !filename) {
-    self.postMessage({ type: 'error', payload: 'Missing scriptText or filename in worker input' });
-    return;
-  }
-
-  try {
-    globalLLMConfig = llmConfig || null;
-    globalPromptConfig = promptConfig || null;
-
-    const analysisResult = await performFullAnalysis(scriptText, filename);
-    self.postMessage({ type: 'success', payload: analysisResult });
-  } catch (error) {
-    console.error('Error in Gemini Analysis Worker:', error);
-    self.postMessage({ type: 'error', payload: error instanceof Error ? error.message : 'Unknown worker error' });
-  }
-}; 
+// Note: Message handler is now defined at the top of the file for better organization 
