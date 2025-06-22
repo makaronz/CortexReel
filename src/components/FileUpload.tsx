@@ -58,6 +58,17 @@ const FileUpload: FC = () => {
     if (!file) return;
 
     setLocalError(null);
+
+    if (!PDFParserService.validateFileSize(file)) {
+      setLocalError('File exceeds 10MB limit.');
+      return;
+    }
+    const supported = PDFParserService.getSupportedFormats();
+    if (!supported.includes(file.type) && !file.name.toLowerCase().endsWith('.pdf')) {
+      setLocalError('Unsupported file type. Please upload a PDF.');
+      return;
+    }
+
     startProcessing();
     setCurrentFile(file);
 
