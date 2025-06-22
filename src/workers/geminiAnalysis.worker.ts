@@ -160,7 +160,13 @@ const getDefaultPrompts = () => {
   };
 };
 
-// --- Funkcje pomocnicze i logika analizy (przeniesione z GeminiAnalysisService) ---
+/**
+ * Sends a progress update message to the main thread with the current analysis section, completion status, estimated time remaining, and an empty error list.
+ *
+ * @param section - The name of the current analysis section being processed
+ * @param current - The index (1-based) of the current section
+ * @param total - The total number of analysis sections
+ */
 
 function updateProgress(section: string, current: number, total: number) {
   self.postMessage({
@@ -176,6 +182,15 @@ function updateProgress(section: string, current: number, total: number) {
   });
 }
 
+/**
+ * Sends a prompt and screenplay text to the Gemini LLM, returning the parsed JSON response.
+ *
+ * Validates and truncates input as needed, retries the LLM call on failure, and attempts to robustly parse the LLM's response as JSON. Throws an error if the input is empty or if a valid JSON response cannot be obtained.
+ *
+ * @param prompt - The prompt template to send to the LLM
+ * @param scriptText - The screenplay text to analyze
+ * @returns The parsed JSON object returned by the LLM
+ */
 async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<any> {
   if (!scriptText.trim()) throw new Error('Empty script text provided to LLM');
   try {
