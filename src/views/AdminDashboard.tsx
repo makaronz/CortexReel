@@ -37,6 +37,7 @@ import {
   Tune as TuneIcon
 } from '@mui/icons-material';
 import { AdminConfigService } from '@/services/AdminConfigService';
+import LoadingOverlay from '@/components/LoadingOverlay';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -219,6 +220,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', p: 3 }}>
+      <LoadingOverlay loading={loading} />
       <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <SettingsIcon fontSize="large" />
         Panel Administracyjny

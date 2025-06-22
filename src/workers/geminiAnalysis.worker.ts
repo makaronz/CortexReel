@@ -1,5 +1,11 @@
 import type { CompleteAnalysis, AnalysisProgress } from '@/types/analysis';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { retryAsync } from '@/services/llm/retry';
+
+/**
+ * WebWorker performing multi-step analysis using the Gemini LLM.
+ * Receives script text and returns structured analysis results.
+ */
 
 // Global configuration variables (passed from main thread)
 let globalLLMConfig: any = null;
@@ -171,6 +177,7 @@ function updateProgress(section: string, current: number, total: number) {
 }
 
 async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<any> {
+  if (!scriptText.trim()) throw new Error('Empty script text provided to LLM');
   try {
     const llmConfig = getLLMConfig();
     const genAI = getGeminiAPI();
@@ -185,7 +192,7 @@ async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<an
     
     console.log(`Using LLM model: ${modelName} (from config: ${llmConfig.model})`);
     
-    const model = genAI.getGenerativeModel({ 
+    const model = genAI.getGenerativeModel({
       model: modelName,
       generationConfig: {
         temperature: llmConfig.temperature,
@@ -194,6 +201,11 @@ async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<an
         topK: llmConfig.topK
       }
     });
+
+    if (scriptText.length > llmConfig.maxTokens * 4) {
+      console.warn('Input script too long, truncating to fit token limit');
+      scriptText = scriptText.slice(0, llmConfig.maxTokens * 4);
+    }
     
     const fullPrompt = `${prompt}
 
@@ -202,7 +214,7 @@ ${scriptText}
 
 Please respond with ONLY valid JSON, no additional text or formatting.`;
 
-    const result = await model.generateContent(fullPrompt);
+    const result = await retryAsync(() => model.generateContent(fullPrompt), 3, 1000);
     const response = await result.response;
     const text = response.text();
     
