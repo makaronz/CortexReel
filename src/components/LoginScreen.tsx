@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/analysisStore';
+import LoadingOverlay from './LoadingOverlay';
 
 const LoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -54,7 +55,8 @@ const LoginScreen: React.FC = () => {
 
   return (
     <Container maxWidth="sm">
-      <Box sx={{ 
+      <LoadingOverlay loading={isLoading} />
+      <Box sx={{
         minHeight: '100vh', 
         display: 'flex', 
         alignItems: 'center', 

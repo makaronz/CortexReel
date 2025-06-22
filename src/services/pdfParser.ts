@@ -1,6 +1,11 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import Tesseract from 'tesseract.js';
 
+/**
+ * Service responsible for extracting text from PDF files.
+ * Performs direct extraction using pdfjs and falls back to OCR when needed.
+ */
+
 // Configure PDF.js worker
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -32,11 +37,24 @@ export class PDFParserService {
 
     try {
       this.updateProgress(0, 1, 'Loading PDF...');
-      
-      // Try direct extraction first
-      const directResult = await this.extractTextDirect(file);
-      
-      if (this.isExtractionSuccessful(directResult.text)) {
+
+      // Try direct extraction with retry
+      let directResult: { text: string; pageCount: number } | null = null;
+      let attempts = 0;
+      const maxAttempts = 3;
+      while (attempts < maxAttempts && !directResult) {
+        try {
+          attempts++;
+          const result = await this.extractTextDirect(file);
+          if (this.isExtractionSuccessful(result.text)) {
+            directResult = result;
+          }
+        } catch (err) {
+          if (attempts >= maxAttempts) throw err;
+        }
+      }
+
+      if (directResult) {
         return {
           text: directResult.text,
           pageCount: directResult.pageCount,
@@ -45,7 +63,7 @@ export class PDFParserService {
           processingTime: Date.now() - startTime,
         };
       }
-      
+
       // If direct extraction failed, try OCR
       this.updateProgress(0, 1, 'Direct extraction failed, starting OCR...');
       const ocrResult = await this.extractTextOCR(file);
