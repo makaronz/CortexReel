@@ -17,5 +17,6 @@ describe('PDFParserService', () => {
   it('lists supported formats', () => {
     const formats = PDFParserService.getSupportedFormats();
     expect(formats).toContain('application/pdf');
+    expect(formats).toContain('.pdf');
   });
 });
