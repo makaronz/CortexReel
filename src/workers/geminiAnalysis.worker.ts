@@ -1,10 +1,11 @@
 import type { CompleteAnalysis, AnalysisProgress } from '@/types/analysis';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { retryAsync } from '@/services/llm/retry';
+import { retryAsync, type ShouldRetryFn } from '@/services/llm/retry';
 
 /**
  * WebWorker performing multi-step analysis using the Gemini LLM.
  * Receives script text and returns structured analysis results.
+ * Enhanced with robust error handling, smart retry logic, and chunk management.
  */
 
 // Global configuration variables (passed from main thread)
@@ -16,6 +17,13 @@ interface WorkerInput {
   filename: string;
   llmConfig?: any;
   promptConfig?: any;
+}
+
+// Enhanced error handling for different types of failures
+interface AnalysisError extends Error {
+  type: 'RATE_LIMIT' | 'QUOTA_EXCEEDED' | 'NETWORK' | 'PARSING' | 'VALIDATION' | 'UNKNOWN';
+  retryable: boolean;
+  section?: string;
 }
 
 // Initialize Gemini AI with dynamic configuration
@@ -41,7 +49,7 @@ const getLLMConfig = () => {
   if (globalLLMConfig) {
     console.log('✅ Using LLM configuration from main thread:', globalLLMConfig.model);
     return {
-      model: globalLLMConfig.model || 'google/gemini-1.5-pro-latest',
+      model: globalLLMConfig.model || 'google/gemini-2.5-flash',
       apiKey: globalLLMConfig.apiKey || null,
       temperature: globalLLMConfig.temperature ?? 0.7,
       maxTokens: globalLLMConfig.maxTokens ?? 4096,
@@ -55,10 +63,10 @@ const getLLMConfig = () => {
   // EMERGENCY FALLBACK ONLY - Configuration should always be passed
   console.warn('⚠️ No LLM configuration passed to worker - using emergency defaults');
   return {
-    model: 'google/gemini-1.5-pro-latest',
+    model: 'google/gemini-2.5-flash',
     apiKey: null,
     temperature: 0.7,
-    maxTokens: 8192,
+    maxTokens: 65536, // Gemini 2.5 Flash maximum output tokens
     topP: 0.9,
     topK: 40,
     presencePenalty: 0,
@@ -84,39 +92,64 @@ const getDefaultPrompts = () => {
     sceneStructure: {
       id: 'sceneStructure',
       name: 'Scene Structure Analysis',
-      version: '1.0.0',
-      description: 'Analyzes screenplay scenes for structure and metadata',
-      prompt: `Analyze screenplay scenes. Return JSON array with scenes:
+      version: '2.0.0',
+      description: 'Analyzes Polish screenplay scenes with proper formatting recognition',
+      prompt: `Przeanalizuj scenariusz filmowy w języku polskim i zidentyfikuj WSZYSTKIE sceny. 
+
+ROZPOZNAJ POLSKIE MARKERY SCEN:
+- "1. WN." = Scena 1, Wnętrze 
+- "2. ZN." = Scena 2, Zewnętrze
+- "3. WN." = Scena 3, Wnętrze
+- etc.
+
+ROZPOZNAJ POLSKIE MARKERY CZASU:
+- "DZIEŃ", "NOC", "RANO", "WIECZÓR", "ZACHÓD SŁOŃCA", "ŚWIT"
+
+INSTRUKCJE:
+1. Znajdź KAŻDY marker sceny zaczynający się od numeru i kropki (1., 2., 3., itd.)
+2. Po numerze szukaj "WN." (wnętrze) lub "ZN." (zewnętrze) 
+3. Wyciągnij nazwę lokacji i czas dnia
+4. Zidentyfikuj wszystkie postacie występujące w każdej scenie
+5. Policz linie dialogów i akcji dla każdej sceny
+
+ZWRÓĆ tablicę JSON ze WSZYSTKIMI scenami:
 [{
-  "id": "unique_id",
-  "number": scene_number,
-  "heading": "full scene heading",
-  "location": "location name",
-  "timeOfDay": "DAY|NIGHT|DAWN|DUSK|CONTINUOUS|MORNING|AFTERNOON|EVENING",
-  "sceneType": "INTERIOR|EXTERIOR",
-  "description": "scene description",
-  "characters": ["character1", "character2"],
-  "dialogueCount": number_of_dialogue_lines,
-  "actionLines": ["action1", "action2"],
-  "estimatedDuration": minutes,
-  "pageNumber": page,
-  "complexity": "LOW|MEDIUM|HIGH",
+  "id": "scene_X",
+  "number": X,
+  "heading": "pełny nagłówek sceny z oryginału",
+  "location": "nazwa lokacji",
+  "timeOfDay": "DZIEŃ|NOC|RANO|WIECZÓR|ŚWIT|ZACHÓD_SŁOŃCA|CIĄGŁY",
+  "sceneType": "WNĘTRZE|ZEWNĘTRZE", 
+  "description": "opis akcji w scenie",
+  "characters": ["postać1", "postać2"],
+  "dialogueCount": liczba_linii_dialogów,
+  "actionLines": ["linia_akcji1", "linia_akcji2"],
+  "estimatedDuration": szacunkowy_czas_w_minutach,
+  "pageNumber": numer_strony,
+  "complexity": "PROSTA|ŚREDNIA|ZŁOŻONA",
   "emotions": {
     "tension": 0-10,
-    "sadness": 0-10,
+    "sadness": 0-10, 
     "hope": 0-10,
     "anger": 0-10,
     "fear": 0-10,
     "joy": 0-10,
-    "dominantEmotion": "emotion_name",
+    "dominantEmotion": "nazwa_emocji",
     "intensity": 0-10
   },
-  "technicalRequirements": [],
-  "safetyConsiderations": [],
-  "props": ["prop1", "prop2"],
-  "vehicles": ["vehicle1"],
-  "specialEffects": ["effect1"]
-}]`
+  "technicalRequirements": ["wymóg1", "wymóg2"],
+  "safetyConsiderations": ["uwaga1", "uwaga2"],
+  "props": ["rekwizyt1", "rekwizyt2"],
+  "vehicles": ["pojazd1"],
+  "specialEffects": ["efekt1"]
+}]
+
+WAŻNE: 
+- Znajdź WSZYSTKIE sceny (powinno być około 16 scen w tym scenariuszu)
+- Nie pomijaj żadnej sceny, nawet krótkiej
+- Rozpoznaj polskie nazwy postaci (HALINA, ANDRZEJ, OLKA, etc.)
+- Uwzględnij specyfikę polskiego kina i polskich lokacji
+- Każda scena z numerem (1., 2., 3...) to osobna scena`
     },
     characters: {
       id: 'characters',
@@ -160,6 +193,159 @@ const getDefaultPrompts = () => {
   };
 };
 
+// Enhanced text chunking strategy for large scripts
+function intelligentChunking(text: string, maxTokens: number): string[] {
+  const maxChars = maxTokens * 3.5; // Conservative token-to-char ratio
+  
+  if (text.length <= maxChars) {
+    return [text];
+  }
+  
+  const chunks: string[] = [];
+  let currentChunk = '';
+  const lines = text.split('\n');
+  
+  for (const line of lines) {
+    // Check if adding this line would exceed chunk size
+    if (currentChunk.length + line.length > maxChars && currentChunk.length > 0) {
+      chunks.push(currentChunk.trim());
+      currentChunk = line;
+    } else {
+      currentChunk += (currentChunk ? '\n' : '') + line;
+    }
+  }
+  
+  if (currentChunk.trim()) {
+    chunks.push(currentChunk.trim());
+  }
+  
+  console.log(`📄 Script chunked into ${chunks.length} parts (${text.length} chars total)`);
+  return chunks;
+}
+
+// Enhanced error classification for smart retry logic
+function classifyError(error: unknown): AnalysisError {
+  let analysisError: AnalysisError;
+  
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    
+    if (message.includes('quota') || message.includes('exceeded')) {
+      analysisError = Object.assign(new Error(error.message), {
+        type: 'QUOTA_EXCEEDED' as const,
+        retryable: false
+      });
+    } else if (message.includes('rate limit') || message.includes('429')) {
+      analysisError = Object.assign(new Error(error.message), {
+        type: 'RATE_LIMIT' as const,
+        retryable: true
+      });
+    } else if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
+      analysisError = Object.assign(new Error(error.message), {
+        type: 'NETWORK' as const,
+        retryable: true
+      });
+    } else if (message.includes('json') || message.includes('parse')) {
+      analysisError = Object.assign(new Error(error.message), {
+        type: 'PARSING' as const,
+        retryable: false
+      });
+    } else {
+      analysisError = Object.assign(new Error(error.message), {
+        type: 'UNKNOWN' as const,
+        retryable: true
+      });
+    }
+  } else {
+    analysisError = Object.assign(new Error('Unknown error occurred'), {
+      type: 'UNKNOWN' as const,
+      retryable: false
+    });
+  }
+  
+  return analysisError;
+}
+
+// Smart retry strategy based on error type
+function shouldRetryLLMCall(error: unknown, attemptNumber: number): boolean {
+  const analysisError = classifyError(error);
+  
+  // Don't retry non-retryable errors
+  if (!analysisError.retryable) {
+    console.warn(`❌ Non-retryable error: ${analysisError.type} - ${analysisError.message}`);
+    return false;
+  }
+  
+  // Rate limit errors: longer delays, fewer retries
+  if (analysisError.type === 'RATE_LIMIT') {
+    return attemptNumber <= 2;
+  }
+  
+  // Network errors: standard retries
+  if (analysisError.type === 'NETWORK') {
+    return attemptNumber <= 3;
+  }
+  
+  // Unknown errors: conservative retries
+  return attemptNumber <= 2;
+}
+
+// Enhanced JSON sanitization and parsing
+function sanitizeAndParseJSON(text: string): any {
+  try {
+    // Step 1: Basic cleanup
+    let cleanedText = text
+      .replace(/```json\n?/g, '')
+      .replace(/\n?```/g, '')
+      .replace(/^[^{[\]]*/, '') // Remove text before first { or [
+      .replace(/[^}\]]*$/, '') // Remove text after last } or ]
+      .trim();
+    
+    // Step 2: Try direct parsing
+    try {
+      return JSON.parse(cleanedText);
+    } catch (firstAttempt) {
+      console.warn('🔧 Direct JSON parsing failed, attempting advanced cleanup...');
+    }
+    
+    // Step 3: Advanced cleanup for common LLM mistakes
+    cleanedText = cleanedText
+      .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+      .replace(/([{,]\s*)"([^"]+)"(\s*:)/g, '$1"$2"$3') // Fix unescaped quotes in keys
+      .replace(/:\s*"([^"]*)\n([^"]*)"(\s*[,}])/g, ': "$1 $2"$3') // Fix multi-line strings
+      .replace(/\\n/g, ' ') // Replace literal \n with space
+      .replace(/\n/g, ' ') // Replace actual newlines with space
+      .replace(/\s+/g, ' '); // Normalize whitespace
+    
+    // Step 4: Try parsing again
+    try {
+      return JSON.parse(cleanedText);
+    } catch (secondAttempt) {
+      console.warn('🔧 Advanced cleanup failed, attempting JSON extraction...');
+    }
+    
+    // Step 5: Extract first valid JSON object/array
+    const jsonRegex = /({.*?}|\[.*?\])/s;
+    const match = cleanedText.match(jsonRegex);
+    
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch (extractionError) {
+        console.error('🚨 JSON extraction also failed:', extractionError);
+      }
+    }
+    
+    // Step 6: Last resort - return minimal structure
+    console.error('🚨 All JSON parsing attempts failed, returning fallback structure');
+    return {};
+    
+  } catch (error) {
+    console.error('🚨 JSON sanitization completely failed:', error);
+    return {};
+  }
+}
+
 // --- Funkcje pomocnicze i logika analizy (przeniesione z GeminiAnalysisService) ---
 
 function updateProgress(section: string, current: number, total: number) {
@@ -176,10 +362,15 @@ function updateProgress(section: string, current: number, total: number) {
   });
 }
 
-async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<any> {
-  if (!scriptText.trim()) throw new Error('Empty script text provided to LLM');
+async function analyzeWithPrompt(prompt: string, scriptText: string, sectionName?: string): Promise<any> {
+  if (!scriptText.trim()) {
+    throw new Error('Empty script text provided to LLM');
+  }
+  
+  const startTime = Date.now();
+  const llmConfig = getLLMConfig();
+  
   try {
-    const llmConfig = getLLMConfig();
     const genAI = getGeminiAPI();
     
     // Extract model name from the full model path (e.g., 'google/gemini-2.5-pro' -> 'gemini-2.5-pro')
@@ -187,10 +378,10 @@ async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<an
     if (modelName.includes('/')) {
       const parts = modelName.split('/');
       modelName = parts[parts.length - 1];
-      console.log(`Stripped provider prefix, using model name: ${modelName}`);
+      console.log(`🤖 Stripped provider prefix, using model name: ${modelName}`);
     }
     
-    console.log(`Using LLM model: ${modelName} (from config: ${llmConfig.model})`);
+    console.log(`🚀 Starting ${sectionName || 'analysis'} with model: ${modelName}`);
     
     const model = genAI.getGenerativeModel({
       model: modelName,
@@ -202,65 +393,126 @@ async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<an
       }
     });
 
-    if (scriptText.length > llmConfig.maxTokens * 4) {
-      console.warn('Input script too long, truncating to fit token limit');
-      scriptText = scriptText.slice(0, llmConfig.maxTokens * 4);
-    }
+    // Enhanced chunking strategy for large scripts
+    const chunks = intelligentChunking(scriptText, llmConfig.maxTokens);
     
-    const fullPrompt = `${prompt}
+    if (chunks.length > 1) {
+      console.log(`📄 Processing ${chunks.length} chunks for ${sectionName}`);
+      
+      // Process chunks and merge results
+      const chunkResults = [];
+      for (let i = 0; i < chunks.length; i++) {
+        const chunkPrompt = `${prompt}
+
+Script text chunk ${i + 1}/${chunks.length}:
+${chunks[i]}
+
+Please respond with ONLY valid JSON, no additional text or formatting.`;
+
+        const shouldRetry: ShouldRetryFn = (error) => shouldRetryLLMCall(error, 1);
+        const result = await retryAsync(
+          async () => {
+            const response = await model.generateContent(chunkPrompt);
+            return response.response.text();
+          },
+          3,
+          2000, // 2 second base delay for chunked requests
+          shouldRetry
+        );
+        
+        chunkResults.push(sanitizeAndParseJSON(result));
+      }
+      
+      // Merge chunk results intelligently
+      return mergeChunkResults(chunkResults, sectionName);
+    } else {
+      // Single chunk processing
+      const fullPrompt = `${prompt}
 
 Script text to analyze:
 ${scriptText}
 
 Please respond with ONLY valid JSON, no additional text or formatting.`;
 
-    const result = await retryAsync(() => model.generateContent(fullPrompt), 3, 1000);
-    const response = await result.response;
-    const text = response.text();
-    
-    // Clean up response to ensure it's valid JSON
-    let cleanedText = text.replace(/```json\n?/g, '').replace(/\n?```/g, '').trim();
-    
-    // Remove any trailing non-JSON content that might be after the valid JSON
-    const firstBraceIndex = cleanedText.indexOf('{');
-    const lastBraceIndex = cleanedText.lastIndexOf('}');
-    
-    if (firstBraceIndex !== -1 && lastBraceIndex !== -1 && lastBraceIndex > firstBraceIndex) {
-      cleanedText = cleanedText.substring(firstBraceIndex, lastBraceIndex + 1);
+      const shouldRetry: ShouldRetryFn = (error) => shouldRetryLLMCall(error, 1);
+      const result = await retryAsync(
+        async () => {
+          const response = await model.generateContent(fullPrompt);
+          return response.response.text();
+        },
+        3,
+        1000, // 1 second base delay for single requests
+        shouldRetry
+      );
+      
+      const parsed = sanitizeAndParseJSON(result);
+      const duration = Date.now() - startTime;
+      
+      console.log(`✅ ${sectionName || 'Analysis'} completed in ${duration}ms`);
+      return parsed;
     }
     
-    try {
-      return JSON.parse(cleanedText);
-    } catch (parseError) {
-      console.error('Failed to parse Gemini response as JSON:', parseError);
-      console.error('Raw response text for debugging:', cleanedText.substring(0, 1000) + '...');
-      
-      // Attempt to find a JSON object or array in the text
-      const jsonRegex = /({.*})|(\[.*\])/s;
-      const match = cleanedText.match(jsonRegex);
-      
-      if (match) {
-        const potentialJson = match[1] || match[2];
-        try {
-          console.warn("Attempting to parse extracted JSON from messy response...");
-          return JSON.parse(potentialJson);
-        } catch (innerError) {
-          console.error('Failed to parse extracted JSON:', innerError, 'Extracted text:', potentialJson);
-        }
-      }
-      
-      throw new Error(`Invalid JSON response from Gemini API, and no fallback JSON found. Response starts with: ${cleanedText.substring(0, 200)}...`);
-    }
   } catch (error) {
-    console.error('Gemini API call error in worker:', error);
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('An unknown error occurred during Gemini API call in worker');
+    const duration = Date.now() - startTime;
+    const analysisError = classifyError(error);
+    analysisError.section = sectionName;
+    
+    console.error(`❌ ${sectionName || 'Analysis'} failed after ${duration}ms:`, {
+      type: analysisError.type,
+      retryable: analysisError.retryable,
+      message: analysisError.message
+    });
+    
+    throw analysisError;
   }
 }
 
+// Intelligent merging of chunk results based on section type
+function mergeChunkResults(chunkResults: any[], sectionName?: string): any {
+  if (!chunkResults.length) return {};
+  
+  const firstResult = chunkResults[0];
+  
+  // For array-based sections, concatenate arrays
+  if (Array.isArray(firstResult)) {
+    return chunkResults.flat();
+  }
+  
+  // For object-based sections, merge objects intelligently
+  if (typeof firstResult === 'object' && firstResult !== null) {
+    const merged = { ...firstResult };
+    
+    for (let i = 1; i < chunkResults.length; i++) {
+      const chunk = chunkResults[i];
+      if (typeof chunk === 'object' && chunk !== null) {
+        Object.keys(chunk).forEach(key => {
+          if (Array.isArray(merged[key]) && Array.isArray(chunk[key])) {
+            merged[key] = [...merged[key], ...chunk[key]];
+          } else if (typeof merged[key] === 'object' && typeof chunk[key] === 'object') {
+            merged[key] = { ...merged[key], ...chunk[key] };
+          } else {
+            // Use the first non-empty value
+            merged[key] = merged[key] || chunk[key];
+          }
+        });
+      }
+    }
+    
+    return merged;
+  }
+  
+  // Fallback: return first result
+  return firstResult;
+}
+
 function postPartialResult(sectionName: string, data: any) {
+  console.log(`📤 Posting partial result for section: ${sectionName}`, {
+    dataType: typeof data,
+    isArray: Array.isArray(data),
+    length: Array.isArray(data) ? data.length : 'N/A',
+    keys: typeof data === 'object' && data !== null ? Object.keys(data) : 'N/A'
+  });
+  
   self.postMessage({
     type: 'partial_result',
     payload: {
@@ -271,18 +523,35 @@ function postPartialResult(sectionName: string, data: any) {
 }
 
 function extractArrayFromResult(result: any): any[] {
+  console.log('🔍 extractArrayFromResult received:', JSON.stringify(result, null, 2));
+  
   if (Array.isArray(result)) {
+    console.log('✅ LLM returned array directly, length:', result.length);
     return result;
   }
   if (result && typeof result === 'object' && !Array.isArray(result)) {
+    console.log('🔧 LLM returned object, looking for array properties...');
+    console.log('🔍 Object keys:', Object.keys(result));
+    
     // Find the first property that is an array
     const key = Object.keys(result).find(k => Array.isArray(result[k]));
     if (key) {
-      console.warn(`LLM returned an object instead of an array. Using the array from key: "${key}"`);
+      console.warn(`⚠️ LLM returned an object instead of an array. Using the array from key: "${key}", length: ${result[key].length}`);
       return result[key];
     }
+    
+    // Check for common scene structure patterns
+    const commonSceneKeys = ['scenes', 'sceneList', 'allScenes', 'screenplay', 'data'];
+    for (const sceneKey of commonSceneKeys) {
+      if (result[sceneKey] && Array.isArray(result[sceneKey])) {
+        console.warn(`🎬 Found scenes array in "${sceneKey}" property, length: ${result[sceneKey].length}`);
+        return result[sceneKey];
+      }
+    }
+    
+    console.error('❌ No array found in object properties');
   }
-  console.warn(`Expected an array from LLM, but got something else. Returning empty array. Received:`, result);
+  console.warn(`⚠️ Expected an array from LLM, but got something else. Returning empty array. Received type:`, typeof result);
   return []; // Return empty array to prevent downstream errors
 }
 
@@ -314,7 +583,12 @@ async function analyzeSceneStructure(scriptText: string) {
   const scenePrompt = promptConfig.sceneStructure?.prompt || getDefaultPrompts().sceneStructure.prompt;
   
   console.log('🎬 Analyzing scene structure with prompt version:', promptConfig.sceneStructure?.version || 'default');
-  return await analyzeWithPrompt(scenePrompt, scriptText);
+  console.log('🎬 Scene prompt length:', scenePrompt.length, 'characters');
+  
+  const rawResult = await analyzeWithPrompt(scenePrompt, scriptText, 'Scene Structure');
+  console.log('🎬 Raw LLM result for scenes:', JSON.stringify(rawResult, null, 2));
+  
+  return rawResult;
 }
 
 async function analyzeCharacters(scriptText: string) {
@@ -764,7 +1038,13 @@ async function performFullAnalysis(scriptText: string, filename: string): Promis
   postPartialResult('metadata', metadata);
   
   updateProgress('Scene Structure', 2, 27);
-  const scenes = extractArrayFromResult(await analyzeSceneStructure(scriptText));
+  const scenesRawResult = await analyzeSceneStructure(scriptText);
+  console.log('🎬 Scene Structure Raw Result:', JSON.stringify(scenesRawResult, null, 2));
+  
+  const scenes = extractArrayFromResult(scenesRawResult);
+  console.log('🎬 Extracted scenes array:', JSON.stringify(scenes, null, 2));
+  console.log('🎬 Final scenes array length:', scenes.length);
+  
   partialAnalysis.scenes = scenes;
   postPartialResult('scenes', scenes);
 

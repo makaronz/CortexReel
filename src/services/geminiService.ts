@@ -36,17 +36,28 @@ export class GeminiAnalysisService {
       this.worker.onmessage = (event: MessageEvent) => {
         try {
           const { type, payload } = event.data;
-          console.log('Message from Gemini Analysis Worker:', type, payload ? Object.keys(payload) : 'No payload');
+          console.log('📨 Message from Gemini Analysis Worker:', type, payload ? Object.keys(payload) : 'No payload');
           
           if (type === 'success') {
+            console.log('✅ Analysis completed successfully. Scenes array length:', payload.scenes?.length || 0);
             resolve(payload as CompleteAnalysis);
             this.cleanupWorker();
           } else if (type === 'partial_result') {
+            console.log(`📨 Partial result for section: ${payload.section}`);
+            if (payload.section === 'scenes') {
+              console.log('🎬 Received scenes data:', {
+                dataType: typeof payload.data,
+                isArray: Array.isArray(payload.data),
+                length: Array.isArray(payload.data) ? payload.data.length : 'N/A',
+                sample: Array.isArray(payload.data) && payload.data.length > 0 ? payload.data[0] : 'Empty or not array'
+              });
+            }
+            
             if (this.onPartialResult) {
               this.onPartialResult(payload.section, payload.data);
             }
           } else if (type === 'error') {
-            console.error('Error message from Gemini Analysis Worker:', payload);
+            console.error('❌ Error message from Gemini Analysis Worker:', payload);
             reject(new Error(payload as string));
             this.cleanupWorker();
           } else if (type === 'progress') {

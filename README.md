@@ -272,136 +272,288 @@ yarn dev
 5. **Review** results in interactive sections
 6. **Export** data in your preferred format
 
----
+### 📋 Manual QA Testing Guide
 
-## 🛠️ Tech Stack
+#### **Scenario 1: File Size and Type Validation**
+```bash
+# Test Case: Oversized PDF validation
+1. Navigate to upload area
+2. Attempt to upload PDF > 10MB
+3. ✅ Expected: "Plik przekracza limit rozmiaru 10MB" error message
+4. ✅ Expected: File rejected, no processing started
 
-### 🎨 Frontend Core
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 19.x | Modern UI framework with concurrent features |
-| **TypeScript** | 5.x | Type safety and enhanced developer experience |
-| **Vite** | 5.x | Lightning-fast build tool and dev server |
-| **Material-UI** | 5.x | Professional component library |
-| **Zustand** | 4.x | Lightweight state management |
+# Test Case: Invalid file format
+1. Try uploading .txt, .docx, .exe files
+2. ✅ Expected: "Nieobsługiwany format pliku" error for non-PDFs
+3. ✅ Expected: Security error for suspicious extensions (.exe, .scr)
 
-### 🧠 AI & Processing
-| Technology | Purpose |
-|------------|---------|
-| **Google Gemini AI** | Advanced screenplay analysis and insights |
-| **PDF.js** | Direct PDF text extraction |
-| **Tesseract.js** | OCR fallback for scanned documents |
-| **React-Dropzone** | Drag-and-drop file upload interface |
-
-### 📊 Data & Visualization
-| Technology | Purpose |
-|------------|---------|
-| **Recharts** | Interactive charts and graphs |
-| **React Force Graph** | Network relationship visualization |
-| **React Big Calendar** | Production scheduling interface |
-| **Date-fns** | Date manipulation and formatting |
-
-### 🛠️ Development Tools
-| Technology | Purpose |
-|------------|---------|
-| **ESLint** | Code linting and quality assurance |
-| **Prettier** | Consistent code formatting |
-| **Vite PWA** | Progressive web app capabilities |
-| **TypeScript** | Static type checking |
-
-### 🔧 Build & Deployment
-| Technology | Purpose |
-|------------|---------|
-| **Vite Build** | Optimized production bundles |
-| **Rollup** | Module bundling and tree shaking |
-| **PostCSS** | CSS processing and optimization |
-| **Workbox** | Service worker and caching |
-
----
-
-## 📁 Project Structure
-
-```
-CortexReel/
-├── 📁 public/                    # Static assets
-│   ├── 🖼️ icons/                # App icons and favicons
-│   ├── 📄 manifest.json         # PWA manifest
-│   └── 🤖 robots.txt            # SEO configuration
-├── 📁 src/                       # Source code
-│   ├── 📁 components/            # React components
-│   │   ├── 📁 common/           # Shared components
-│   │   ├── 📁 dashboards/       # Role-specific dashboards
-│   │   ├── 📁 forms/            # Form components
-│   │   ├── 📁 layout/           # Layout components
-│   │   └── 📁 visualizations/   # Charts and graphs
-│   ├── 📁 contexts/             # React contexts
-│   │   ├── 🎨 ThemeContext.tsx  # Theme management
-│   │   └── 👤 AuthContext.tsx   # Authentication
-│   ├── 📁 hooks/                # Custom React hooks
-│   │   ├── 🔄 useAnalysis.ts    # Analysis state management
-│   │   ├── 📄 usePdfProcessor.ts # PDF processing
-│   │   └── 💾 useLocalStorage.ts # Local storage utilities
-│   ├── 📁 services/             # External services
-│   │   ├── 🧠 geminiService.ts  # AI analysis engine
-│   │   ├── 📄 pdfParser.ts      # PDF processing service
-│   │   ├── 📊 exportService.ts  # Data export utilities
-│   │   └── 🔒 authService.ts    # Authentication service
-│   ├── 📁 store/                # State management
-│   │   ├── 📊 analysisStore.ts  # Analysis state (Zustand)
-│   │   ├── 👤 authStore.ts      # Authentication state
-│   │   └── 🎨 uiStore.ts        # UI state management
-│   ├── 📁 types/                # TypeScript definitions
-│   │   ├── 📊 analysis.ts       # Analysis data types
-│   │   ├── 👤 auth.ts           # Authentication types
-│   │   ├── 📄 pdf.ts            # PDF processing types
-│   │   └── 🎨 ui.ts             # UI component types
-│   ├── 📁 utils/                # Utility functions
-│   │   ├── 📊 dataProcessing.ts # Data manipulation
-│   │   ├── 📄 fileUtils.ts      # File handling utilities
-│   │   ├── 🎨 formatters.ts     # Data formatting
-│   │   └── 🔧 helpers.ts        # General utilities
-│   ├── 📁 views/                # Page components
-│   │   ├── 🏠 Dashboard.tsx     # Main dashboard
-│   │   ├── 📊 Analysis.tsx      # Analysis results
-│   │   ├── 📄 Upload.tsx        # File upload page
-│   │   └── ⚙️ Settings.tsx      # Application settings
-│   ├── 📁 workers/              # Web Workers
-│   │   ├── 📄 pdfWorker.ts      # PDF processing worker
-│   │   └── 🧠 analysisWorker.ts # Analysis processing worker
-│   ├── 🎨 App.tsx               # Main application component
-│   ├── 🎨 App.css               # Global styles
-│   ├── 🚀 main.tsx              # Application entry point
-│   └── 🌍 vite-env.d.ts         # Vite type definitions
-├── 📁 scripts/                   # Build and utility scripts
-│   ├── 🏗️ build.js              # Custom build script
-│   ├── 🧪 test.js               # Test runner
-│   └── 🚀 deploy.js             # Deployment script
-├── 📁 docs/                      # Documentation
-│   ├── 📖 API.md                # API documentation
-│   ├── 🎨 DESIGN.md             # Design system
-│   └── 🚀 DEPLOYMENT.md         # Deployment guide
-├── 📁 memory-bank/               # AI memory and context
-├── ⚙️ vite.config.ts            # Vite configuration
-├── 📦 package.json              # Dependencies and scripts
-├── 🔧 tsconfig.json             # TypeScript configuration
-├── 🎨 tailwind.config.js        # Tailwind CSS configuration
-├── 📋 .eslintrc.js              # ESLint configuration
-├── 🎨 .prettierrc               # Prettier configuration
-├── 🚫 .gitignore                # Git ignore rules
-├── 🌍 env.example               # Environment template
-├── 📄 README.md                 # This file
-└── 📜 LICENSE                   # MIT License
+# Test Case: Edge cases
+1. Upload 0-byte file
+2. ✅ Expected: "Plik jest pusty" error
+3. Upload file with 300+ character filename
+4. ✅ Expected: "Nazwa pliku jest zbyt długa" error
 ```
 
-### 📂 Key Directories Explained
+#### **Scenario 2: Network Connectivity Testing**
+```bash
+# Test Case: Network disconnection during upload
+1. Start uploading a valid PDF
+2. Disconnect network connection immediately
+3. ✅ Expected: Retry mechanism activates with "Network error" message
+4. Reconnect network
+5. ✅ Expected: Processing resumes or restart option provided
 
-- **`/src/components`**: Reusable UI components organized by functionality
-- **`/src/services`**: Business logic and external API integrations
-- **`/src/store`**: Zustand stores for state management
-- **`/src/types`**: TypeScript type definitions for type safety
-- **`/src/utils`**: Pure utility functions and helpers
-- **`/src/views`**: Top-level page components and routing
-- **`/src/workers`**: Web Workers for heavy processing tasks
+# Test Case: API timeout simulation
+1. Upload large PDF (5-10MB)
+2. Monitor network tab for timeout errors
+3. ✅ Expected: Retry logic with exponential backoff
+4. ✅ Expected: User-friendly timeout messages in Polish
+```
+
+#### **Scenario 3: PDF Processing Edge Cases**
+```bash
+# Test Case: Scanned PDF (OCR required)
+1. Upload image-based PDF (scanned document)
+2. ✅ Expected: Direct extraction fails gracefully
+3. ✅ Expected: OCR fallback activates with progress indicators
+4. ✅ Expected: "OCR Processing" stage visible in progress bar
+5. ✅ Expected: Final result includes OCR-extracted text
+
+# Test Case: Password-protected PDF
+1. Upload encrypted/password-protected PDF
+2. ✅ Expected: "PDF jest chroniony hasłem" error message
+3. ✅ Expected: Clear instructions to remove protection
+
+# Test Case: Corrupted PDF
+1. Upload damaged/corrupted PDF file
+2. ✅ Expected: "Plik PDF jest uszkodzony" error message
+3. ✅ Expected: Suggestion to try different file
+```
+
+#### **Scenario 4: Admin Configuration Integration**
+```bash
+# Test Case: LLM Model Switching
+1. Go to Admin Panel → LLM Configuration
+2. Change model from Gemini to GPT-4
+3. Save configuration
+4. Upload new screenplay
+5. ✅ Expected: Analysis uses new model (check network requests)
+6. ✅ Expected: API calls go to correct endpoint
+
+# Test Case: Custom Prompt Configuration
+1. Admin Panel → Prompts Management
+2. Modify "Scene Structure Analysis" prompt
+3. Save changes
+4. Run new analysis
+5. ✅ Expected: Custom prompt used in API calls
+6. ✅ Expected: Analysis reflects custom prompt instructions
+
+# Test Case: Feature Toggle Testing
+1. Admin Panel → App Settings
+2. Disable "OCR Fallback" feature
+3. Save configuration
+4. Upload scanned PDF
+5. ✅ Expected: OCR fallback disabled, direct extraction only
+6. ✅ Expected: Appropriate error if text extraction fails
+```
+
+#### **Scenario 5: Analysis Progress and Error Recovery**
+```bash
+# Test Case: Long-running analysis interruption
+1. Start analysis of complex screenplay
+2. Close browser tab during processing
+3. Reopen application
+4. ✅ Expected: Analysis status recovered or restart option
+5. ✅ Expected: No corrupt state in localStorage
+
+# Test Case: API quota exceeded
+1. Configure invalid/expired API key in Admin Panel
+2. Attempt analysis
+3. ✅ Expected: "Klucz API jest nieprawidłowy" error
+4. ✅ Expected: Clear instructions to update key in Admin Panel
+
+# Test Case: Partial analysis failure
+1. Start analysis and simulate network issues mid-process
+2. ✅ Expected: Partial results preserved
+3. ✅ Expected: Option to retry failed sections
+4. ✅ Expected: Clear indication of completed vs failed sections
+```
+
+#### **Scenario 6: Performance and Memory Testing**
+```bash
+# Test Case: Large file processing
+1. Upload maximum size PDF (10MB)
+2. Monitor browser memory usage
+3. ✅ Expected: Memory usage stays below 1GB
+4. ✅ Expected: Progress indicators remain responsive
+5. ✅ Expected: Analysis completes within reasonable time (5-10 minutes)
+
+# Test Case: Multiple file processing
+1. Complete analysis of one screenplay
+2. Immediately upload another without page refresh
+3. ✅ Expected: Previous analysis data cleared properly
+4. ✅ Expected: No memory leaks or performance degradation
+5. ✅ Expected: New analysis starts with clean state
+```
+
+#### **Scenario 7: User Experience Validation**
+```bash
+# Test Case: Polish language consistency
+1. Navigate through entire application
+2. Trigger various error scenarios
+3. ✅ Expected: All user-facing messages in Polish
+4. ✅ Expected: Consistent terminology throughout
+5. ✅ Expected: Professional tone appropriate for film industry
+
+# Test Case: Loading state indicators
+1. Upload PDF and monitor all loading states
+2. ✅ Expected: Loading overlay during file processing
+3. ✅ Expected: Progress bar with meaningful stage descriptions
+4. ✅ Expected: Estimated time remaining updates
+5. ✅ Expected: Section-by-section completion tracking
+
+# Test Case: Admin Panel accessibility
+1. Navigate admin panel using only keyboard
+2. Test with screen reader
+3. ✅ Expected: All controls keyboard accessible
+4. ✅ Expected: Proper ARIA labels and roles
+5. ✅ Expected: Focus management works correctly
+```
+
+### Automated Test Verification
+
+Run comprehensive test suite before manual QA:
+
+```bash
+# Run all tests
+npm run test
+
+# Run specific test suites
+npm run test -- --run src/__tests__/pdfParser.test.ts
+npm run test -- --run src/__tests__/retry.test.ts
+
+# Check test coverage
+npm run test:coverage
+```
+
+## 🔧 Configuration Management
+
+### Environment Variables
+
+Create `.env.local` with required configuration:
+
+```env
+# Required
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional
+VITE_APP_NAME=CortexReel
+VITE_MAX_FILE_SIZE_MB=10
+VITE_DEBUG_MODE=false
+```
+
+### Admin Dashboard Configuration
+
+Access admin panel at `/admin` to configure:
+
+- **LLM Settings**: API keys, model selection, generation parameters
+- **Prompt Management**: Custom analysis prompts with version control
+- **Application Settings**: File limits, feature toggles, logging levels
+
+## 📊 Performance Monitoring
+
+### Key Metrics to Monitor
+
+- **Initial Load Time**: Target <3 seconds
+- **PDF Processing Time**: 30 seconds - 5 minutes depending on size and complexity
+- **Memory Usage**: Should remain stable <500MB for normal sessions
+- **Analysis Completion Rate**: Target >95% success rate
+
+### Performance Debugging
+
+```bash
+# Enable debug mode for detailed logging
+localStorage.setItem('cortexreel_debug', 'true')
+
+# Monitor performance in browser dev tools
+# - Network tab: API call timings
+# - Memory tab: Memory usage patterns
+# - Console: Detailed processing logs
+```
+
+## 🛠️ Development Guidelines
+
+### Code Quality Standards
+
+- **TypeScript**: Strict mode enabled, 95%+ coverage required
+- **Testing**: Comprehensive unit and integration tests
+- **Error Handling**: Graceful degradation with user-friendly messages
+- **Performance**: Optimized for film industry professional workflows
+
+### Adding New Features
+
+1. **Read Memory Bank**: Always start by reading all files in `memory-bank/`
+2. **Follow Patterns**: Use established architectural patterns
+3. **Update Tests**: Add comprehensive test coverage
+4. **Update Documentation**: Keep README and JSDoc current
+
+### File Size and Format Guidelines
+
+- **Maximum PDF Size**: 10MB (configurable in Admin Panel)
+- **Supported Formats**: PDF only (with .pdf extension)
+- **Processing Strategy**: Direct text extraction → OCR fallback
+- **Text Validation**: Minimum 50 characters, 25 words for successful extraction
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+#### PDF Upload Failures
+```bash
+# Check file size and format
+console.log('File size:', file.size / 1024 / 1024, 'MB');
+console.log('File type:', file.type);
+
+# Verify PDF parser service
+PDFParserService.validateFileSize(file);
+PDFParserService.getSupportedFormats();
+```
+
+#### Analysis Failures
+```bash
+# Check API key configuration
+AdminConfigService.getLLMConfig().then(config => 
+  console.log('API Key present:', !!config.apiKey)
+);
+
+# Monitor network requests
+# Look for 401 (unauthorized) or 429 (rate limit) errors
+```
+
+#### Memory Issues
+```bash
+# Clear application state
+localStorage.clear();
+location.reload();
+
+# Monitor memory usage
+console.log('Memory usage:', performance.memory?.usedJSHeapSize / 1024 / 1024, 'MB');
+```
+
+### Support Information
+
+For additional support:
+- Review Memory Bank documentation in `memory-bank/`
+- Check browser console for detailed error messages
+- Verify Admin Panel configuration
+- Test with smaller PDF files first
+
+## 📖 Architecture Documentation
+
+Detailed technical documentation available in:
+- `memory-bank/systemPatterns.md` - Technical architecture
+- `memory-bank/productContext.md` - Product requirements
+- `diagrams/` - System architecture diagrams
 
 ---
 
