@@ -163,8 +163,8 @@ const getDefaultPrompts = () => {
 /**
  * Sends a progress update message to the main thread with the current analysis section, completion status, estimated time remaining, and an empty error list.
  *
- * @param section - The name of the current analysis section being processed
- * @param current - The index (1-based) of the current section
+ * @param section - The name of the current analysis section
+ * @param current - The current section number being processed (1-based)
  * @param total - The total number of analysis sections
  */
 
@@ -185,11 +185,11 @@ function updateProgress(section: string, current: number, total: number) {
 /**
  * Sends a prompt and screenplay text to the Gemini LLM, returning the parsed JSON response.
  *
- * Validates and truncates input as needed, retries the LLM call on failure, and attempts to robustly parse the LLM's response as JSON. Throws an error if the input is empty or if a valid JSON response cannot be obtained.
+ * Validates input, applies retry logic for transient failures, truncates overly long input, and attempts to clean and parse the LLM's response as JSON. Throws an error if the input is empty or if a valid JSON response cannot be obtained.
  *
  * @param prompt - The prompt template to send to the LLM
  * @param scriptText - The screenplay text to analyze
- * @returns The parsed JSON object returned by the LLM
+ * @returns The parsed JSON result from the LLM
  */
 async function analyzeWithPrompt(prompt: string, scriptText: string): Promise<any> {
   if (!scriptText.trim()) throw new Error('Empty script text provided to LLM');
