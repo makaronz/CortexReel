@@ -193,7 +193,8 @@ const AdminDashboard: React.FC = () => {
   };
 
   const availableModels = [
-    // Google Gemini Models
+    // Google Gemini Models (2.5 Flash as default)
+    'google/gemini-2.5-flash',
     'google/gemini-1.5-pro-latest',
     'google/gemini-1.5-flash-latest',
     'google/gemini-pro',
@@ -227,7 +228,8 @@ const AdminDashboard: React.FC = () => {
       </Typography>
       
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        Zarządzaj konfiguracją LLM, promptami i ustawieniami aplikacji
+        Zarządzaj konfiguracją LLM, promptami i ustawieniami aplikacji. 
+        <strong>🎬 NOWE:</strong> Gemini 2.5 Flash z 65K tokenów + MISTYCZNY ALTER EGO REŻYSERA - kompleksowa analiza filmowa w 27 sekcjach!
       </Typography>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
@@ -254,6 +256,19 @@ const AdminDashboard: React.FC = () => {
       </Box>
 
       <TabPanel value={tabValue} index={0}>
+        <Alert 
+          severity="info" 
+          sx={{ mb: 3 }}
+          icon="🎬"
+        >
+          <Typography variant="body2">
+            <strong>NOWY MEGA PROMPT dostępny!</strong> Kliknij "🎬 Reset do Nowych Domyślnych" aby załadować:
+            <br />• <strong>Gemini 2.5 Flash</strong> - najszybszy model z 65,536 tokenami output
+            <br />• <strong>MISTYCZNY ALTER EGO REŻYSERA</strong> - kompleksowa analiza w 27 sekcjach filmowych
+            <br />• Głęboka analiza psychoanalityczna + wizja producenta + strategie marketingowe
+          </Typography>
+        </Alert>
+        
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -295,14 +310,15 @@ const AdminDashboard: React.FC = () => {
 
               {/* Max Tokens */}
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Maksymalna liczba tokenów"
-                  type="number"
-                  value={llmConfig.maxTokens}
-                  onChange={(e) => setLlmConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                  inputProps={{ min: 1, max: 32768 }}
-                />
+                                  <TextField
+                    fullWidth
+                    label="Maksymalna liczba tokenów"
+                    type="number"
+                    value={llmConfig.maxTokens}
+                    onChange={(e) => setLlmConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                    inputProps={{ min: 1, max: 65536 }}
+                    helperText="Gemini 2.5 Flash: do 65,536 tokenów output"
+                  />
               </Grid>
 
               {/* Temperature */}
@@ -369,17 +385,50 @@ const AdminDashboard: React.FC = () => {
                 />
               </Grid>
 
-              {/* Save Button */}
+              {/* Action Buttons */}
               <Grid item xs={12}>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={() => saveConfiguration('llm')}
-                  disabled={loading}
-                  size="large"
-                >
-                  Zapisz Konfigurację LLM
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    onClick={() => saveConfiguration('llm')}
+                    disabled={loading}
+                    size="large"
+                  >
+                    Zapisz Konfigurację LLM
+                  </Button>
+                  
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<RefreshIcon />}
+                    onClick={async () => {
+                      setLoading(true);
+                      try {
+                        await configService.resetToNewDefaults();
+                        await loadConfigurations();
+                        setSnackbar({ 
+                          open: true, 
+                          message: '🎬 Konfiguracja zresetowana do nowych domyślnych (Gemini 2.5 Flash + MEGA PROMPT)', 
+                          severity: 'success' 
+                        });
+                      } catch (error) {
+                        console.error('Error resetting to defaults:', error);
+                        setSnackbar({ 
+                          open: true, 
+                          message: 'Błąd podczas resetowania konfiguracji', 
+                          severity: 'error' 
+                        });
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    disabled={loading}
+                    size="large"
+                  >
+                    🎬 Reset do Nowych Domyślnych
+                  </Button>
+                </Box>
               </Grid>
             </Grid>
           </CardContent>

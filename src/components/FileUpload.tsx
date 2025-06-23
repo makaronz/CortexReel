@@ -24,6 +24,7 @@ import {
 import { useAnalysisStore } from '@/store/analysisStore';
 import { PDFParserService } from '@/services/pdfParser';
 import { GeminiAnalysisService } from '@/services/geminiService';
+import { AdminConfigService } from '@/services/AdminConfigService';
 
 const FileUpload: FC = () => {
   const {
@@ -53,31 +54,88 @@ const FileUpload: FC = () => {
     stage: string;
   } | null>(null);
 
+  // Enhanced validation function using PDFParserService methods
+  const validateFile = (file: File): string | null => {
+    // File size validation - use PDFParserService.validateFileSize()
+    if (!PDFParserService.validateFileSize(file)) {
+      const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+      return `Plik przekracza limit rozmiaru 10MB (aktualny rozmiar: ${sizeMB}MB). Spróbuj kompresji PDF lub wybierz mniejszy plik.`;
+    }
+    
+    // File type validation - use PDFParserService.getSupportedFormats()
+    const supportedFormats = PDFParserService.getSupportedFormats();
+    const isValidType = supportedFormats.includes(file.type) || file.name.toLowerCase().endsWith('.pdf');
+    
+    if (!isValidType) {
+      return `Nieobsługiwany format pliku. Obsługiwane formaty: PDF. Aktualny typ: ${file.type || 'nieznany'}`;
+    }
+
+    // Additional validations
+    if (file.size === 0) {
+      return 'Plik jest pusty. Wybierz prawidłowy plik PDF.';
+    }
+
+    if (file.name.length > 255) {
+      return 'Nazwa pliku jest zbyt długa (max 255 znaków).';
+    }
+
+    return null; // File is valid
+  };
+
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
     setLocalError(null);
 
-    if (!PDFParserService.validateFileSize(file)) {
-      setLocalError('File exceeds 10MB limit.');
-      return;
-    }
-    const supported = PDFParserService.getSupportedFormats();
-    if (!supported.includes(file.type) && !file.name.toLowerCase().endsWith('.pdf')) {
-      setLocalError('Unsupported file type. Please upload a PDF.');
+    // Enhanced validation with specific error messages
+    const validationError = validateFile(file);
+    if (validationError) {
+      setLocalError(validationError);
       return;
     }
 
     startProcessing();
     setCurrentFile(file);
+    
+    // Get estimated processing time for user feedback
+    const estimatedTime = PDFParserService.estimateProcessingTime(file);
+    console.log(`Szacowany czas przetwarzania: ${Math.round(estimatedTime / 1000)}s`);
 
     try {
       const parser = new PDFParserService(setParseProgress);
       const parsedContent = await parser.parseFile(file);
       setExtractedText(parsedContent.text, parsedContent.extractionMethod);
+      
+      // Success feedback with extraction details
+      console.log(`✅ Plik przetworzony pomyślnie:
+        - Metoda: ${parsedContent.extractionMethod}
+        - Strony: ${parsedContent.pageCount}
+        - Czas: ${(parsedContent.processingTime / 1000).toFixed(1)}s
+        - Pewność: ${(parsedContent.confidence * 100).toFixed(0)}%`);
+      
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to parse file';
+      let errorMessage = 'Nie udało się przetworzyć pliku';
+      
+      if (error instanceof Error) {
+        // Specific error messages based on error type
+        const errorText = error.message.toLowerCase();
+        
+        if (errorText.includes('file size')) {
+          errorMessage = 'Plik jest zbyt duży do przetworzenia. Spróbuj kompresji PDF.';
+        } else if (errorText.includes('invalid file type')) {
+          errorMessage = 'Nieprawidłowy format pliku. Upewnij się, że to jest poprawny plik PDF.';
+        } else if (errorText.includes('direct extraction') && errorText.includes('ocr')) {
+          errorMessage = 'Nie udało się odczytać tekstu z PDF. Plik może być uszkodzony lub zawierać tylko obrazy bez tekstu.';
+        } else if (errorText.includes('memory') || errorText.includes('timeout')) {
+          errorMessage = 'Plik jest zbyt złożony do przetworzenia. Spróbuj z mniejszym plikiem.';
+        } else if (errorText.includes('permission') || errorText.includes('encrypted')) {
+          errorMessage = 'Plik PDF jest chroniony hasłem lub zaszyfrowany. Usuń ochronę i spróbuj ponownie.';
+        } else {
+          errorMessage = `Błąd przetwarzania pliku: ${error.message}`;
+        }
+      }
+      
       setLocalError(errorMessage);
       console.error('File parsing error:', error);
       setCurrentFile(null); // Clear the failed file
@@ -91,7 +149,7 @@ const FileUpload: FC = () => {
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     maxFiles: 1,
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 10 * 1024 * 1024, // 10MB - keep consistent with PDFParserService
     disabled: isProcessing || isAnalyzing,
   });
 
@@ -100,6 +158,18 @@ const FileUpload: FC = () => {
 
     try {
       startAnalysis();
+      
+      // Load admin configuration for analysis
+      const adminConfigService = new AdminConfigService();
+      const llmConfig = await adminConfigService.getLLMConfig();
+      const promptConfig = await adminConfigService.getPromptConfig();
+      
+      console.log('🔧 Rozpoczynanie analizy z konfiguracją Admin Dashboard:', {
+        model: llmConfig.model,
+        customPrompts: Object.keys(promptConfig).length,
+        fileName: currentFile.name
+      });
+      
       const analysisService = new GeminiAnalysisService(setAnalysisProgress, updatePartialAnalysis);
       const result = await analysisService.analyzeScreenplay(
         extractedText,
@@ -108,7 +178,23 @@ const FileUpload: FC = () => {
       setAnalysisResult(result);
     } catch (error) {
       console.error('Analysis error:', error);
-      setAnalysisError(error instanceof Error ? error.message : 'Analysis failed');
+      
+      let errorMessage = 'Nie udało się przeprowadzić analizy';
+      if (error instanceof Error) {
+        const errorText = error.message.toLowerCase();
+        
+        if (errorText.includes('api key')) {
+          errorMessage = 'Brak lub nieprawidłowy klucz API. Skonfiguruj klucz w Panelu Administratora.';
+        } else if (errorText.includes('quota') || errorText.includes('rate limit')) {
+          errorMessage = 'Przekroczono limit zapytań API. Spróbuj ponownie za chwilę.';
+        } else if (errorText.includes('network') || errorText.includes('connection')) {
+          errorMessage = 'Błąd połączenia. Sprawdź internet i spróbuj ponownie.';
+        } else {
+          errorMessage = `Błąd analizy: ${error.message}`;
+        }
+      }
+      
+      setAnalysisError(errorMessage);
     }
   };
 

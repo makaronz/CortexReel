@@ -137,9 +137,25 @@ export const useAnalysisStore = create<AppState>()(
       },
       
       updatePartialAnalysis: (section: string, data: any) => {
+        console.log(`🏪 Store updating partial analysis for section: ${section}`, {
+          dataType: typeof data,
+          isArray: Array.isArray(data),
+          length: Array.isArray(data) ? data.length : 'N/A'
+        });
+        
+        if (section === 'scenes') {
+          console.log('🎬 Store received scenes data:', {
+            dataType: typeof data,
+            isArray: Array.isArray(data),
+            length: Array.isArray(data) ? data.length : 'N/A',
+            sample: Array.isArray(data) && data.length > 0 ? JSON.stringify(data[0], null, 2) : 'Empty or not array'
+          });
+        }
+        
         set(state => {
           if (!state.currentAnalysis) {
             // Initialize with the first partial result if it doesn't exist
+            console.log('🏪 Initializing currentAnalysis with first partial result');
             return { 
               currentAnalysis: { 
                 id: crypto.randomUUID(),
@@ -151,12 +167,22 @@ export const useAnalysisStore = create<AppState>()(
             };
           }
           
+          console.log(`🏪 Updating existing currentAnalysis with ${section} data`);
+          const updatedAnalysis = {
+            ...state.currentAnalysis,
+            [section]: data,
+            lastModified: new Date().toISOString(),
+          };
+          
+          if (section === 'scenes') {
+            console.log('🎬 Final scenes in store:', {
+              length: updatedAnalysis.scenes?.length || 0,
+              sample: updatedAnalysis.scenes?.[0] ? JSON.stringify(updatedAnalysis.scenes[0], null, 2) : 'No scenes'
+            });
+          }
+          
           return {
-            currentAnalysis: {
-              ...state.currentAnalysis,
-              [section]: data,
-              lastModified: new Date().toISOString(),
-            }
+            currentAnalysis: updatedAnalysis
           };
         });
       },
