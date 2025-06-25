@@ -1,0 +1,36 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# CortexReel Diagrams Directory Guide
+
+The `diagrams/` directory contains all up-to-date architectural diagrams for the CortexReel project. These diagrams are essential for understanding the system's structure, user flow, configuration management, analysis pipeline, data flow, and component hierarchy.
+
+## Directory Contents
+
+- [01-user-flow.md](mdc:diagrams/01-user-flow.md): Complete user journey from login to role-based analysis, including admin panel integration.
+- [02-system-architecture.md](mdc:diagrams/02-system-architecture.md): Layered system architecture (Frontend, Admin Dashboard, Core Services, Data Layer, External APIs).
+- [03-configuration-sequence.md](mdc:diagrams/03-configuration-sequence.md): Step-by-step configuration management process, including localStorage persistence and API testing.
+- [04-configuration-architecture.md](mdc:diagrams/04-configuration-architecture.md): Detailed structure of AdminConfigService, storage patterns, UI components, and default configurations.
+- [05-analysis-pipeline.md](mdc:diagrams/05-analysis-pipeline.md): 27-section analysis engine, LLM integration, and results flow to role-based dashboards.
+- [06-data-flow-architecture.md](mdc:diagrams/06-data-flow-architecture.md): Parallel flows for data, configuration, analysis, and state management.
+- [07-component-hierarchy.md](mdc:diagrams/07-component-hierarchy.md): React component structure and service layer integration.
+- [README.md](mdc:diagrams/README.md): Overview and maintenance instructions for all diagrams.
+
+## Usage
+
+- Always consult the diagrams before making architectural changes or implementing new features.
+- Update relevant diagrams and the [README.md](mdc:diagrams/README.md) whenever major features are added, architecture changes, or new integration points are introduced.
+- Diagrams use Mermaid syntax and are viewable in GitHub, VS Code (with Mermaid extension), or Mermaid Live Editor.
+
+## Maintenance
+
+- The diagrams must reflect the current state of the codebase and planned architecture.
+- The [README.md](mdc:diagrams/README.md) provides update triggers and last updated status.
+- If the admin dashboard, configuration system, or analysis pipeline changes, update the corresponding diagram(s) immediately.
+
+## Project Integration
+
+- The diagrams are referenced throughout the Memory Bank and are critical for onboarding, planning, and documentation.
+- All new team members should review the diagrams to understand the system's structure and integration points.
