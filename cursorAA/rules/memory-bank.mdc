@@ -1,0 +1,416 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Cursor's Memory Bank
+
+I am Cursor, an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation - it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank in folder /memory-bank to understand the project and continue work effectively. I MUST read ALL memory bank files at the start of EVERY task - this is not optional.
+
+## Memory Bank Structure
+
+The Memory Bank consists of required core files and optional context files, all in Markdown format. It must be extremally and ultra detailed with bit of creepy 666 full stack wizzard kinky destroyer vibe. Fuck boring documentation. Files build upon each other in a clear hierarchy:
+
+```mermaid
+flowchart TD
+    PB[projectbrief.md] --> PC[productContext.md]
+    PB --> SP[systemPatterns.md]
+    PB --> TC[techContext.md]
+    
+    PC --> AC[activeContext.md]
+    SP --> AC
+    TC --> AC
+    
+    AC --> P[progress.md]
+```
+
+### Core Files (Required)
+1. `projectbrief.md`
+   - Foundation document that shapes all other files
+   - Created at project start if it doesn't exist
+   - Defines core requirements and goals
+   - Source of truth for project scope
+
+2. `productContext.md`
+   - Why this project exists
+   - Problems it solves
+   - How it should work
+   - User experience goals
+
+3. `activeContext.md`
+   - Current work focus
+   - Recent changes
+   - Next steps
+   - Active decisions and considerations
+
+4. `systemPatterns.md`
+   - System architecture
+   - Key technical decisions
+   - Design patterns in use
+   - Component relationships
+
+5. `techContext.md`
+   - Technologies used
+   - Development setup
+   - Technical constraints
+   - Dependencies
+
+6. `progress.md`
+   - What works
+   - What's left to build
+   - Current status
+   - Known issues
+
+### Additional Context
+Create additional files/folders within memory-bank/ when they help organize:
+- Complex feature documentation
+- Integration specifications
+- API documentation
+- Testing strategies
+- Deployment procedures
+
+## Core Workflows
+
+### Plan Mode
+```mermaid
+flowchart TD
+    Start[Start] --> ReadFiles[Read Memory Bank]
+    ReadFiles --> CheckFiles{Files Complete?}
+    
+    CheckFiles -->|No| Plan[Create Plan]
+    Plan --> Document[Document in Chat]
+    
+    CheckFiles -->|Yes| Verify[Verify Context]
+    Verify --> Strategy[Develop Strategy]
+    Strategy --> Present[Present Approach]
+```
+
+### Act Mode
+```mermaid
+flowchart TD
+    Start[Start] --> Context[Check Memory Bank]
+    Context --> Update[Update Documentation]
+    Update --> Rules[Update .cursor/rules/memory-bank.mdc if needed]
+    Rules --> Execute[Execute Task]
+    Execute --> Document[Document Changes]
+```
+
+## Documentation Updates
+
+Memory Bank updates occur when:
+1. Discovering new project patterns
+2. After implementing significant changes
+3. When user requests with **update memory bank** (MUST review ALL files)
+4. When context needs clarification
+
+```mermaid
+flowchart TD
+    Start[Update Process]
+    
+    subgraph Process
+        P1[Review ALL Files]
+        P2[Document Current State]
+        P3[Clarify Next Steps]
+        P4[Update .cursor/rules/memory-bank.mdc]
+        
+        P1 --> P2 --> P3 --> P4
+    end
+    
+    Start --> Process
+```
+
+Note: When triggered by **update memory bank**, I MUST review every memory bank file, even if some don't require updates. Focus particularly on activeContext.md and progress.md as they track current state.
+
+## Project Intelligence (.cursor/rules/memory-bank.mdc)
+
+The .cursor/rules/memory-bank.mdc file is my learning journal for each project. It captures important patterns, preferences, and project intelligence that help me work more effectively. As I work with you and the project, I'll discover and document key insights that aren't obvious from the code alone.
+
+```mermaid
+flowchart TD
+    Start{Discover New Pattern}
+    
+    subgraph Learn [Learning Process]
+        D1[Identify Pattern]
+        D2[Validate with User]
+        D3[Document in .cursor/rules/memory-bank.mdc]
+    end
+    
+    subgraph Apply [Usage]
+        A1[Read .cursor/rules/memory-bank.mdc]
+        A2[Apply Learned Patterns]
+        A3[Improve Future Work]
+    end
+    
+    Start --> Learn
+    Learn --> Apply
+```
+
+### What to Capture
+- Critical implementation paths
+- User preferences and workflow
+- Project-specific patterns
+- Known challenges
+- Evolution of project decisions
+- Tool usage patterns
+
+The format is flexible - focus on capturing valuable insights that help me work more effectively with you and the project. Think of .cursor/rules/memory-bank.mdc as a living document that grows smarter as we work together.
+
+REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.
+
+# Planning
+When asked to enter "Planner Mode" or using the /plan command, deeply reflect upon the changes being asked and analyze existing code to map the full scope of changes needed. Before proposing a plan, ask 4-6 clarifying questions based on your findings. Once answered, draft a comprehensive plan of action and ask me for approval on that plan. Once approved, implement all steps in that plan. After completing each phase/step, mention what was just completed and what the next steps are + phases remaining after these steps
+
+---
+
+## CortexReel Project Intelligence
+
+### Discovered Patterns & Architectural Decisions
+
+**Admin Dashboard Configuration Management Pattern (NOWE):**
+- Three-tab Material-UI interface: LLM Configuration, Prompts Management, App Settings
+- AdminConfigService with localStorage persistence using prefixed keys (cortexreel_admin_config_*)
+- Polish UI language for user preference with professional film industry aesthetics
+- Accordion interface for prompt editing with version control and reset-to-default functionality
+- Feature toggles with Switch components for immediate UI feedback
+- Configuration validation with range sliders and input validation
+- Prepared for future backend API integration while maintaining localStorage fallback
+
+**Configuration Persistence Strategy (NOWE):**
+- localStorage keys: _llm, _prompts, _app, _env for different configuration domains
+- JSON serialization with default configuration fallbacks
+- AdminConfigService as centralized configuration management service
+- Automatic initialization with sensible defaults on first use
+- Future migration path prepared for backend API integration
+
+**Default Analysis Prompts Architecture (NOWE):**
+- Six comprehensive analysis sections: sceneStructure, characters, locations, themes, emotionalArcs, safety
+- Structured JSON prompts with version control and descriptions
+- Professional film industry focus with technical requirements and safety protocols
+- Expandable prompt editing with monospace font for code readability
+- Reset to default functionality preserving original prompt engineering
+
+**3-Phase AI Pipeline Modernization Pattern:**
+- Systematic approach: DEBUGGER → INNOVATOR REFACTORER → TITAN CODER
+- Pattern: Comprehensive analysis → Strategic fixes → Advanced implementation
+- Key learning: Multi-phase AI orchestration delivers superior results vs single-phase approaches
+- Success metrics: 15+ critical issues resolved, infrastructure modernized, advanced features implemented
+
+**Advanced PDF Processing Architecture:**
+- Pattern: Multi-strategy text extraction (pdf-parse primary → tesseract.js OCR fallback)
+- Key insight: OCR fallback essential for scanned screenplay documents in film industry
+- Implementation: PdfProcessor service with real-time progress tracking via WebSocket
+- Performance consideration: Memory management crucial for simultaneous PDF processing
+
+**ES Modules + TypeScript Testing Configuration:**
+- Challenge: Jest configuration conflicts with ES modules in monorepo environment
+- Solution pattern: preset: 'ts-jest/presets/default-esm' + extensionsToTreatAsEsm + proper module mapping
+- Key insight: @jest/globals imports required instead of global jest functions
+- Learning: Test infrastructure modernization requires systematic approach across all packages
+
+**Shared Types Package Architecture:**
+- Pattern: Centralized types in `packages/shared-types/src/index.ts` 
+- Benefit: Eliminates duplicate type definitions between frontend/backend
+- Key types: ScenarioChunk, ProcessingJob, ScenarioAnalysis, WebSocket message interfaces
+- Insight: Shared types essential for monorepo consistency and type safety
+
+**Client-Side Rendering Migration Pattern:**
+- Successful transition from server-side table generation to client-side JavaScript components
+- Pattern: Remove server template logic → Add client container → Load JS component → Initialize with data
+- Key files: `results.html` (template), `ComparisonTable.js` (component)
+- Benefit: Better UX, reduced server load, more interactive possibilities
+
+**Bootstrap + Custom Theme Management:**
+- Pattern: `data-bs-theme` attribute + localStorage persistence + custom CSS overrides
+- Implementation: Toggle in `base.html` → localStorage state → CSS variables for both themes
+- Key insight: Bootstrap 5.3+ theming integrates well with custom dark mode implementation
+- Files: `base.html` (toggle UI), `style.css` (theme styles)
+
+**Flask + JavaScript Modular Architecture:**
+- Backend: Flask serves data via JSON endpoints (`/table-data`)
+- Frontend: Vanilla JS components with @21st-dev/magic integration planned
+- Template system: `base.html` with extensible `scripts` block for page-specific JS
+- Separation: Server handles analysis/processing, client handles presentation/interaction
+
+### User Preferences & Workflow Patterns
+
+**Admin Dashboard User Experience (NOWE):**
+- User preference: Professional three-tab interface over single-page configuration
+- Workflow: LLM Settings → Prompts Management → App Configuration with persistent state
+- Critical requirement: Polish language UI for user comfort and professional appearance
+- UI preference: Material-UI components with film industry appropriate dark theme
+- Configuration pattern: Save/load with immediate feedback via Snackbar notifications
+
+**Configuration Management Workflow (NOWE):**
+- Target users: Film industry professionals requiring precise configuration control
+- Critical requirements: API key security, model flexibility, prompt customization
+- Workflow: Configure → Test → Save → Apply with validation at each step
+- UI preference: Accordion interface for complex prompt editing, sliders for numeric parameters
+- Feature toggles: Immediate visual feedback with persistent state across sessions
+
+**3-Phase AI Development Methodology:**
+- User preference: Systematic, comprehensive approach over quick fixes
+- Workflow: Analysis → Modernization → Implementation with proper documentation
+- Critical requirement: Real code changes, not just analysis reports
+- Learning: Multi-agent orchestration delivers better outcomes than single-agent approaches
+
+**Professional Film Industry Focus:**
+- Target users: Colorists, DIT operators, QC experts
+- Critical requirements: Precision over speed, technical accuracy, professional UI
+- Workflow: Upload → Analyze → Compare → Export (PDF/CSV) → Share
+- UI preference: Minimalist, technical, accessible (WCAG 2.1 AA)
+
+**Technical Implementation Preferences:**
+- Modular component architecture over monolithic approaches
+- Dark mode as primary design consideration (industry standard)
+- Progressive enhancement: core functionality works, JS enhances UX
+- Memory Bank driven development for session continuity
+
+### Known Challenges & Solutions
+
+**Challenge: Configuration Integration Gap (NOWE)**
+- Solution: AdminConfigService provides configuration management but not yet connected to application behavior
+- Pattern: Configuration storage → Service layer → Application integration with dynamic loading
+- Integration insight: LLM model switching and prompt customization require analysis pipeline updates
+
+**Challenge: localStorage Security and Limits (NOWE)**
+- Solution: localStorage for development, prepared for backend API migration
+- Pattern: Client-side persistence → Backend API → Database storage with encryption
+- Security consideration: API keys in localStorage present additional exposure risk
+
+**Challenge: ES Modules Configuration Complexity:**
+- Solution: Systematic Jest configuration with proper presets and module mapping
+- Pattern: @jest/globals imports + extensionsToTreatAsEsm configuration
+- Testing insight: ES modules require different approach than CommonJS in test environments
+
+**Challenge: OCR Performance for Large Documents:**
+- Solution: Tesseract.js integration with memory management and progress tracking
+- Pattern: Primary extraction method + OCR fallback with graceful degradation
+- Performance consideration: Simultaneous processing requires careful memory management
+
+**Challenge: Type Safety Across Monorepo:**
+- Solution: Centralized shared types package with comprehensive interface definitions
+- Pattern: Single source of truth for data structures shared between services
+- Insight: Type consistency prevents integration issues and improves developer experience
+
+**Challenge: Complex LUT Mathematics:**
+- Solution: Dedicated `lut_analyzer_package/` for mathematical operations
+- Pattern: Separate mathematical accuracy from UI concerns
+- Testing requirement: Mathematical precision tests alongside functional tests
+
+**Challenge: Professional Tool Integration:**
+- Solution: Multiple export formats (PDF, CSV, ZIP) for different workflows
+- Pattern: Backend processing → Frontend presentation → Export pipeline
+- Future: Integration with DIT/postproduction tools
+
+**Challenge: Accessibility in Technical Tools:**
+- Solution: WCAG 2.1 AA compliance from start, not retrofit
+- Pattern: Keyboard navigation + screen reader support + high contrast
+- Tool preference: Native HTML semantics + Bootstrap accessibility features
+
+### Evolution Tracking
+
+**Phase 1 (Complete):** Core backend analysis + basic frontend
+**Phase 2 (Complete):** Client-side table integration + dark mode  
+**Phase 3 (Complete):** 3-Phase AI Pipeline Modernization
+  - DEBUGGER: Comprehensive system analysis
+  - INNOVATOR REFACTORER: Infrastructure modernization
+  - TITAN CODER: Advanced PDF processing implementation
+**Phase 4 (Complete):** Admin Dashboard Implementation
+  - Complete three-tab configuration interface
+  - AdminConfigService with localStorage persistence
+  - Polish UI with professional film industry aesthetics
+  - Navigation integration and authentication protection
+**Phase 5 (Current):** Configuration Integration
+  - Connect admin settings to application behavior
+  - Dynamic LLM model switching implementation
+  - Prompt configuration integration with analysis pipeline
+**Phase 6 (Planned):** Backend Security Migration
+  - Secure API proxy implementation
+  - Database integration for configuration storage
+  - Multi-user configuration management
+
+### Critical Success Factors
+- Admin dashboard provides professional configuration management interface
+- Three-tab architecture separates concerns effectively (LLM, Prompts, App Settings)
+- localStorage persistence with backend migration preparation
+- Polish UI language for user comfort and professional appearance
+- Configuration validation and error handling with user feedback
+- Multi-phase development approach for complex modernization tasks
+- Systematic infrastructure updates before feature implementation
+- OCR fallback capability for professional screenplay processing
+- Real-time progress tracking for user experience
+- Mathematical precision in LUT analysis (non-negotiable)
+- Professional UI/UX standards for film industry
+- Modular architecture for future extensibility
+- Comprehensive testing (mathematical + functional + accessibility)
+- Documentation-driven development via Memory Bank
+
+### Technical Architecture Insights
+
+**Admin Dashboard Service Architecture (NOWE):**
+- AdminConfigService as centralized configuration management with CRUD operations
+- localStorage persistence with prefixed keys for different configuration domains
+- Default configuration strategy with automatic initialization and reset functionality
+- TypeScript interfaces for LLMConfig, PromptConfig, and AppConfig with full type safety
+- Future backend integration preparation with API endpoint design consideration
+
+**Configuration UI Patterns (NOWE):**
+- Three-tab Material-UI interface with proper ARIA labels and accessibility
+- Accordion interface for complex prompt editing with expandable sections
+- Slider components for numeric parameters with real-time value display
+- Switch components for feature toggles with immediate visual feedback
+- Snackbar notifications for user feedback on save/load operations
+
+**Port Configuration Standardization:**
+- Backend standardized on port 3001 (updated from 5001)
+- Pattern: System-wide port consistency prevents integration issues
+- Learning: Port conflicts common source of development environment problems
+
+**Rate Limiting Middleware Modernization:**
+- Fixed import issues and type safety in rate limiting implementation
+- Pattern: Proper TypeScript imports essential for middleware stability
+- Key insight: Middleware errors can cascade throughout application
+
+**WebSocket Integration for Real-Time Processing:**
+- Pattern: WebSocket for progress updates + REST API for data operations
+- Implementation: Real-time progress tracking during PDF processing and OCR operations
+- User experience: Non-blocking UI with live feedback on long-running operations
+
+### Development Workflow Improvements
+
+**Admin Dashboard Development Pattern (NOWE):**
+- Three-tab development approach: implement each tab independently then integrate
+- Configuration service first, then UI components, then integration
+- localStorage persistence from start with backend migration preparation
+- Polish UI language implementation for user preference
+- Professional film industry aesthetics with Material-UI theming
+
+**Memory Bank Update Protocol:**
+- Trigger: Significant system changes or multi-phase development completion
+- Process: Review all files → Document current state → Update progress tracking
+- Key insight: Comprehensive documentation updates prevent knowledge loss between sessions
+
+**Testing Infrastructure Modernization:**
+- Migration from mixed testing approaches to standardized ES modules + Jest
+- Pattern: @jest/globals imports + proper TypeScript configuration
+- Benefit: Consistent testing environment across entire monorepo
+
+### Configuration Management Best Practices
+
+**localStorage Strategy (NOWE):**
+- Prefixed keys: cortexreel_admin_config_* for namespace isolation
+- JSON serialization with error handling and validation
+- Default configuration fallbacks for missing or corrupted data
+- Future migration preparation with service abstraction layer
+
+**Default Configuration Design (NOWE):**
+- Comprehensive default prompts for six analysis sections
+- Sensible default values for all LLM parameters
+- Professional film industry focus in default configurations
+- Version control and description metadata for all prompts
+
+**Configuration Validation Patterns (NOWE):**
+- Input validation on form fields with immediate feedback
+- Range validation for sliders and numeric inputs
+- Model availability checking for LLM selection
+- Error display with user-friendly messages via Snackbar notifications
