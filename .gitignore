@@ -174,3 +174,18 @@ trash/Wciel się w rolę mistrza sztuki filmowej.groovy.md
 trash/You are a visionary filmmaker's AI alter.md
 KRAKSA.pdf
 cursorAA/
+
+# CortexReel specific ignores
+*.pdf
+KRAKSA.pdf
+scripts/logs/
+scripts/uploads/
+scripts/scripts/
+trash/
+
+# Development tools
+.plandex-v2/
+.plandex/
+
+# Temporary files and caches
+TASK_log.md
