@@ -1,11 +1,6 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Box, Typography, Card, CardContent } from '@mui/material';
-import {
-  ResourcePlanning,
-  EquipmentRequirement,
-  ProductionChecklist,
-} from '@/types/analysis';
+import { ResourcePlanning, EquipmentRequirement, ProductionChecklist } from '@/types/analysis';
 
 interface ProductionDashboardProps {
   resources: ResourcePlanning;
@@ -13,24 +8,19 @@ interface ProductionDashboardProps {
   checklist: ProductionChecklist;
 }
 
-const ProductionDashboard: React.FC<ProductionDashboardProps> = ({
-  resources: _resources,
-  equipment: _equipment,
-  checklist: _checklist,
-}) => {
-  const { t } = useTranslation();
+const ProductionDashboard: React.FC<ProductionDashboardProps> = ({ resources: _resources, equipment: _equipment, checklist: _checklist }) => {
   return (
     <Card>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          {t('productionDashboard.title')}
+          Dashboard Produkcji
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {t('productionDashboard.subtitle')}
+          Zarządzanie zasobami i planowanie produkcji.
         </Typography>
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2">
-            {t('productionDashboard.placeholder')}
+            Ten komponent będzie zawierał kompletny dashboard zarządzania produkcją.
           </Typography>
         </Box>
       </CardContent>

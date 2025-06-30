@@ -1,115 +1,73 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Grid,
   Card,
   CardContent,
   Typography,
   Box,
+  LinearProgress,
   Chip,
   Stack,
+  Paper,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  Avatar,
+  Avatar
 } from '@mui/material';
 import {
+  TrendingUp as TrendingUpIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   Schedule as ScheduleIcon,
   People as PeopleIcon,
   LocationOn as LocationIcon,
   Security as SecurityIcon,
+  AttachMoney as MoneyIcon
 } from '@mui/icons-material';
-import { CompleteAnalysis } from '@/types/analysis';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { CompleteAnalysis, FilmRole } from '@/types/analysis';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface OverviewDashboardProps {
   analysis: CompleteAnalysis;
 }
 
 const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
-  const { t } = useTranslation();
-
+  // Oblicz kluczowe metryki
   const totalScenes = analysis.scenes?.length || 0;
   const totalCharacters = analysis.characters?.length || 0;
   const totalLocations = analysis.locations?.length || 0;
-  const estimatedDuration =
-    analysis.scenes?.reduce(
-      (acc, scene) => acc + (scene.estimatedDuration || 0),
-      0
-    ) || 0;
-
-  const highRisks =
-    analysis.risks?.filter(
-      (risk) => risk.impact === 'HIGH' || risk.impact === 'CRITICAL'
-    ).length || 0;
-  const safetyLevel =
-    analysis.safety?.overallAssessment?.overallRiskLevel || 'UNKNOWN';
-
+  const estimatedDuration = analysis.scenes?.reduce((acc, scene) => acc + (scene.estimatedDuration || 0), 0) || 0;
+  
+  // Ryzyko produkcyjne
+  const highRisks = analysis.risks?.filter(risk => risk.impact === 'HIGH' || risk.impact === 'CRITICAL').length || 0;
+  const safetyLevel = analysis.safety?.overallAssessment?.overallRiskLevel || 'UNKNOWN';
+  
+  // Dane dla wykresów
   const sceneComplexityData = [
-    {
-      name: t('overviewDashboard.complexity.simple'),
-      value: analysis.scenes?.filter((s) => s.complexity === 'LOW').length || 0,
-      color: '#4caf50',
-    },
-    {
-      name: t('overviewDashboard.complexity.medium'),
-      value: analysis.scenes?.filter((s) => s.complexity === 'MEDIUM').length || 0,
-      color: '#ff9800',
-    },
-    {
-      name: t('overviewDashboard.complexity.complex'),
-      value: analysis.scenes?.filter((s) => s.complexity === 'HIGH').length || 0,
-      color: '#f44336',
-    },
+    { name: 'Proste', value: analysis.scenes?.filter(s => s.complexity === 'LOW').length || 0, color: '#4caf50' },
+    { name: 'Średnie', value: analysis.scenes?.filter(s => s.complexity === 'MEDIUM').length || 0, color: '#ff9800' },
+    { name: 'Złożone', value: analysis.scenes?.filter(s => s.complexity === 'HIGH').length || 0, color: '#f44336' }
   ];
 
   const locationTypeData = [
-    {
-      name: t('overviewDashboard.locationTypes.interior'),
-      value:
-        analysis.locations?.filter((l) => l.type === 'INTERIOR').length || 0,
-    },
-    {
-      name: t('overviewDashboard.locationTypes.exterior'),
-      value:
-        analysis.locations?.filter((l) => l.type === 'EXTERIOR').length || 0,
-    },
-    {
-      name: t('overviewDashboard.locationTypes.mixed'),
-      value: analysis.locations?.filter((l) => l.type === 'MIXED').length || 0,
-    },
+    { name: 'Wnętrza', value: analysis.locations?.filter(l => l.type === 'INTERIOR').length || 0 },
+    { name: 'Zewnętrzne', value: analysis.locations?.filter(l => l.type === 'EXTERIOR').length || 0 },
+    { name: 'Mieszane', value: analysis.locations?.filter(l => l.type === 'MIXED').length || 0 }
   ];
 
-  const topRisks =
-    analysis.risks
-      ?.filter((risk) => risk.impact === 'HIGH' || risk.impact === 'CRITICAL')
-      .slice(0, 5) || [];
-
-  const mainCharacters =
-    analysis.characters
-      ?.filter(
-        (char) => char.role === 'PROTAGONIST' || char.role === 'ANTAGONIST'
-      )
-      .slice(0, 5) || [];
+  // Najważniejsze ryzyka
+  const topRisks = analysis.risks?.filter(risk => risk.impact === 'HIGH' || risk.impact === 'CRITICAL').slice(0, 5) || [];
+  
+  // Główne postacie
+  const mainCharacters = analysis.characters?.filter(char => char.role === 'PROTAGONIST' || char.role === 'ANTAGONIST').slice(0, 5) || [];
 
   return (
     <Grid container spacing={3}>
+      {/* Statystyki główne */}
       <Grid item xs={12}>
         <Grid container spacing={3}>
+          {/* Sceny */}
           <Grid item xs={6} md={3}>
             <Card>
               <CardContent>
@@ -122,9 +80,7 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
                       {totalScenes}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {t('overviewDashboard.scenes', {
-                        duration: Math.round(estimatedDuration),
-                      })}
+                      Sceny ({Math.round(estimatedDuration)} min)
                     </Typography>
                   </Box>
                 </Stack>
@@ -132,6 +88,7 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
             </Card>
           </Grid>
 
+          {/* Postacie */}
           <Grid item xs={6} md={3}>
             <Card>
               <CardContent>
@@ -144,7 +101,7 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
                       {totalCharacters}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {t('overviewDashboard.characters')}
+                      Postacie
                     </Typography>
                   </Box>
                 </Stack>
@@ -152,6 +109,7 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
             </Card>
           </Grid>
 
+          {/* Lokacje */}
           <Grid item xs={6} md={3}>
             <Card>
               <CardContent>
@@ -164,7 +122,7 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
                       {totalLocations}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {t('overviewDashboard.locations')}
+                      Lokacje
                     </Typography>
                   </Box>
                 </Stack>
@@ -172,20 +130,15 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
             </Card>
           </Grid>
 
+          {/* Bezpieczeństwo */}
           <Grid item xs={6} md={3}>
             <Card>
               <CardContent>
                 <Stack direction="row" alignItems="center" spacing={2}>
-                  <Avatar
-                    sx={{
-                      bgcolor:
-                        safetyLevel === 'LOW'
-                          ? 'success.main'
-                          : safetyLevel === 'MEDIUM'
-                          ? 'warning.main'
-                          : 'error.main',
-                    }}
-                  >
+                  <Avatar sx={{ 
+                    bgcolor: safetyLevel === 'LOW' ? 'success.main' : 
+                             safetyLevel === 'MEDIUM' ? 'warning.main' : 'error.main' 
+                  }}>
                     <SecurityIcon />
                   </Avatar>
                   <Box>
@@ -193,7 +146,7 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
                       {highRisks}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {t('overviewDashboard.highRisks')}
+                      Wysokie ryzyka
                     </Typography>
                   </Box>
                 </Stack>
@@ -203,11 +156,12 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
         </Grid>
       </Grid>
 
+      {/* Wykresy */}
       <Grid item xs={12} md={6}>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              {t('overviewDashboard.sceneComplexity')}
+              Złożoność Scen
             </Typography>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -234,7 +188,7 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              {t('overviewDashboard.locationTypes.title')}
+              Typy Lokacji
             </Typography>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={locationTypeData}>
@@ -249,50 +203,43 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
         </Card>
       </Grid>
 
+      {/* Główne ryzyka */}
       <Grid item xs={12} md={6}>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              {t('overviewDashboard.topRisks')}
+              Najważniejsze Ryzyka
             </Typography>
             <List>
-              {topRisks.length > 0 ? (
-                topRisks.map((risk) => (
-                  <ListItem key={risk.id} divider>
-                    <ListItemIcon>
-                      <WarningIcon
-                        color={
-                          risk.impact === 'CRITICAL' ? 'error' : 'warning'
-                        }
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={risk.description}
-                      secondary={
-                        <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                          <Chip
-                            label={risk.category}
-                            size="small"
-                            variant="outlined"
-                          />
-                          <Chip
-                            label={risk.impact}
-                            size="small"
-                            color={
-                              risk.impact === 'CRITICAL' ? 'error' : 'warning'
-                            }
-                          />
-                        </Stack>
-                      }
-                    />
-                  </ListItem>
-                ))
-              ) : (
+              {topRisks.length > 0 ? topRisks.map((risk, index) => (
+                <ListItem key={risk.id} divider>
+                  <ListItemIcon>
+                    <WarningIcon color={risk.impact === 'CRITICAL' ? 'error' : 'warning'} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={risk.description}
+                    secondary={
+                      <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                        <Chip 
+                          label={risk.category} 
+                          size="small" 
+                          variant="outlined" 
+                        />
+                        <Chip 
+                          label={risk.impact} 
+                          size="small" 
+                          color={risk.impact === 'CRITICAL' ? 'error' : 'warning'}
+                        />
+                      </Stack>
+                    }
+                  />
+                </ListItem>
+              )) : (
                 <ListItem>
                   <ListItemIcon>
                     <CheckCircleIcon color="success" />
                   </ListItemIcon>
-                  <ListItemText primary={t('overviewDashboard.noRisks')} />
+                  <ListItemText primary="Brak znaczących ryzyk wykrytych" />
                 </ListItem>
               )}
             </List>
@@ -300,59 +247,45 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
         </Card>
       </Grid>
 
+      {/* Główne postacie */}
       <Grid item xs={12} md={6}>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              {t('overviewDashboard.mainCharacters')}
+              Główne Postacie
             </Typography>
             <List>
-              {mainCharacters.length > 0 ? (
-                mainCharacters.map((character) => (
-                  <ListItem key={character.id} divider>
-                    <ListItemIcon>
-                      <Avatar
-                        sx={{
-                          bgcolor:
-                            character.role === 'PROTAGONIST'
-                              ? 'primary.main'
-                              : 'error.main',
-                          width: 32,
-                          height: 32,
-                        }}
-                      >
-                        {character.name.charAt(0)}
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={character.name}
-                      secondary={
-                        <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                          <Chip
-                            label={character.role}
-                            size="small"
-                            color={
-                              character.role === 'PROTAGONIST'
-                                ? 'primary'
-                                : 'error'
-                            }
-                            variant="outlined"
-                          />
-                          <Typography variant="caption" color="text.secondary">
-                            {t('overviewDashboard.sceneCount', {
-                              count: character.totalScenes,
-                            })}
-                          </Typography>
-                        </Stack>
-                      }
-                    />
-                  </ListItem>
-                ))
-              ) : (
-                <ListItem>
+              {mainCharacters.length > 0 ? mainCharacters.map((character, index) => (
+                <ListItem key={character.id} divider>
+                  <ListItemIcon>
+                    <Avatar sx={{ 
+                      bgcolor: character.role === 'PROTAGONIST' ? 'primary.main' : 'error.main',
+                      width: 32,
+                      height: 32
+                    }}>
+                      {character.name.charAt(0)}
+                    </Avatar>
+                  </ListItemIcon>
                   <ListItemText
-                    primary={t('overviewDashboard.noMainCharacters')}
+                    primary={character.name}
+                    secondary={
+                      <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                        <Chip 
+                          label={character.role} 
+                          size="small" 
+                          color={character.role === 'PROTAGONIST' ? 'primary' : 'error'}
+                          variant="outlined"
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          {character.totalScenes} scen
+                        </Typography>
+                      </Stack>
+                    }
                   />
+                </ListItem>
+              )) : (
+                <ListItem>
+                  <ListItemText primary="Brak zidentyfikowanych głównych postaci" />
                 </ListItem>
               )}
             </List>
@@ -360,39 +293,38 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
         </Card>
       </Grid>
 
+      {/* Metadata */}
       <Grid item xs={12}>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              {t('overviewDashboard.scriptInfo.title')}
+              Informacje o Scenariuszu
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={3}>
                 <Box textAlign="center" sx={{ p: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    {t('overviewDashboard.scriptInfo.genre')}
+                    Gatunek
                   </Typography>
                   <Typography variant="h6">
-                    {analysis.metadata?.genre ||
-                      t('overviewDashboard.scriptInfo.unknown')}
+                    {analysis.metadata?.genre || 'Nieznany'}
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <Box textAlign="center" sx={{ p: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    {t('overviewDashboard.scriptInfo.tone')}
+                    Ton
                   </Typography>
                   <Typography variant="h6">
-                    {analysis.metadata?.tone ||
-                      t('overviewDashboard.scriptInfo.unknown')}
+                    {analysis.metadata?.tone || 'Nieznany'}
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <Box textAlign="center" sx={{ p: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    {t('overviewDashboard.scriptInfo.pages')}
+                    Strony
                   </Typography>
                   <Typography variant="h6">
                     {analysis.metadata?.pageCount || 0}
@@ -402,12 +334,10 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ analysis }) => {
               <Grid item xs={12} sm={6} md={3}>
                 <Box textAlign="center" sx={{ p: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    {t('overviewDashboard.scriptInfo.readingTime')}
+                    Czas czytania
                   </Typography>
                   <Typography variant="h6">
-                    {t('overviewDashboard.scriptInfo.readingTimeValue', {
-                      time: analysis.metadata?.estimatedReadingTime || 0,
-                    })}
+                    {analysis.metadata?.estimatedReadingTime || 0} min
                   </Typography>
                 </Box>
               </Grid>

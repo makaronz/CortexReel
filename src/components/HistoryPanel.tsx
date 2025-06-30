@@ -1,9 +1,8 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import {
-  Card,
-  CardContent,
-  Typography,
+import { 
+  Card, 
+  CardContent, 
+  Typography, 
   List,
   ListItem,
   ListItemText,
@@ -12,27 +11,26 @@ import {
   Button,
   Box,
   Chip,
-  Stack,
+  Stack
 } from '@mui/material';
 import {
   History as HistoryIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
-  Clear as ClearIcon,
+  Clear as ClearIcon
 } from '@mui/icons-material';
 import { useAnalysisHistory, useAnalysisStore } from '@/store/analysisStore';
 
 const HistoryPanel: React.FC = () => {
-  const { t, i18n } = useTranslation();
   const history = useAnalysisHistory();
   const { loadFromHistory, removeFromHistory, clearHistory } = useAnalysisStore();
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString(i18n.language, {
+    return new Date(timestamp).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -50,10 +48,10 @@ const HistoryPanel: React.FC = () => {
         <CardContent>
           <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
             <HistoryIcon />
-            <Typography variant="h6">{t('historyPanel.title')}</Typography>
+            <Typography variant="h6">Analysis History</Typography>
           </Stack>
           <Typography variant="body2" color="text.secondary" textAlign="center">
-            {t('historyPanel.noHistory')}
+            No analyses yet. Upload a screenplay to get started.
           </Typography>
         </CardContent>
       </Card>
@@ -66,13 +64,17 @@ const HistoryPanel: React.FC = () => {
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
           <HistoryIcon />
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            {t('historyPanel.title')}
+            Analysis History
           </Typography>
-          <Chip label={history.length} color="primary" size="small" />
-          <IconButton
+          <Chip 
+            label={history.length}
+            color="primary"
             size="small"
+          />
+          <IconButton 
+            size="small" 
             onClick={clearHistory}
-            title={t('historyPanel.clearAllTooltip')}
+            title="Clear all history"
           >
             <ClearIcon />
           </IconButton>
@@ -89,8 +91,8 @@ const HistoryPanel: React.FC = () => {
                 borderRadius: 1,
                 mb: 1,
                 '&:hover': {
-                  bgcolor: 'action.hover',
-                },
+                  bgcolor: 'action.hover'
+                }
               }}
             >
               <ListItemText
@@ -105,18 +107,18 @@ const HistoryPanel: React.FC = () => {
                       {formatDate(entry.timestamp)}
                     </Typography>
                     <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                      <Chip
+                      <Chip 
                         label={entry.analysisType}
                         size="small"
                         variant="outlined"
                       />
-                      <Chip
+                      <Chip 
                         label={formatFileSize(entry.fileSize)}
                         size="small"
                         variant="outlined"
                         color="secondary"
                       />
-                      <Chip
+                      <Chip 
                         label={formatProcessingTime(entry.processingTime)}
                         size="small"
                         variant="outlined"
@@ -132,14 +134,14 @@ const HistoryPanel: React.FC = () => {
                   <IconButton
                     size="small"
                     onClick={() => loadFromHistory(entry.id)}
-                    title={t('historyPanel.viewTooltip')}
+                    title="View analysis"
                   >
                     <ViewIcon />
                   </IconButton>
                   <IconButton
                     size="small"
                     onClick={() => removeFromHistory(entry.id)}
-                    title={t('historyPanel.deleteTooltip')}
+                    title="Delete from history"
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -157,7 +159,7 @@ const HistoryPanel: React.FC = () => {
               onClick={clearHistory}
               color="error"
             >
-              {t('historyPanel.clearAllButton')}
+              Clear All History
             </Button>
           </Box>
         )}
