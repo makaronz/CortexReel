@@ -1,8 +1,5 @@
-import {
-  useState,
-  useCallback,
-  FC,
-} from 'react';
+import { useState, useCallback, FC } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDropzone } from 'react-dropzone';
 import {
   Box,
@@ -13,7 +10,7 @@ import {
   LinearProgress,
   Alert,
   Chip,
-  Stack
+  Stack,
 } from '@mui/material';
 import {
   CloudUpload as CloudUploadIcon,
@@ -27,6 +24,7 @@ import { GeminiAnalysisService } from '@/services/geminiService';
 import { AdminConfigService } from '@/services/AdminConfigService';
 
 const FileUpload: FC = () => {
+  const { t } = useTranslation();
   const {
     currentFile,
     extractedText,
@@ -37,14 +35,11 @@ const FileUpload: FC = () => {
     isAnalyzing,
     startProcessing,
     stopProcessing,
-  } = useAnalysisStore();
-
-  const {
     startAnalysis,
     updatePartialAnalysis,
     setAnalysisProgress,
     setAnalysisResult,
-    setAnalysisError
+    setAnalysisError,
   } = useAnalysisStore();
 
   const [localError, setLocalError] = useState<string | null>(null);
@@ -54,102 +49,104 @@ const FileUpload: FC = () => {
     stage: string;
   } | null>(null);
 
-  // Enhanced validation function using PDFParserService methods
-  const validateFile = (file: File): string | null => {
-    // File size validation - use PDFParserService.validateFileSize()
+  const validateFile = useCallback((file: File): string | null => {
     if (!PDFParserService.validateFileSize(file)) {
-      const sizeMB = (file.size / 1024 / 1024).toFixed(1);
-      return `Plik przekracza limit rozmiaru 10MB (aktualny rozmiar: ${sizeMB}MB). Spróbuj kompresji PDF lub wybierz mniejszy plik.`;
-    }
-    
-    // File type validation - use PDFParserService.getSupportedFormats()
-    const supportedFormats = PDFParserService.getSupportedFormats();
-    const isValidType = supportedFormats.includes(file.type) || file.name.toLowerCase().endsWith('.pdf');
-    
-    if (!isValidType) {
-      return `Nieobsługiwany format pliku. Obsługiwane formaty: PDF. Aktualny typ: ${file.type || 'nieznany'}`;
+      return t('fileUpload.errors.fileTooLarge', {
+        size: (file.size / 1024 / 1024).toFixed(1),
+        maxSize: '10',
+      });
     }
 
-    // Additional validations
+    const supportedFormats = PDFParserService.getSupportedFormats();
+    const isValidType =
+      supportedFormats.includes(file.type) ||
+      file.name.toLowerCase().endsWith('.pdf');
+    if (!isValidType) {
+      return t('fileUpload.errors.unsupportedFormat', {
+        type: file.type || t('fileUpload.unknown'),
+      });
+    }
+
     if (file.size === 0) {
-      return 'Plik jest pusty. Wybierz prawidłowy plik PDF.';
+      return t('fileUpload.errors.emptyFile');
     }
 
     if (file.name.length > 255) {
-      return 'Nazwa pliku jest zbyt długa (max 255 znaków).';
+      return t('fileUpload.errors.filenameTooLong');
     }
 
-    return null; // File is valid
-  };
+    return null;
+  }, [t]);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (!file) return;
 
-    setLocalError(null);
-
-    // Enhanced validation with specific error messages
-    const validationError = validateFile(file);
-    if (validationError) {
-      setLocalError(validationError);
-      return;
-    }
-
-    startProcessing();
-    setCurrentFile(file);
-    
-    // Get estimated processing time for user feedback
-    const estimatedTime = PDFParserService.estimateProcessingTime(file);
-    console.log(`Szacowany czas przetwarzania: ${Math.round(estimatedTime / 1000)}s`);
-
-    try {
-      const parser = new PDFParserService(setParseProgress);
-      const parsedContent = await parser.parseFile(file);
-      setExtractedText(parsedContent.text, parsedContent.extractionMethod);
-      
-      // Success feedback with extraction details
-      console.log(`✅ Plik przetworzony pomyślnie:
-        - Metoda: ${parsedContent.extractionMethod}
-        - Strony: ${parsedContent.pageCount}
-        - Czas: ${(parsedContent.processingTime / 1000).toFixed(1)}s
-        - Pewność: ${(parsedContent.confidence * 100).toFixed(0)}%`);
-      
-    } catch (error) {
-      let errorMessage = 'Nie udało się przetworzyć pliku';
-      
-      if (error instanceof Error) {
-        // Specific error messages based on error type
-        const errorText = error.message.toLowerCase();
-        
-        if (errorText.includes('file size')) {
-          errorMessage = 'Plik jest zbyt duży do przetworzenia. Spróbuj kompresji PDF.';
-        } else if (errorText.includes('invalid file type')) {
-          errorMessage = 'Nieprawidłowy format pliku. Upewnij się, że to jest poprawny plik PDF.';
-        } else if (errorText.includes('direct extraction') && errorText.includes('ocr')) {
-          errorMessage = 'Nie udało się odczytać tekstu z PDF. Plik może być uszkodzony lub zawierać tylko obrazy bez tekstu.';
-        } else if (errorText.includes('memory') || errorText.includes('timeout')) {
-          errorMessage = 'Plik jest zbyt złożony do przetworzenia. Spróbuj z mniejszym plikiem.';
-        } else if (errorText.includes('permission') || errorText.includes('encrypted')) {
-          errorMessage = 'Plik PDF jest chroniony hasłem lub zaszyfrowany. Usuń ochronę i spróbuj ponownie.';
-        } else {
-          errorMessage = `Błąd przetwarzania pliku: ${error.message}`;
-        }
+      setLocalError(null);
+      const validationError = validateFile(file);
+      if (validationError) {
+        setLocalError(validationError);
+        return;
       }
-      
-      setLocalError(errorMessage);
-      console.error('File parsing error:', error);
-      setCurrentFile(null); // Clear the failed file
-    } finally {
-      stopProcessing();
-      setParseProgress(null);
-    }
-  }, [setCurrentFile, setExtractedText, startProcessing, stopProcessing]);
+
+      startProcessing();
+      setCurrentFile(file);
+
+      try {
+        const parser = new PDFParserService(setParseProgress);
+        const parsedContent = await parser.parseFile(file);
+        setExtractedText(parsedContent.text, parsedContent.extractionMethod);
+      } catch (error) {
+        let errorMessageKey = 'fileUpload.errors.genericParseError';
+        const errorArgs: { [key: string]: string } = {};
+
+        if (error instanceof Error) {
+          const errorText = error.message.toLowerCase();
+          if (errorText.includes('file size'))
+            errorMessageKey = 'fileUpload.errors.fileTooLarge';
+          else if (errorText.includes('invalid file type'))
+            errorMessageKey = 'fileUpload.errors.invalidFileType';
+          else if (
+            errorText.includes('direct extraction') &&
+            errorText.includes('ocr')
+          )
+            errorMessageKey = 'fileUpload.errors.textExtractionFailed';
+          else if (errorText.includes('memory') || errorText.includes('timeout'))
+            errorMessageKey = 'fileUpload.errors.fileTooComplex';
+          else if (
+            errorText.includes('permission') ||
+            errorText.includes('encrypted')
+          )
+            errorMessageKey = 'fileUpload.errors.pdfProtected';
+          else {
+            errorMessageKey = 'fileUpload.errors.parseErrorWithMessage';
+            errorArgs.message = error.message;
+          }
+        }
+
+        setLocalError(t(errorMessageKey, errorArgs));
+        setCurrentFile(null);
+      } finally {
+        stopProcessing();
+        setParseProgress(null);
+      }
+    },
+    [
+      setCurrentFile,
+      setExtractedText,
+      startProcessing,
+      stopProcessing,
+      t,
+      validateFile,
+    ]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     maxFiles: 1,
-    maxSize: 10 * 1024 * 1024, // 10MB - keep consistent with PDFParserService
+    maxSize: 10 * 1024 * 1024,
     disabled: isProcessing || isAnalyzing,
   });
 
@@ -158,43 +155,37 @@ const FileUpload: FC = () => {
 
     try {
       startAnalysis();
-      
-      // Load admin configuration for analysis
       const adminConfigService = new AdminConfigService();
       const llmConfig = await adminConfigService.getLLMConfig();
       const promptConfig = await adminConfigService.getPromptConfig();
-      
-      console.log('🔧 Rozpoczynanie analizy z konfiguracją Admin Dashboard:', {
-        model: llmConfig.model,
-        customPrompts: Object.keys(promptConfig).length,
-        fileName: currentFile.name
-      });
-      
-      const analysisService = new GeminiAnalysisService(setAnalysisProgress, updatePartialAnalysis);
+
+      const analysisService = new GeminiAnalysisService(
+        setAnalysisProgress,
+        updatePartialAnalysis
+      );
       const result = await analysisService.analyzeScreenplay(
         extractedText,
         currentFile.name
       );
       setAnalysisResult(result);
     } catch (error) {
-      console.error('Analysis error:', error);
-      
-      let errorMessage = 'Nie udało się przeprowadzić analizy';
+      let errorMessageKey = 'fileUpload.errors.genericAnalysisError';
+       const errorArgs: { [key: string]: string } = {};
+
       if (error instanceof Error) {
         const errorText = error.message.toLowerCase();
-        
-        if (errorText.includes('api key')) {
-          errorMessage = 'Brak lub nieprawidłowy klucz API. Skonfiguruj klucz w Panelu Administratora.';
-        } else if (errorText.includes('quota') || errorText.includes('rate limit')) {
-          errorMessage = 'Przekroczono limit zapytań API. Spróbuj ponownie za chwilę.';
-        } else if (errorText.includes('network') || errorText.includes('connection')) {
-          errorMessage = 'Błąd połączenia. Sprawdź internet i spróbuj ponownie.';
-        } else {
-          errorMessage = `Błąd analizy: ${error.message}`;
+        if (errorText.includes('api key'))
+          errorMessageKey = 'fileUpload.errors.apiKeyError';
+        else if (errorText.includes('quota') || errorText.includes('rate limit'))
+          errorMessageKey = 'fileUpload.errors.quotaError';
+        else if (errorText.includes('network') || errorText.includes('connection'))
+          errorMessageKey = 'fileUpload.errors.networkError';
+        else {
+           errorMessageKey = 'fileUpload.errors.analysisErrorWithMessage';
+           errorArgs.message = error.message;
         }
       }
-      
-      setAnalysisError(errorMessage);
+      setAnalysisError(t(errorMessageKey, errorArgs));
     }
   };
 
@@ -203,19 +194,27 @@ const FileUpload: FC = () => {
     setExtractedText('', null);
     setLocalError(null);
   };
-  
+
   const isActionDisabled = isProcessing || isAnalyzing;
 
   return (
     <Card>
       <CardContent>
-        <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h5"
+          gutterBottom
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <CloudUploadIcon />
-          Upload Screenplay
+          {t('fileUpload.title')}
         </Typography>
 
         {localError && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setLocalError(null)}>
+          <Alert
+            severity="error"
+            sx={{ mb: 2 }}
+            onClose={() => setLocalError(null)}
+          >
             {localError}
           </Alert>
         )}
@@ -241,15 +240,19 @@ const FileUpload: FC = () => {
             }}
           >
             <input {...getInputProps()} />
-            <CloudUploadIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+            <CloudUploadIcon
+              sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }}
+            />
             <Typography variant="h6" gutterBottom>
-              {isDragActive ? 'Drop the file here' : 'Drag & drop a PDF screenplay'}
+              {isDragActive
+                ? t('fileUpload.dropzone.dropHere')
+                : t('fileUpload.dropzone.dragAndDrop')}
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Or click to browse files
+              {t('fileUpload.dropzone.orClick')}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Supports PDF files up to 10MB
+              {t('fileUpload.dropzone.supportedFormats', { maxSize: '10MB' })}
             </Typography>
           </Box>
         )}
@@ -261,7 +264,9 @@ const FileUpload: FC = () => {
                 <Stack direction="row" alignItems="center" spacing={2}>
                   <DescriptionIcon color="primary" />
                   <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="subtitle1" noWrap>{currentFile.name}</Typography>
+                    <Typography variant="subtitle1" noWrap>
+                      {currentFile.name}
+                    </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {(currentFile.size / 1024 / 1024).toFixed(1)} MB
                     </Typography>
@@ -269,10 +274,14 @@ const FileUpload: FC = () => {
 
                   {isProcessing && parseProgress && (
                     <Box sx={{ width: '100px' }}>
-                      <Typography variant="caption">{parseProgress.stage}</Typography>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={(parseProgress.current / parseProgress.total) * 100}
+                      <Typography variant="caption">
+                        {parseProgress.stage}
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={
+                          (parseProgress.current / parseProgress.total) * 100
+                        }
                       />
                     </Box>
                   )}
@@ -280,7 +289,9 @@ const FileUpload: FC = () => {
                   {extractedText && extractionMethod && !isProcessing && (
                     <Chip
                       icon={<CheckCircleIcon />}
-                      label={`Parsed (${extractionMethod})`}
+                      label={t('fileUpload.parsedChip', {
+                        method: extractionMethod,
+                      })}
                       color="success"
                       variant="outlined"
                     />
@@ -292,7 +303,7 @@ const FileUpload: FC = () => {
                     onClick={handleRemoveFile}
                     disabled={isActionDisabled}
                   >
-                    Remove
+                    {t('fileUpload.buttons.remove')}
                   </Button>
                 </Stack>
               </CardContent>
@@ -303,7 +314,7 @@ const FileUpload: FC = () => {
         {extractedText && (
           <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle2" gutterBottom>
-              Extracted Text Preview:
+              {t('fileUpload.preview.title')}
             </Typography>
             <Box
               sx={{
@@ -316,15 +327,17 @@ const FileUpload: FC = () => {
                 maxHeight: 150,
                 overflow: 'auto',
                 fontFamily: 'monospace',
-                fontSize: '0.8rem'
+                fontSize: '0.8rem',
               }}
             >
               {extractedText.substring(0, 1000)}
               {extractedText.length > 1000 && '...'}
             </Box>
-             <Typography variant="caption" color="text.secondary">
-              {extractedText.length.toLocaleString()} characters extracted
-              {extractionMethod && ` via ${extractionMethod}`}
+            <Typography variant="caption" color="text.secondary">
+              {t('fileUpload.preview.charCount', {
+                count: extractedText.length.toLocaleString(),
+                method: extractionMethod || t('fileUpload.unknown'),
+              })}
             </Typography>
           </Box>
         )}
@@ -336,7 +349,9 @@ const FileUpload: FC = () => {
             disabled={!extractedText || isActionDisabled}
             sx={{ minWidth: 220 }}
           >
-            {isAnalyzing ? 'Analyzing...' : 'Start Full Analysis'}
+            {isAnalyzing
+              ? t('fileUpload.buttons.analyzing')
+              : t('fileUpload.buttons.startAnalysis')}
           </Button>
         </Stack>
       </CardContent>

@@ -1,16 +1,18 @@
 import React from 'react';
-import { 
-  Box, 
-  Card, 
-  CardContent, 
-  LinearProgress, 
+import { useTranslation } from 'react-i18next';
+import {
+  Box,
+  Card,
+  CardContent,
+  LinearProgress,
   Typography,
   Chip,
-  Stack
+  Stack,
 } from '@mui/material';
 import { useAnalysisProgress, useIsAnalyzing } from '@/store/analysisStore';
 
 const ProgressBar: React.FC = () => {
+  const { t } = useTranslation();
   const isAnalyzing = useIsAnalyzing();
   const progress = useAnalysisProgress();
 
@@ -25,42 +27,45 @@ const ProgressBar: React.FC = () => {
       <CardContent>
         <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Analyzing Screenplay
+            {t('progressBar.title')}
           </Typography>
-          <Chip 
-            label={`${progress.sectionsComplete}/${progress.totalSections} sections`}
+          <Chip
+            label={t('progressBar.sections', {
+              complete: progress.sectionsComplete,
+              total: progress.totalSections,
+            })}
             color="primary"
             variant="outlined"
           />
-          <Chip 
-            label={`${timeRemaining}s remaining`}
+          <Chip
+            label={t('progressBar.remaining', { time: timeRemaining })}
             color="secondary"
             variant="outlined"
           />
         </Stack>
 
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          Current: {progress.currentSection}
+          {t('progressBar.current')}: {progress.currentSection}
         </Typography>
 
-        <LinearProgress 
-          variant="determinate" 
+        <LinearProgress
+          variant="determinate"
           value={progress.percentage}
-          sx={{ 
-            height: 8, 
+          sx={{
+            height: 8,
             borderRadius: 4,
-            mb: 1
+            mb: 1,
           }}
         />
 
         <Typography variant="caption" color="text.secondary">
-          {progress.percentage}% complete
+          {t('progressBar.complete', { percentage: progress.percentage })}
         </Typography>
 
         {progress.errors.length > 0 && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="caption" color="error">
-              {progress.errors.length} error(s) encountered
+              {t('progressBar.errors', { count: progress.errors.length })}
             </Typography>
           </Box>
         )}

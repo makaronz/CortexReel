@@ -14,6 +14,7 @@ export const analysisWorker = new Worker<AnalysisJobPayload>(
     const analysisResult = await service.analyzeScreenplayFile(filepath, {
       filename: originalName,
       userId,
+      jobId: job.id,
     });
 
     return analysisResult;
@@ -29,4 +30,4 @@ analysisWorker.on('completed', (job) => {
 analysisWorker.on('failed', (job, err) => {
   // eslint-disable-next-line no-console
   console.error(`Analysis job ${job?.id} failed`, err);
-}); 
+});

@@ -123,7 +123,7 @@ export class LangChainRAGService {
 
     public async analyzeScreenplayFile(
         filepath: string,
-        meta: { filename: string; userId?: string },
+        meta: { filename: string; userId?: string; jobId?: string },
     ): Promise<{ pages: number; chunks: number; filename: string }> {
         console.log(`▶️  [RAG] Starting analysis for ${meta.filename}`);
 
@@ -171,6 +171,7 @@ export class LangChainRAGService {
                 chunkIndex: idx,
                 filename: meta.filename,
                 userId: meta.userId,
+                jobId: meta.jobId,
             },
         }));
 
@@ -184,4 +185,4 @@ export class LangChainRAGService {
 
         return { pages: pageCount, chunks: docs.length, filename: meta.filename };
     }
-} 
+}

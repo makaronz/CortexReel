@@ -1,6 +1,11 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, Typography, Card, CardContent } from '@mui/material';
-import { ComprehensiveSafety, ProductionRisk, StuntCoordination } from '@/types/analysis';
+import {
+  ComprehensiveSafety,
+  ProductionRisk,
+  StuntCoordination,
+} from '@/types/analysis';
 
 interface SafetyDashboardProps {
   safety: ComprehensiveSafety;
@@ -8,19 +13,28 @@ interface SafetyDashboardProps {
   stunts: StuntCoordination;
 }
 
-const SafetyDashboard: React.FC<SafetyDashboardProps> = ({ safety, risks, stunts }) => {
+const SafetyDashboard: React.FC<SafetyDashboardProps> = ({
+  safety,
+  risks,
+  stunts,
+}) => {
+  const { t } = useTranslation();
   return (
     <Card>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          Dashboard Bezpieczeństwa
+          {t('safetyDashboard.title')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Poziom ryzyka: {safety?.overallAssessment?.overallRiskLevel || 'Nieznany'}
+          {t('safetyDashboard.riskLevel', {
+            level:
+              safety?.overallAssessment?.overallRiskLevel ||
+              t('safetyDashboard.unknown'),
+          })}
         </Typography>
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2">
-            Ten komponent będzie zawierał kompletny dashboard bezpieczeństwa produkcji.
+            {t('safetyDashboard.placeholder')}
           </Typography>
         </Box>
       </CardContent>

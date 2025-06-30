@@ -1,0 +1,7 @@
+mcp:
+  servers:
+    browser-tools-mcp:
+      command: "npx @agentdeskai/browser-tools-mcp@latest"
+      transport: stdio
+  client:
+    autoConnect: true
