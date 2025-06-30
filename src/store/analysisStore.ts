@@ -142,7 +142,7 @@ export const useAnalysisStore = create<AppState>()(
           isArray: Array.isArray(data),
           length: Array.isArray(data) ? data.length : 'N/A'
         });
-       
+        
         if (section === 'scenes') {
           console.log('🎬 Store received scenes data:', {
             dataType: typeof data,

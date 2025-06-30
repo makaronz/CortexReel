@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -21,9 +20,7 @@ interface BudgetBreakdownProps {
   budget?: BudgetAnalysis;
 }
 
-const getPriorityChipColor = (
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-) => {
+const getPriorityChipColor = (priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') => {
   switch (priority) {
     case 'CRITICAL':
       return 'error';
@@ -38,65 +35,55 @@ const getPriorityChipColor = (
 };
 
 const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ budget }) => {
-  const { t, i18n } = useTranslation();
-
   if (!budget) {
     return (
       <Paper elevation={3} sx={{ p: 2 }}>
-        <Typography variant="h6">{t('budgetBreakdown.title')}</Typography>
-        <Typography>{t('budgetBreakdown.waiting')}</Typography>
+        <Typography variant="h6">Budget Breakdown</Typography>
+        <Typography>Waiting for budget data...</Typography>
         <LinearProgress sx={{ mt: 2 }} />
       </Paper>
     );
   }
 
   const chartData = useMemo(() => {
-    if (!budget || !budget.costDrivers)
-      return [[t('budgetBreakdown.chart.driver'), t('budgetBreakdown.chart.count')]];
+    if (!budget || !budget.costDrivers) return [['Driver', 'Count']];
+    
     const counts = budget.costDrivers.reduce((acc, driver) => {
       acc[driver] = (acc[driver] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    return [[t('budgetBreakdown.chart.driver'), t('budgetBreakdown.chart.count')], ...Object.entries(counts)];
-  }, [budget, t]);
+
+    return [['Driver', 'Count'], ...Object.entries(counts)];
+  }, [budget]);
 
   return (
     <Paper elevation={3} sx={{ p: 2, backgroundColor: 'background.paper' }}>
       <Typography variant="h5" gutterBottom>
-        {t('budgetBreakdown.title')}
+        Budget Breakdown
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid item xs={12} sm={6}>
-          <Typography variant="subtitle1">
-            {t('budgetBreakdown.overallComplexity')}:{' '}
-            <strong>{budget.overallComplexity}</strong>
-          </Typography>
+            <Typography variant="subtitle1">
+                Overall Complexity: <strong>{budget.overallComplexity}</strong>
+            </Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
-          {budget.targetBudget && (
-            <Typography variant="subtitle1" align="right">
-              {t('budgetBreakdown.targetBudget')}:{' '}
-              <strong>
-                {new Intl.NumberFormat(i18n.language, {
-                  style: 'currency',
-                  currency: budget.currency || 'USD',
-                }).format(budget.targetBudget)}
-              </strong>
-            </Typography>
-          )}
+            {budget.targetBudget && (
+                <Typography variant="subtitle1" align="right">
+                    Target Budget: <strong>{new Intl.NumberFormat('en-US', { style: 'currency', currency: budget.currency || 'USD' }).format(budget.targetBudget)}</strong>
+                </Typography>
+            )}
         </Grid>
       </Grid>
-
+      
       <Grid container spacing={3}>
         <Grid item xs={12} md={5}>
-          <Typography variant="h6" gutterBottom>
-            {t('budgetBreakdown.costDrivers')}
-          </Typography>
+          <Typography variant="h6" gutterBottom>Cost Drivers</Typography>
           <Chart
             chartType="PieChart"
             data={chartData}
             options={{
-              title: t('budgetBreakdown.chart.title'),
+              title: 'Cost Driver Distribution',
               pieHole: 0.4,
               is3D: false,
               backgroundColor: 'transparent',
@@ -108,17 +95,15 @@ const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ budget }) => {
           />
         </Grid>
         <Grid item xs={12} md={7}>
-          <Typography variant="h6" gutterBottom>
-            {t('budgetBreakdown.budgetFlags')}
-          </Typography>
+          <Typography variant="h6" gutterBottom>Budget Flags</Typography>
           <TableContainer component={Paper}>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>{t('budgetBreakdown.table.category')}</TableCell>
-                  <TableCell>{t('budgetBreakdown.table.description')}</TableCell>
-                  <TableCell>{t('budgetBreakdown.table.estimatedCost')}</TableCell>
-                  <TableCell>{t('budgetBreakdown.table.priority')}</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Estimated Cost</TableCell>
+                  <TableCell>Priority</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -128,11 +113,7 @@ const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ budget }) => {
                     <TableCell>{flag.description}</TableCell>
                     <TableCell>{flag.estimatedCost}</TableCell>
                     <TableCell>
-                      <Chip
-                        label={flag.priority}
-                        color={getPriorityChipColor(flag.priority)}
-                        size="small"
-                      />
+                      <Chip label={flag.priority} color={getPriorityChipColor(flag.priority)} size="small" />
                     </TableCell>
                   </TableRow>
                 ))}

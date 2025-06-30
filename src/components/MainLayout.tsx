@@ -1,10 +1,9 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import {
-  Box,
-  AppBar,
-  Toolbar,
-  Typography,
+import { 
+  Box, 
+  AppBar, 
+  Toolbar, 
+  Typography, 
   IconButton,
   Drawer,
   List,
@@ -28,14 +27,13 @@ import {
   Settings as SettingsIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAnalysisStore, useUIState } from '@/store/analysisStore';
+import { useAnalysisStore, useUIState, useAuth } from '@/store/analysisStore';
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { sidebarOpen, darkMode, setSidebarOpen, toggleDarkMode } = useUIState();
@@ -48,12 +46,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const menuItems = [
-    { icon: <DashboardIcon />, text: t('mainLayout.menu.dashboard'), path: '/' },
-    { icon: <UploadIcon />, text: t('mainLayout.menu.upload'), path: '/upload' },
-    { icon: <AnalyticsIcon />, text: t('mainLayout.menu.analysis'), path: '/analysis' },
-    { icon: <HistoryIcon />, text: t('mainLayout.menu.history'), path: '/history' },
-    { icon: <PersonIcon />, text: t('mainLayout.menu.roleSelector'), path: '/role-selector' },
-    { icon: <SettingsIcon />, text: t('mainLayout.menu.adminPanel'), path: '/admin' },
+    { icon: <DashboardIcon />, text: 'Dashboard', path: '/' },
+    { icon: <UploadIcon />, text: 'Upload', path: '/upload' },
+    { icon: <AnalyticsIcon />, text: 'Analysis', path: '/analysis' },
+    { icon: <HistoryIcon />, text: 'History', path: '/history' },
+    { icon: <PersonIcon />, text: 'Role Selector', path: '/role-selector' },
+    { icon: <SettingsIcon />, text: 'Admin Panel', path: '/admin' },
   ];
 
   const drawerWidth = 240;
@@ -61,9 +59,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <Box sx={{ display: 'flex' }}>
       {/* App Bar */}
-      <AppBar
-        position="fixed"
-        sx={{
+      <AppBar 
+        position="fixed" 
+        sx={{ 
           zIndex: (theme) => theme.zIndex.drawer + 1,
           bgcolor: darkMode ? '#1e293b' : '#1976d2'
         }}
@@ -71,7 +69,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label={t('mainLayout.appBar.toggleDrawer')}
+            aria-label="open drawer"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             edge="start"
             sx={{ mr: 2 }}
@@ -80,12 +78,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </IconButton>
           
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {t('mainLayout.appBar.title')}
+            CortexReel - Professional Screenplay Analysis
           </Typography>
           
           <FormControlLabel
             control={
-              <Switch
+              <Switch 
                 checked={darkMode}
                 onChange={toggleDarkMode}
                 icon={<LightModeIcon />}
@@ -93,11 +91,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               />
             }
             label=""
-            aria-label={t('mainLayout.appBar.toggleTheme')}
             sx={{ mr: 1 }}
           />
           
-          <IconButton color="inherit" onClick={handleLogout} aria-label={t('mainLayout.appBar.logout')}>
+          <IconButton color="inherit" onClick={handleLogout}>
             <LogoutIcon />
           </IconButton>
         </Toolbar>
@@ -121,7 +118,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <Box sx={{ overflow: 'auto' }}>
           <List>
             {menuItems.map((item) => (
-              <ListItem
+              <ListItem 
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 sx={{
@@ -135,7 +132,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <ListItemIcon sx={{ color: location.pathname === item.path ? 'primary.main' : 'inherit' }}>
                   {item.icon}
                 </ListItemIcon>
-                <ListItemText
+                <ListItemText 
                   primary={item.text}
                   sx={{ color: location.pathname === item.path ? 'primary.main' : 'inherit' }}
                 />
@@ -148,8 +145,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <List>
             <ListItem>
               <ListItemText
-                primary={t('mainLayout.status.title')}
-                secondary={t('mainLayout.status.ready')}
+                primary="Analysis Status"
+                secondary="Ready for new upload"
                 sx={{ fontSize: '0.875rem' }}
               />
             </ListItem>
