@@ -2,7 +2,7 @@
 node_modules/
 /.pnp
 .pnp.js
-
+.kilocode/mcp.json
 # Production builds
 /dist
 /build
