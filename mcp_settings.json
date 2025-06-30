@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "awslabs.amazon_qindex_mcp_server": {
+      "command": "uvx",
+      "args": [
+        "awslabs.amazon_qindex_mcp_server"
+      ],
+      "env": {
+        "AWS_PROFILE": "your-aws-profile",
+        "AWS_REGION": "us-east-1"
+      }
+    },
+    "github.com/AgentDeskAI/browser-tools-mcp": {
+      "command": "npx",
+      "args": [
+        "@agentdeskai/browser-tools-mcp@latest"
+      ],
+      "env": {}
+    }
+  }
+}

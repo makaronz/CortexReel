@@ -22,9 +22,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
-  Divider,
-  IconButton,
-  Tooltip
+  Divider
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -38,6 +36,7 @@ import {
 } from '@mui/icons-material';
 import { AdminConfigService } from '@/services/AdminConfigService';
 import LoadingOverlay from '@/components/LoadingOverlay';
+import translations from '@/localization/pl.json'; // Import the translations
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -93,6 +92,8 @@ interface AppConfig {
   enableCollaboration: boolean;
 }
 
+const t = translations; // Alias for easier access
+
 const AdminDashboard: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [llmConfig, setLlmConfig] = useState<LLMConfig>({
@@ -141,10 +142,10 @@ const AdminDashboard: React.FC = () => {
       setPromptConfig(prompts);
       setAppConfig(app);
       
-      setSnackbar({ open: true, message: 'Konfiguracja załadowana pomyślnie', severity: 'success' });
+      setSnackbar({ open: true, message: t.snackbar.configLoaded, severity: 'success' });
     } catch (error) {
       console.error('Error loading configurations:', error);
-      setSnackbar({ open: true, message: 'Błąd podczas ładowania konfiguracji', severity: 'error' });
+      setSnackbar({ open: true, message: t.snackbar.configLoadError, severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -165,10 +166,10 @@ const AdminDashboard: React.FC = () => {
           break;
       }
       
-      setSnackbar({ open: true, message: 'Konfiguracja zapisana pomyślnie', severity: 'success' });
+      setSnackbar({ open: true, message: t.snackbar.configSaved, severity: 'success' });
     } catch (error) {
       console.error('Error saving configuration:', error);
-      setSnackbar({ open: true, message: 'Błąd podczas zapisywania konfiguracji', severity: 'error' });
+      setSnackbar({ open: true, message: t.snackbar.configSaveError, severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -193,27 +194,10 @@ const AdminDashboard: React.FC = () => {
   };
 
   const availableModels = [
-    // Google Gemini Models (2.5 Flash as default)
-    'google/gemini-2.5-flash',
-    'google/gemini-1.5-pro-latest',
-    'google/gemini-1.5-flash-latest',
-    'google/gemini-pro',
-    
-    // OpenAI Models
-    'openai/gpt-4o',
-    'openai/gpt-4-turbo',
-    'openai/gpt-3.5-turbo',
-    
-    // Anthropic Claude Models
-    'anthropic/claude-3-opus-20240229',
-    'anthropic/claude-3-sonnet-20240229',
-    'anthropic/claude-3-haiku-20240307',
-    
-    // Mistral Models
-    'mistralai/mistral-large-latest',
-    'mistralai/mistral-small-latest',
-    
-    // Legacy support for older saved configs
+    'google/gemini-2.5-flash', 'google/gemini-1.5-pro-latest', 'google/gemini-1.5-flash-latest', 'google/gemini-pro',
+    'openai/gpt-4o', 'openai/gpt-4-turbo', 'openai/gpt-3.5-turbo',
+    'anthropic/claude-3-opus-20240229', 'anthropic/claude-3-sonnet-20240229', 'anthropic/claude-3-haiku-20240307',
+    'mistralai/mistral-large-latest', 'mistralai/mistral-small-latest',
     'gemini-1.5-pro',
   ];
 
@@ -224,31 +208,28 @@ const AdminDashboard: React.FC = () => {
       <LoadingOverlay loading={loading} />
       <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <SettingsIcon fontSize="large" />
-        Panel Administracyjny
+        {t.dashboard.title}
       </Typography>
       
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        Zarządzaj konfiguracją LLM, promptami i ustawieniami aplikacji. 
-        <strong>🎬 NOWE:</strong> Gemini 2.5 Flash z 65K tokenów + MISTYCZNY ALTER EGO REŻYSERA - kompleksowa analiza filmowa w 27 sekcjach!
-      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }} dangerouslySetInnerHTML={{ __html: t.dashboard.description }} />
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange} aria-label="admin dashboard tabs">
           <Tab 
             icon={<SecurityIcon />} 
-            label="Konfiguracja LLM" 
+            label={t.dashboard.tabs.llm} 
             id="admin-tab-0"
             aria-controls="admin-tabpanel-0"
           />
           <Tab 
             icon={<CodeIcon />} 
-            label="Prompty" 
+            label={t.dashboard.tabs.prompts}
             id="admin-tab-1"
             aria-controls="admin-tabpanel-1"
           />
           <Tab 
             icon={<TuneIcon />} 
-            label="Ustawienia Aplikacji" 
+            label={t.dashboard.tabs.settings} 
             id="admin-tab-2"
             aria-controls="admin-tabpanel-2"
           />
@@ -262,10 +243,10 @@ const AdminDashboard: React.FC = () => {
           icon="🎬"
         >
           <Typography variant="body2">
-            <strong>NOWY MEGA PROMPT dostępny!</strong> Kliknij "🎬 Reset do Nowych Domyślnych" aby załadować:
-            <br />• <strong>Gemini 2.5 Flash</strong> - najszybszy model z 65,536 tokenami output
-            <br />• <strong>MISTYCZNY ALTER EGO REŻYSERA</strong> - kompleksowa analiza w 27 sekcjach filmowych
-            <br />• Głęboka analiza psychoanalityczna + wizja producenta + strategie marketingowe
+            <strong dangerouslySetInnerHTML={{ __html: t.llm.newPromptAlert.title }} />
+            <br />{t.llm.newPromptAlert.line1}
+            <br />{t.llm.newPromptAlert.line2}
+            <br />{t.llm.newPromptAlert.line3}
           </Typography>
         </Alert>
         
@@ -273,160 +254,118 @@ const AdminDashboard: React.FC = () => {
           <CardContent>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <SecurityIcon />
-              Konfiguracja LLM
+              {t.llm.title}
             </Typography>
             
             <Grid container spacing={3}>
-              {/* API Key */}
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Klucz API"
+                  label={t.llm.apiKey.label}
                   type="password"
                   value={llmConfig.apiKey}
                   onChange={(e) => setLlmConfig(prev => ({ ...prev, apiKey: e.target.value }))}
-                  helperText="Klucz API dla wybranego modelu LLM"
+                  helperText={t.llm.apiKey.helper}
                   variant="outlined"
                 />
               </Grid>
 
-              {/* Model Selection */}
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth>
-                  <InputLabel>Model LLM</InputLabel>
+                  <InputLabel>{t.llm.model.label}</InputLabel>
                   <Select
                     value={llmConfig.model}
-                    label="Model LLM"
+                    label={t.llm.model.label}
                     onChange={(e) => setLlmConfig(prev => ({ ...prev, model: e.target.value }))}
                   >
                     {availableModels.map((model) => (
-                      <MenuItem key={model} value={model}>
-                        {model}
-                      </MenuItem>
+                      <MenuItem key={model} value={model}>{model}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               </Grid>
 
-              {/* Max Tokens */}
-              <Grid item xs={12} md={6}>
-                                  <TextField
-                    fullWidth
-                    label="Maksymalna liczba tokenów"
-                    type="number"
-                    value={llmConfig.maxTokens}
-                    onChange={(e) => setLlmConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                    inputProps={{ min: 1, max: 65536 }}
-                    helperText="Gemini 2.5 Flash: do 65,536 tokenów output"
-                  />
-              </Grid>
-
-              {/* Temperature */}
-              <Grid item xs={12} md={6}>
-                <Typography gutterBottom>Temperatura: {llmConfig.temperature}</Typography>
-                <Slider
-                  value={llmConfig.temperature}
-                  onChange={(e, value) => setLlmConfig(prev => ({ ...prev, temperature: value as number }))}
-                  min={0}
-                  max={2}
-                  step={0.1}
-                  marks={[
-                    { value: 0, label: '0 (Deterministyczny)' },
-                    { value: 1, label: '1 (Zbalansowany)' },
-                    { value: 2, label: '2 (Kreatywny)' }
-                  ]}
-                />
-              </Grid>
-
-              {/* Top P */}
-              <Grid item xs={12} md={6}>
-                <Typography gutterBottom>Top P: {llmConfig.topP}</Typography>
-                <Slider
-                  value={llmConfig.topP}
-                  onChange={(e, value) => setLlmConfig(prev => ({ ...prev, topP: value as number }))}
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  marks={[
-                    { value: 0, label: '0' },
-                    { value: 0.5, label: '0.5' },
-                    { value: 1, label: '1' }
-                  ]}
-                />
-              </Grid>
-
-              {/* Top K */}
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Top K"
+                  label={t.llm.maxTokens.label}
+                  type="number"
+                  value={llmConfig.maxTokens}
+                  onChange={(e) => setLlmConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                  inputProps={{ min: 1, max: 65536 }}
+                  helperText={t.llm.maxTokens.helper}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Typography gutterBottom>{t.llm.temperature.label.replace('{temp}', llmConfig.temperature.toString())}</Typography>
+                <Slider
+                  value={llmConfig.temperature}
+                  onChange={(e, value) => setLlmConfig(prev => ({ ...prev, temperature: value as number }))}
+                  min={0} max={2} step={0.1}
+                  marks={[
+                    { value: 0, label: t.llm.temperature.deterministic },
+                    { value: 1, label: t.llm.temperature.balanced },
+                    { value: 2, label: t.llm.temperature.creative }
+                  ]}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Typography gutterBottom>{t.llm.topP.label.replace('{topP}', llmConfig.topP.toString())}</Typography>
+                <Slider
+                  value={llmConfig.topP}
+                  onChange={(e, value) => setLlmConfig(prev => ({ ...prev, topP: value as number }))}
+                  min={0} max={1} step={0.05}
+                  marks={[{ value: 0, label: '0' }, { value: 0.5, label: '0.5' }, { value: 1, label: '1' }]}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label={t.llm.topK.label}
                   type="number"
                   value={llmConfig.topK}
                   onChange={(e) => setLlmConfig(prev => ({ ...prev, topK: parseInt(e.target.value) }))}
                   inputProps={{ min: 1, max: 100 }}
-                  helperText="Liczba najlepszych tokenów do rozważenia"
+                  helperText={t.llm.topK.helper}
                 />
               </Grid>
 
-              {/* Presence Penalty */}
               <Grid item xs={12} md={6}>
-                <Typography gutterBottom>Presence Penalty: {llmConfig.presencePenalty}</Typography>
+                <Typography gutterBottom>{t.llm.presencePenalty.label.replace('{penalty}', llmConfig.presencePenalty.toString())}</Typography>
                 <Slider
                   value={llmConfig.presencePenalty}
                   onChange={(e, value) => setLlmConfig(prev => ({ ...prev, presencePenalty: value as number }))}
-                  min={-2}
-                  max={2}
-                  step={0.1}
-                  marks={[
-                    { value: -2, label: '-2' },
-                    { value: 0, label: '0' },
-                    { value: 2, label: '2' }
-                  ]}
+                  min={-2} max={2} step={0.1}
+                  marks={[{ value: -2, label: '-2' }, { value: 0, label: '0' }, { value: 2, label: '2' }]}
                 />
               </Grid>
 
-              {/* Action Buttons */}
               <Grid item xs={12}>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                  <Button
-                    variant="contained"
-                    startIcon={<SaveIcon />}
-                    onClick={() => saveConfiguration('llm')}
-                    disabled={loading}
-                    size="large"
-                  >
-                    Zapisz Konfigurację LLM
+                  <Button variant="contained" startIcon={<SaveIcon />} onClick={() => saveConfiguration('llm')} disabled={loading} size="large">
+                    {t.llm.buttons.save}
                   </Button>
-                  
                   <Button
-                    variant="outlined"
-                    color="secondary"
-                    startIcon={<RefreshIcon />}
+                    variant="outlined" color="secondary" startIcon={<RefreshIcon />}
                     onClick={async () => {
                       setLoading(true);
                       try {
                         await configService.resetToNewDefaults();
                         await loadConfigurations();
-                        setSnackbar({ 
-                          open: true, 
-                          message: '🎬 Konfiguracja zresetowana do nowych domyślnych (Gemini 2.5 Flash + MEGA PROMPT)', 
-                          severity: 'success' 
-                        });
+                        setSnackbar({ open: true, message: t.snackbar.configReset, severity: 'success' });
                       } catch (error) {
                         console.error('Error resetting to defaults:', error);
-                        setSnackbar({ 
-                          open: true, 
-                          message: 'Błąd podczas resetowania konfiguracji', 
-                          severity: 'error' 
-                        });
+                        setSnackbar({ open: true, message: t.snackbar.configResetError, severity: 'error' });
                       } finally {
                         setLoading(false);
                       }
                     }}
-                    disabled={loading}
-                    size="large"
+                    disabled={loading} size="large"
                   >
-                    🎬 Reset do Nowych Domyślnych
+                    {t.llm.buttons.reset}
                   </Button>
                 </Box>
               </Grid>
@@ -439,119 +378,60 @@ const AdminDashboard: React.FC = () => {
         <Box sx={{ mb: 2 }}>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CodeIcon />
-            Zarządzanie Promptami
+            {t.prompts.title}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Edytuj prompty używane do analizy scenariuszy. Każdy prompt odpowiada za konkretną sekcję analizy.
+            {t.prompts.description}
           </Typography>
-          
-          <Button
-            variant="contained"
-            startIcon={<SaveIcon />}
-            onClick={() => saveConfiguration('prompts')}
-            disabled={loading}
-            sx={{ mb: 3 }}
-          >
-            Zapisz Wszystkie Prompty
+          <Button variant="contained" startIcon={<SaveIcon />} onClick={() => saveConfiguration('prompts')} disabled={loading} sx={{ mb: 3 }}>
+            {t.prompts.buttons.saveAll}
           </Button>
         </Box>
 
         {Object.entries(promptConfig).map(([promptId, prompt]) => (
-          <Accordion
-            key={promptId}
-            expanded={expandedPrompt === promptId}
-            onChange={handlePromptAccordionChange(promptId)}
-            sx={{ mb: 2 }}
-          >
+          <Accordion key={promptId} expanded={expandedPrompt === promptId} onChange={handlePromptAccordionChange(promptId)} sx={{ mb: 2 }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                 <PsychologyIcon color="primary" />
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h6">{prompt.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {prompt.description}
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary">{prompt.description}</Typography>
                 </Box>
-                <Chip 
-                  label={`v${prompt.version}`} 
-                  size="small" 
-                  color="primary" 
-                  variant="outlined" 
-                />
+                <Chip label={`v${prompt.version}`} size="small" color="primary" variant="outlined" />
               </Box>
             </AccordionSummary>
-            
             <AccordionDetails>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Nazwa"
-                    value={prompt.name}
-                    onChange={(e) => updatePrompt(promptId, 'name', e.target.value)}
-                    variant="outlined"
-                  />
+                  <TextField fullWidth label={t.prompts.prompt.name} value={prompt.name} onChange={(e) => updatePrompt(promptId, 'name', e.target.value)} variant="outlined" />
                 </Grid>
-                
                 <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Wersja"
-                    value={prompt.version}
-                    onChange={(e) => updatePrompt(promptId, 'version', e.target.value)}
-                    variant="outlined"
-                  />
+                  <TextField fullWidth label={t.prompts.prompt.version} value={prompt.version} onChange={(e) => updatePrompt(promptId, 'version', e.target.value)} variant="outlined" />
                 </Grid>
-                
+                <Grid item xs={12}>
+                  <TextField fullWidth label={t.prompts.prompt.description} value={prompt.description} onChange={(e) => updatePrompt(promptId, 'description', e.target.value)} variant="outlined" multiline rows={2} />
+                </Grid>
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Opis"
-                    value={prompt.description}
-                    onChange={(e) => updatePrompt(promptId, 'description', e.target.value)}
-                    variant="outlined"
-                    multiline
-                    rows={2}
-                  />
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Prompt"
+                    label={t.prompts.prompt.prompt}
                     value={prompt.prompt}
                     onChange={(e) => updatePrompt(promptId, 'prompt', e.target.value)}
-                    variant="outlined"
-                    multiline
-                    rows={12}
-                    helperText="Główny prompt używany do analizy. Używaj JSON format dla strukturalnych odpowiedzi."
-                    sx={{
-                      '& .MuiInputBase-input': {
-                        fontFamily: 'monospace',
-                        fontSize: '0.875rem'
-                      }
-                    }}
+                    variant="outlined" multiline rows={12}
+                    helperText={t.prompts.prompt.helper}
+                    sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace', fontSize: '0.875rem' } }}
                   />
                 </Grid>
-                
                 <Grid item xs={12}>
                   <Divider sx={{ my: 2 }} />
                   <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<RefreshIcon />}
-                      onClick={() => {
-                        // Reset to default prompt
-                        const defaultPrompts = new AdminConfigService().getDefaultPrompts();
-                        if (defaultPrompts[promptId]) {
-                          setPromptConfig(prev => ({
-                            ...prev,
-                            [promptId]: defaultPrompts[promptId]
-                          }));
-                        }
-                      }}
-                    >
-                      Przywróć Domyślny
+                    <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => {
+                      const defaultPrompts = new AdminConfigService().getDefaultPrompts();
+                      if (defaultPrompts[promptId]) {
+                        setPromptConfig(prev => ({ ...prev, [promptId]: defaultPrompts[promptId] }));
+                      }
+                    }}>
+                      {t.prompts.buttons.restoreDefault}
                     </Button>
                   </Box>
                 </Grid>
@@ -566,142 +446,70 @@ const AdminDashboard: React.FC = () => {
           <CardContent>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TuneIcon />
-              Ustawienia Aplikacji
+              {t.appSettings.title}
             </Typography>
-            
             <Grid container spacing={3}>
-              {/* App Name */}
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Nazwa Aplikacji"
-                  value={appConfig.appName}
-                  onChange={(e) => setAppConfig(prev => ({ ...prev, appName: e.target.value }))}
-                  variant="outlined"
-                />
+                <TextField fullWidth label={t.appSettings.appName.label} value={appConfig.appName} onChange={(e) => setAppConfig(prev => ({ ...prev, appName: e.target.value }))} variant="outlined" />
               </Grid>
-
-              {/* Max File Size */}
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Maksymalny rozmiar pliku (bajty)"
+                  label={t.appSettings.maxFileSize.label}
                   type="number"
                   value={appConfig.maxFileSize}
                   onChange={(e) => setAppConfig(prev => ({ ...prev, maxFileSize: parseInt(e.target.value) }))}
-                  helperText={`Aktualnie: ${(appConfig.maxFileSize / 1024 / 1024).toFixed(1)} MB`}
-                  inputProps={{ min: 1048576 }} // 1MB minimum
+                  helperText={t.appSettings.maxFileSize.helper.replace('{size}', (appConfig.maxFileSize / 1024 / 1024).toFixed(1))}
+                  inputProps={{ min: 1048576 }}
                 />
               </Grid>
-
-              {/* Supported Formats */}
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Obsługiwane formaty"
+                  label={t.appSettings.supportedFormats.label}
                   value={appConfig.supportedFormats}
                   onChange={(e) => setAppConfig(prev => ({ ...prev, supportedFormats: e.target.value }))}
-                  helperText="Oddziel przecinkami (np. pdf,txt,docx)"
+                  helperText={t.appSettings.supportedFormats.helper}
                   variant="outlined"
                 />
               </Grid>
-
-              {/* Log Level */}
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth>
-                  <InputLabel>Poziom logowania</InputLabel>
+                  <InputLabel>{t.appSettings.logLevel.label}</InputLabel>
                   <Select
                     value={appConfig.logLevel}
-                    label="Poziom logowania"
+                    label={t.appSettings.logLevel.label}
                     onChange={(e) => setAppConfig(prev => ({ ...prev, logLevel: e.target.value }))}
                   >
-                    {logLevels.map((level) => (
-                      <MenuItem key={level} value={level}>
-                        {level.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    {logLevels.map((level) => (<MenuItem key={level} value={level}>{level.toUpperCase()}</MenuItem>))}
                   </Select>
                 </FormControl>
               </Grid>
-
-              {/* Feature Toggles */}
               <Grid item xs={12}>
                 <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                  Funkcjonalności
+                  {t.appSettings.features.title}
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={appConfig.debugMode}
-                          onChange={(e) => setAppConfig(prev => ({ ...prev, debugMode: e.target.checked }))}
-                        />
-                      }
-                      label="Tryb debugowania"
-                    />
+                    <FormControlLabel control={<Switch checked={appConfig.debugMode} onChange={(e) => setAppConfig(prev => ({ ...prev, debugMode: e.target.checked }))} />} label={t.appSettings.features.debugMode} />
                   </Grid>
-
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={appConfig.enableOCR}
-                          onChange={(e) => setAppConfig(prev => ({ ...prev, enableOCR: e.target.checked }))}
-                        />
-                      }
-                      label="Włącz OCR"
-                    />
+                    <FormControlLabel control={<Switch checked={appConfig.enableOCR} onChange={(e) => setAppConfig(prev => ({ ...prev, enableOCR: e.target.checked }))} />} label={t.appSettings.features.enableOCR} />
                   </Grid>
-
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={appConfig.enableAdvancedCharts}
-                          onChange={(e) => setAppConfig(prev => ({ ...prev, enableAdvancedCharts: e.target.checked }))}
-                        />
-                      }
-                      label="Zaawansowane wykresy"
-                    />
+                    <FormControlLabel control={<Switch checked={appConfig.enableAdvancedCharts} onChange={(e) => setAppConfig(prev => ({ ...prev, enableAdvancedCharts: e.target.checked }))} />} label={t.appSettings.features.enableAdvancedCharts} />
                   </Grid>
-
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={appConfig.enableExport}
-                          onChange={(e) => setAppConfig(prev => ({ ...prev, enableExport: e.target.checked }))}
-                        />
-                      }
-                      label="Eksport danych"
-                    />
+                    <FormControlLabel control={<Switch checked={appConfig.enableExport} onChange={(e) => setAppConfig(prev => ({ ...prev, enableExport: e.target.checked }))} />} label={t.appSettings.features.enableExport} />
                   </Grid>
-
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={appConfig.enableCollaboration}
-                          onChange={(e) => setAppConfig(prev => ({ ...prev, enableCollaboration: e.target.checked }))}
-                        />
-                      }
-                      label="Współpraca (eksperymentalne)"
-                    />
+                    <FormControlLabel control={<Switch checked={appConfig.enableCollaboration} onChange={(e) => setAppConfig(prev => ({ ...prev, enableCollaboration: e.target.checked }))} />} label={t.appSettings.features.enableCollaboration} />
                   </Grid>
                 </Grid>
               </Grid>
-
-              {/* Save Button */}
               <Grid item xs={12}>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={() => saveConfiguration('app')}
-                  disabled={loading}
-                  size="large"
-                >
-                  Zapisz Ustawienia Aplikacji
+                <Button variant="contained" startIcon={<SaveIcon />} onClick={() => saveConfiguration('app')} disabled={loading} size="large">
+                  {t.appSettings.buttons.save}
                 </Button>
               </Grid>
             </Grid>
@@ -726,4 +534,4 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;

@@ -1,43 +1,36 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Box, 
-  Card, 
-  CardContent, 
-  Typography, 
+import { useTranslation } from 'react-i18next';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
   Tabs,
   Tab,
   Grid,
   Chip,
   Stack,
-  useTheme,
   IconButton,
   Tooltip,
   Paper,
-  Divider
 } from '@mui/material';
-import { 
+import {
   Analytics as AnalyticsIcon,
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   LocationOn as LocationIcon,
-  Build as PropsIcon,
-  DirectionsCar as VehicleIcon,
-  Security as SafetyIcon,
-  Lightbulb as LightingIcon,
   Timeline as TimelineIcon,
   Psychology as PsychologyIcon,
   AttachMoney as BudgetIcon,
   ChecklistRtl as ChecklistIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
   Download as DownloadIcon,
-  Share as ShareIcon
+  Share as ShareIcon,
+  Security as SafetyIcon,
 } from '@mui/icons-material';
 
 import { useCurrentAnalysis, useSelectedRole } from '@/store/analysisStore';
 import { FilmRole } from '@/types/analysis';
 
-// Import komponenty wizualizacyjne
 import OverviewDashboard from '@/components/dashboards/OverviewDashboard';
 import SceneVisualization from '@/components/visualizations/SceneVisualization';
 import CharacterVisualization from '@/components/visualizations/CharacterVisualization';
@@ -71,47 +64,45 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const AnalysisDisplay: React.FC = () => {
+  const { t } = useTranslation();
   const analysis = useCurrentAnalysis();
   const selectedRole = useSelectedRole();
-  const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
 
-  // Konfiguracja tabów na podstawie roli użytkownika
   const tabsConfig = useMemo(() => {
     const baseTabs = [
-      { label: 'Przegląd', icon: <DashboardIcon />, id: 'overview' },
-      { label: 'Sceny', icon: <TimelineIcon />, id: 'scenes' },
-      { label: 'Postacie', icon: <PeopleIcon />, id: 'characters' },
-      { label: 'Lokacje', icon: <LocationIcon />, id: 'locations' },
-      { label: 'Emocje', icon: <PsychologyIcon />, id: 'emotions' },
-      { label: 'Relacje', icon: <PeopleIcon />, id: 'relationships' },
-      { label: 'Produkcja', icon: <AnalyticsIcon />, id: 'production' },
-      { label: 'Bezpieczeństwo', icon: <SafetyIcon />, id: 'safety' },
-      { label: 'Budżet', icon: <BudgetIcon />, id: 'budget' },
-      { label: 'Techniczne', icon: <AnalyticsIcon />, id: 'technical' }
+      { label: t('analysisDisplay.tabs.overview'), icon: <DashboardIcon />, id: 'overview' },
+      { label: t('analysisDisplay.tabs.scenes'), icon: <TimelineIcon />, id: 'scenes' },
+      { label: t('analysisDisplay.tabs.characters'), icon: <PeopleIcon />, id: 'characters' },
+      { label: t('analysisDisplay.tabs.locations'), icon: <LocationIcon />, id: 'locations' },
+      { label: t('analysisDisplay.tabs.emotions'), icon: <PsychologyIcon />, id: 'emotions' },
+      { label: t('analysisDisplay.tabs.relationships'), icon: <PeopleIcon />, id: 'relationships' },
+      { label: t('analysisDisplay.tabs.production'), icon: <AnalyticsIcon />, id: 'production' },
+      { label: t('analysisDisplay.tabs.safety'), icon: <SafetyIcon />, id: 'safety' },
+      { label: t('analysisDisplay.tabs.budget'), icon: <BudgetIcon />, id: 'budget' },
+      { label: t('analysisDisplay.tabs.technical'), icon: <AnalyticsIcon />, id: 'technical' },
     ];
 
-    // Filtrowanie tabów na podstawie roli
     if (selectedRole === FilmRole.DIRECTOR) {
-      return baseTabs.filter(tab => 
+      return baseTabs.filter((tab) =>
         ['overview', 'scenes', 'characters', 'emotions', 'relationships'].includes(tab.id)
       );
     } else if (selectedRole === FilmRole.PRODUCER) {
-      return baseTabs.filter(tab => 
+      return baseTabs.filter((tab) =>
         ['overview', 'production', 'budget', 'safety', 'locations'].includes(tab.id)
       );
     } else if (selectedRole === FilmRole.CINEMATOGRAPHER) {
-      return baseTabs.filter(tab => 
+      return baseTabs.filter((tab) =>
         ['overview', 'scenes', 'locations', 'technical', 'emotions'].includes(tab.id)
       );
     } else if (selectedRole === FilmRole.SAFETY_COORDINATOR) {
-      return baseTabs.filter(tab => 
+      return baseTabs.filter((tab) =>
         ['overview', 'safety', 'production', 'scenes'].includes(tab.id)
       );
     }
-    
-    return baseTabs; // Wszystkie taby dla pozostałych ról
-  }, [selectedRole]);
+
+    return baseTabs;
+  }, [selectedRole, t]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -121,15 +112,21 @@ const AnalysisDisplay: React.FC = () => {
     return (
       <Card>
         <CardContent>
-          <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ py: 8 }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            justifyContent="center"
+            sx={{ py: 8 }}
+          >
             <AnalyticsIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
             <Box textAlign="center">
               <Typography variant="h5" color="text.secondary" gutterBottom>
-                Brak analizy scenariusza
+                {t('analysisDisplay.noAnalysis.title')}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Prześlij plik PDF scenariusza, aby rozpocząć analizę 27 sekcji
-          </Typography>
+                {t('analysisDisplay.noAnalysis.subtitle')}
+              </Typography>
             </Box>
           </Stack>
         </CardContent>
@@ -137,45 +134,52 @@ const AnalysisDisplay: React.FC = () => {
     );
   }
 
-  // Statystyki ogólne
   const totalScenes = analysis.scenes?.length || 0;
   const totalCharacters = analysis.characters?.length || 0;
   const totalLocations = analysis.locations?.length || 0;
   const budgetComplexity = analysis.budget?.overallComplexity || 'UNKNOWN';
-  const safetyLevel = analysis.safety?.overallAssessment?.overallRiskLevel || 'UNKNOWN';
+  const safetyLevel =
+    analysis.safety?.overallAssessment?.overallRiskLevel || 'UNKNOWN';
+
+  const getComplexityColor = (level: string) => {
+    switch (level.toUpperCase()) {
+      case 'LOW': return 'success';
+      case 'MEDIUM': return 'warning';
+      case 'HIGH': return 'error';
+      case 'EXTREME': return 'error';
+      default: return 'default';
+    }
+  };
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-      {/* Nagłówek z podsumowaniem */}
       <Paper elevation={2} sx={{ mb: 3 }}>
-      <CardContent>
+        <CardContent>
           <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
             <AnalyticsIcon color="primary" sx={{ fontSize: 32 }} />
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h4" component="h1" gutterBottom>
-                Analiza Scenariusza
+                {t('analysisDisplay.header.title')}
               </Typography>
               <Typography variant="subtitle1" color="text.secondary">
                 {analysis.filename}
-          </Typography>
+              </Typography>
             </Box>
-            
-            {/* Akcje */}
+
             <Stack direction="row" spacing={1}>
-              <Tooltip title="Pobierz raport">
+              <Tooltip title={t('analysisDisplay.header.downloadTooltip')}>
                 <IconButton>
                   <DownloadIcon />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Udostępnij">
+              <Tooltip title={t('analysisDisplay.header.shareTooltip')}>
                 <IconButton>
                   <ShareIcon />
                 </IconButton>
               </Tooltip>
             </Stack>
-        </Stack>
+          </Stack>
 
-          {/* Szybkie statystyki */}
           <Grid container spacing={2}>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
@@ -183,73 +187,82 @@ const AnalysisDisplay: React.FC = () => {
                   {totalScenes}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Sceny
+                  {t('analysisDisplay.stats.scenes')}
                 </Typography>
               </Box>
-          </Grid>
+            </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
                 <Typography variant="h5" color="primary.main" fontWeight="bold">
                   {totalCharacters}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Postacie
+                  {t('analysisDisplay.stats.characters')}
                 </Typography>
               </Box>
-          </Grid>
+            </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
                 <Typography variant="h5" color="primary.main" fontWeight="bold">
                   {totalLocations}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Lokacje
+                  {t('analysisDisplay.stats.locations')}
                 </Typography>
               </Box>
-          </Grid>
+            </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
-                <Chip 
-                  label={budgetComplexity}
-                  color={budgetComplexity === 'LOW' ? 'success' : budgetComplexity === 'HIGH' ? 'warning' : 'error'}
+                <Chip
+                  label={t(`analysisDisplay.complexity.${budgetComplexity.toUpperCase()}`)}
+                  color={getComplexityColor(budgetComplexity)}
                   size="small"
                 />
-                <Typography variant="caption" color="text.secondary" display="block">
-                  Budżet
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                >
+                  {t('analysisDisplay.stats.budget')}
                 </Typography>
               </Box>
-          </Grid>
+            </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
-                <Chip 
-                  label={safetyLevel}
-                  color={safetyLevel === 'LOW' ? 'success' : safetyLevel === 'MEDIUM' ? 'warning' : 'error'}
+                <Chip
+                  label={t(`analysisDisplay.complexity.${safetyLevel.toUpperCase()}`)}
+                  color={getComplexityColor(safetyLevel)}
                   size="small"
                 />
-                <Typography variant="caption" color="text.secondary" display="block">
-                  Bezpieczeństwo
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                >
+                  {t('analysisDisplay.stats.safety')}
                 </Typography>
               </Box>
-        </Grid>
+            </Grid>
             <Grid item xs={6} sm={3} md={2}>
               <Box textAlign="center" sx={{ p: 1 }}>
                 <Typography variant="h6" color="primary.main" fontWeight="bold">
                   27
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Sekcji analizy
+                  {t('analysisDisplay.stats.sections')}
                 </Typography>
               </Box>
             </Grid>
           </Grid>
 
-          {/* Filtr roli */}
           {selectedRole && (
             <Box sx={{ mt: 2 }}>
-                  <Chip 
-                label={`Widok: ${selectedRole}`}
-                    color="primary"
-                    variant="outlined"
+              <Chip
+                label={t('analysisDisplay.roleFilter.view', {
+                  role: selectedRole,
+                })}
+                color="primary"
+                variant="outlined"
                 size="small"
               />
             </Box>

@@ -523,8 +523,6 @@ function postPartialResult(sectionName: string, data: any) {
 }
 
 function extractArrayFromResult(result: any): any[] {
-  console.log('🔍 extractArrayFromResult received:', JSON.stringify(result, null, 2));
-  
   if (Array.isArray(result)) {
     console.log('✅ LLM returned array directly, length:', result.length);
     return result;
@@ -586,7 +584,6 @@ async function analyzeSceneStructure(scriptText: string) {
   console.log('🎬 Scene prompt length:', scenePrompt.length, 'characters');
   
   const rawResult = await analyzeWithPrompt(scenePrompt, scriptText, 'Scene Structure');
-  console.log('🎬 Raw LLM result for scenes:', JSON.stringify(rawResult, null, 2));
   
   return rawResult;
 }
@@ -1028,6 +1025,7 @@ async function analyzePostProduction(scriptText: string) {
 
 // --- Główna funkcja wykonywana przez workera po otrzymaniu wiadomości ---
 async function performFullAnalysis(scriptText: string, filename: string): Promise<CompleteAnalysis> {
+  console.log('--- STARTING FULL ANALYSIS ---');
   const startTime = Date.now();
   
   let partialAnalysis: Partial<CompleteAnalysis> = {};
@@ -1039,12 +1037,7 @@ async function performFullAnalysis(scriptText: string, filename: string): Promis
   
   updateProgress('Scene Structure', 2, 27);
   const scenesRawResult = await analyzeSceneStructure(scriptText);
-  console.log('🎬 Scene Structure Raw Result:', JSON.stringify(scenesRawResult, null, 2));
-  
   const scenes = extractArrayFromResult(scenesRawResult);
-  console.log('🎬 Extracted scenes array:', JSON.stringify(scenes, null, 2));
-  console.log('🎬 Final scenes array length:', scenes.length);
-  
   partialAnalysis.scenes = scenes;
   postPartialResult('scenes', scenes);
 
@@ -1205,4 +1198,4 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     console.error('Error in Gemini Analysis Worker:', error);
     self.postMessage({ type: 'error', payload: error instanceof Error ? error.message : 'Unknown worker error' });
   }
-}; 
+};
