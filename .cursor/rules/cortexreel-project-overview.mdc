@@ -1,0 +1,64 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# CortexReel Project Overview
+
+## Project Identity
+CortexReel is a **professional React TypeScript SPA** designed for film industry professionals to analyze screenplays using AI. The application provides comprehensive 27-section analysis through Google Gemini AI with role-based visualizations for directors, producers, cinematographers, and safety coordinators.
+
+## Core Architecture Patterns
+
+### Frontend Architecture
+- **Type**: React 19 SPA + TypeScript + Material-UI
+- **State Management**: Zustand with persistence middleware
+- **Build Tool**: Vite 6.2.0 with React plugin
+- **UI Framework**: Material-UI v5.15.0 with custom film industry theme
+- **Key Files**: 
+  - [src/App.tsx](mdc:src/App.tsx) - Main application with routing and theme
+  - [src/views/AdminDashboard.tsx](mdc:src/views/AdminDashboard.tsx) - 3-tab admin panel (729 lines)
+  - [src/services/AdminConfigService.ts](mdc:src/services/AdminConfigService.ts) - Configuration management (734 lines)
+
+### Backend Architecture (Phase 1)
+- **Type**: Fastify + LangChain + RAG Pipeline
+- **Key Components**:
+  - [src/backend/server.ts](mdc:src/backend/server.ts) - Fastify server with WebSocket
+  - [src/backend/services/LangChainRAGService.ts](mdc:src/backend/services/LangChainRAGService.ts) - RAG with Weaviate
+  - [src/backend/utils/queueFactory.ts](mdc:src/backend/utils/queueFactory.ts) - BullMQ + Redis integration
+
+## MEGA PROMPT v7.0 System
+The project implements a sophisticated **27-section AI analysis system** called "MISTYCZNY ALTER EGO REŻYSERA":
+- **Target Model**: Google Gemini 2.5 Flash (65,536 max tokens)
+- **Polish Film Industry Focus**: WN./ZN./PL. scene detection
+- **Comprehensive Analysis**: projectGenesis, filmicVisionSensibility, scenes, characters, themes, etc.
+- **Location**: [src/services/AdminConfigService.ts](mdc:src/services/AdminConfigService.ts) (getDefaultPrompts method)
+
+## Critical Integration Pattern
+**Admin Dashboard → Analysis Pipeline Integration** (FULLY IMPLEMENTED):
+```
+AdminDashboard → AdminConfigService → GeminiService → Worker → Analysis
+     ↓                   ↓                ↓             ↓           ↓
+Polish UI        localStorage     postMessage()    config    Dynamic Processing
+```
+
+## Development Standards
+- **TypeScript**: Strict mode, 95%+ coverage required
+- **Component Pattern**: Atomic Design with Container/Presentational separation
+- **Error Handling**: Graceful degradation with user-friendly feedback
+- **UI Language**: Polish for user interface, English for code/documentation
+- **File Processing**: Multi-strategy PDF processing (direct + OCR fallback)
+
+## Key Dependencies
+- **Frontend**: React 19, Material-UI, Zustand, Recharts, PDF.js, Tesseract.js
+- **Backend**: Fastify, LangChain, BullMQ, IORedis, MongoDB, Weaviate
+- **AI Integration**: Google Gemini API, OpenAI embeddings
+
+## Quality Metrics
+- **Architecture**: A+ (Excellent) - Przemyślana, modułowa, skalowalna
+- **TypeScript Coverage**: 95% (Excellent)
+- **Component Modularity**: 90% (Professional structure)
+- **Security**: C+ (Needs backend proxy for API keys)
+
+## Critical Security Note
+API keys are currently exposed in client bundle - high priority for backend migration with secure proxy implementation.
