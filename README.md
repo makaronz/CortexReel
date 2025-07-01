@@ -44,6 +44,10 @@
 
 **CortexReel** is a cutting-edge, AI-powered screenplay analysis platform designed specifically for film industry professionals. Built with modern web technologies and powered by Google's Gemini AI, it provides comprehensive script analysis across 27 specialized sections, delivering actionable insights for directors, producers, cinematographers, and production teams.
 
+> "No film is ever really finished; it merely escapes." — Orson Welles  
+>  
+> CortexReel is the red pill for beleaguered script departments. Imagine Neo dodging bullets in *The Matrix* (1999) — now swap bullets for page counts. Since **v3** we've bolted a LangChain-powered RAG engine onto the chassis à la *Mad Max: Fury Road* (2015). MongoDB, Weaviate and BullMQ roar behind the scenes while your Admin Dashboard feeds configurations straight into the pipeline faster than you can mutter "I am vengeance." (*The Batman*, 2022)
+
 ### 🎪 Why CortexReel?
 
 - **🎬 Industry-Focused**: Built by film professionals, for film professionals
@@ -53,6 +57,7 @@
 - **🎨 Professional UI**: Dark mode interface following industry standards
 - **🔒 Secure**: Client-side processing with no data retention
 - **📱 Responsive**: Works seamlessly across all devices
+- **🤖 Full-Stack Muscle**: LangChain RAG backend with MongoDB, Weaviate & BullMQ — scalable, secure, "witness me!"
 
 ### 🎭 Target Audience
 
