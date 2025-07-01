@@ -3,3 +3,272 @@ description:
 globs:
 alwaysApply: false
 ---
+# Backend Implementation Phase 1 - LangChain RAG Infrastructure
+
+## 🎯 CURRENT PRIORITY (2025-01-15)
+
+With the Admin Dashboard → Analysis Pipeline integration **COMPLETED**, the next major milestone is implementing a robust backend infrastructure using LangChain for advanced RAG (Retrieval-Augmented Generation) capabilities.
+
+## 📋 Implementation Roadmap
+
+### Phase 1: Infrastructure Setup (CURRENT)
+1. **Docker Compose Environment**
+   - MongoDB for structured analysis storage
+   - Weaviate vector database for embeddings
+   - Redis for job queue management
+   - FastAPI backend server
+
+2. **LangChain RAG Pipeline**
+   - Document ingestion and chunking
+   - Embedding generation (OpenAI/local models)
+   - Vector storage and retrieval
+   - Context-aware analysis chains
+
+3. **Job Queue System**
+   - BullMQ for background processing
+   - Screenplay analysis job management
+   - Progress tracking and error handling
+   - Scalable worker processes
+
+### Phase 2: API Integration (NEXT)
+4. **FastAPI Backend**
+   - Secure REST endpoints
+   - Authentication middleware
+   - File upload handling
+   - Configuration management API
+
+5. **LangChain Orchestration**
+   - Multi-step reasoning chains
+   - Memory-aware conversations
+   - Tool integration (web search, calculations)
+   - Output validation and formatting
+
+### Phase 3: Migration & Enhancement (FUTURE)
+6. **Data Migration**
+   - localStorage → Backend database
+   - Configuration management migration
+   - Analysis history preservation
+   - User preference migration
+
+## 🏗️ Architecture Pattern
+
+### LangChain RAG Flow
+```typescript
+Document Upload → Text Extraction → Chunking → Embeddings → Vector Store
+       ↓               ↓             ↓          ↓           ↓
+   PDF Parser     Semantic Split   OpenAI     Weaviate   Retrieval
+       ↓               ↓             ↓          ↓           ↓
+   Analysis Job → Context Assembly → LLM Chain → Validation → Storage
+```
+
+### Service Integration
+```typescript
+Frontend → FastAPI → BullMQ → LangChain Worker → Vector Database
+    ↓         ↓        ↓           ↓                ↓
+  Admin UI   Auth   Queue    RAG Pipeline      MongoDB
+```
+
+## 🔧 Key Components to Implement
+
+### 1. Docker Compose Configuration
+**File**: `docker-compose.yml`
+```yaml
+services:
+  mongodb:
+    image: mongo:6.0
+    environment:
+      MONGO_INITDB_DATABASE: cortexreel
+    ports:
+      - "27017:27017"
+  
+  weaviate:
+    image: semitechnologies/weaviate:latest
+    environment:
+      ENABLE_MODULES: 'text2vec-openai'
+    ports:
+      - "8080:8080"
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  
+  backend:
+    build: ./src/backend
+    depends_on: [mongodb, weaviate, redis]
+    ports:
+      - "8000:8000"
+```
+
+### 2. LangChain RAG Service
+**File**: [src/backend/services/LangChainRAGService.ts](mdc:src/backend/services/LangChainRAGService.ts)
+```typescript
+import { LangChainService } from 'langchain';
+import { WeaviateVectorStore } from 'langchain/vectorstores/weaviate';
+import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+
+export class LangChainRAGService {
+  private vectorStore: WeaviateVectorStore;
+  private embeddings: OpenAIEmbeddings;
+  
+  async ingestDocument(scriptText: string, metadata: any) {
+    // 1. Split document into semantic chunks
+    // 2. Generate embeddings
+    // 3. Store in Weaviate with metadata
+  }
+  
+  async analyzeWithContext(query: string, scriptId: string) {
+    // 1. Retrieve relevant context from vector store
+    // 2. Construct analysis prompt with context
+    // 3. Execute MEGA PROMPT v7.0 with enhanced context
+    // 4. Validate and format response
+  }
+}
+```
+
+### 3. FastAPI Backend Server
+**File**: [src/backend/server.ts](mdc:src/backend/server.ts)
+```typescript
+import { FastAPI } from 'fastapi';
+import { BullMQService } from './services/BullMQService';
+import { LangChainRAGService } from './services/LangChainRAGService';
+
+const app = new FastAPI();
+
+app.post('/api/analysis/upload', async (file: File) => {
+  // 1. Validate file and extract text
+  // 2. Create analysis job in BullMQ
+  // 3. Return job ID for progress tracking
+});
+
+app.get('/api/analysis/{jobId}/status', async (jobId: string) => {
+  // Return job progress and current status
+});
+
+app.get('/api/analysis/{jobId}/result', async (jobId: string) => {
+  // Return completed analysis results
+});
+```
+
+### 4. BullMQ Job Queue System
+**File**: [src/backend/services/BullMQService.ts](mdc:src/backend/services/BullMQService.ts)
+```typescript
+import { Queue, Worker } from 'bullmq';
+import { LangChainRAGService } from './LangChainRAGService';
+
+export class BullMQService {
+  private analysisQueue: Queue;
+  private ragService: LangChainRAGService;
+  
+  async createAnalysisJob(scriptText: string, filename: string) {
+    return await this.analysisQueue.add('analyze-screenplay', {
+      scriptText,
+      filename,
+      timestamp: Date.now()
+    });
+  }
+  
+  private setupWorker() {
+    new Worker('analysis', async (job) => {
+      // 1. Ingest document into vector store
+      // 2. Perform RAG-enhanced analysis
+      // 3. Store results in MongoDB
+      // 4. Update job progress
+    });
+  }
+}
+```
+
+## 🎯 Implementation Priorities
+
+### Week 1: Infrastructure
+- [x] **Docker Compose setup** - MongoDB, Weaviate, Redis containers
+- [ ] **FastAPI backend scaffold** - Basic server with health checks
+- [ ] **Environment configuration** - Secure API key management
+- [ ] **Database schemas** - MongoDB collections and Weaviate classes
+
+### Week 2: LangChain Integration
+- [ ] **Document ingestion pipeline** - PDF → chunks → embeddings → storage
+- [ ] **Basic RAG queries** - Context retrieval and prompt enhancement
+- [ ] **MEGA PROMPT v7.0 integration** - Enhanced with retrieved context
+- [ ] **Job queue implementation** - Background processing with progress
+
+### Week 3: API Development
+- [ ] **Upload endpoints** - File handling and validation
+- [ ] **Analysis endpoints** - Job creation and status tracking
+- [ ] **Configuration API** - Backend config management
+- [ ] **Authentication** - Basic auth middleware
+
+### Week 4: Integration & Testing
+- [ ] **Frontend integration** - Connect React app to backend
+- [ ] **Migration tools** - localStorage → backend data transfer
+- [ ] **End-to-end testing** - Complete workflow validation
+- [ ] **Performance optimization** - Query optimization and caching
+
+## 🔐 Security Considerations
+
+### API Key Management
+- **Environment Variables** - Secure backend storage
+- **API Proxy Pattern** - Frontend → Backend → LLM services
+- **Rate Limiting** - Prevent API abuse
+- **Request Validation** - Input sanitization and type checking
+
+### Data Protection
+- **MongoDB Security** - Authentication and encryption
+- **Weaviate Access Control** - Protected vector operations
+- **Redis Security** - Memory encryption for job data
+- **CORS Configuration** - Restricted frontend access
+
+## 📊 Success Metrics
+
+### Performance Targets
+- **Document Ingestion**: <30 seconds for 100-page screenplay
+- **RAG Query Time**: <2 seconds for context retrieval
+- **Analysis Completion**: <5 minutes for full 27-section analysis
+- **Concurrent Jobs**: Support 10+ simultaneous analyses
+
+### Quality Indicators
+- **Context Relevance**: >90% relevant context retrieved
+- **Analysis Accuracy**: Enhanced quality vs. client-side version
+- **Error Handling**: Graceful degradation with detailed logging
+- **Monitoring**: Comprehensive metrics and health checks
+
+## 🔗 Integration Points
+
+### Frontend Communication
+```typescript
+// New backend integration pattern
+const analysisService = new BackendAnalysisService();
+
+// Upload and start analysis
+const jobId = await analysisService.uploadAndAnalyze(file);
+
+// Track progress
+const progress = await analysisService.getProgress(jobId);
+
+// Get results
+const results = await analysisService.getResults(jobId);
+```
+
+### Configuration Migration
+```typescript
+// Gradual migration from localStorage
+const backendConfig = await ConfigService.migrateFromLocalStorage();
+await BackendConfigService.saveConfiguration(backendConfig);
+```
+
+## 🚀 Next Actions
+
+### Immediate (This Session)
+1. **Set up Docker Compose** - Create development environment
+2. **Initialize FastAPI** - Basic server structure
+3. **Configure MongoDB** - Database schemas and connections
+4. **Test LangChain setup** - Basic RAG pipeline verification
+
+### Short Term (Next Sessions)
+1. **Implement job queue** - BullMQ with Redis backend
+2. **Build ingestion pipeline** - Document processing and storage
+3. **Create API endpoints** - Upload, status, results
+4. **Frontend integration** - Connect React app to backend
+
+This backend implementation will provide the foundation for scalable, secure, and enhanced AI analysis capabilities while maintaining the professional user experience established in the frontend.
