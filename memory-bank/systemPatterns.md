@@ -310,3 +310,16 @@ browserbase_get_text() → Configuration Verification
   - Chains combine retrieval, prompt, and LLM call, with validation and fallback.
 - Enables modular, testable, and extensible AI pipelines.
 - Future: LangChain agents for tool use, multi-hop reasoning, and collaborative workflows. 
+
+## Pattern Graveyard
+
+This section documents architectural patterns that were considered but ultimately rejected, along with the reasoning for their exclusion. This is crucial for preventing the re-evaluation of unsuitable solutions.
+
+### **Rejected Pattern: Server-Side Rendering (SSR) for Analysis Results**
+- **Description:** An initial architectural approach considered generating the 27-section analysis report on a backend server (e.g., using Node.js with a templating engine) and delivering a complete, static HTML page to the user.
+- **Reason for Rejection:**
+    - **Lack of Interactivity:** SSR would have resulted in a static, non-interactive report. The core value proposition of CortexReel lies in its dynamic, role-based dashboards with interactive charts and real-time filtering, which are best implemented in a client-side SPA.
+    - **Poor User Experience:** Users would have to wait for the entire, massive report to be generated and loaded. The current SPA approach allows for progressive loading, showing results as they become available from the analysis worker.
+    - **Increased Server Load:** Generating large, complex reports on the server for each user would be resource-intensive and would not scale well. The current client-side/worker approach offloads this processing to the user's machine.
+    - **Architectural Complexity:** Integrating interactive client-side components with a server-rendered page (hydration) would have introduced unnecessary complexity compared to a pure SPA architecture.
+- **Chosen Alternative:** A full Single Page Application (SPA) architecture using React, with analysis performed in a Web Worker and results rendered dynamically on the client. This provides a superior, interactive user experience and a more scalable model. 

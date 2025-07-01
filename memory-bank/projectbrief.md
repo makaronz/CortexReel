@@ -1,5 +1,31 @@
 # CortexReel - Project Brief
 
+## Project Metadata
+- **Version:** 1.0.0
+- **Owners:** CortexReel Development Team
+- **Deadlines:** Q2 2025 - Backend Integration Phase Completion
+- **OKRs:**
+  - **Objective 1:** Deliver a professional-grade, AI-powered analysis tool that reduces screenplay breakdown time from weeks to minutes.
+    - **KR1:** Achieve analysis completion for a 120-page script in under 5 minutes.
+    - **KR2:** Ensure all 27 analysis sections operate with >95% reliability for standard screenplay formats.
+  - **Objective 2:** Establish CortexReel as an intuitive and indispensable tool for film industry professionals.
+    - **KR1:** Achieve a user satisfaction score of >4.5/5 based on feedback surveys.
+    - **KR2:** Ensure exported analysis results are 100% compatible with standard production workflows (e.g., importable into scheduling software).
+
+## System Boundary Diagram (C4 Level 1)
+
+```mermaid
+C4Context
+  title System Context diagram for CortexReel
+
+  Person(user, "Film Professional", "A director, producer, cinematographer, or safety coordinator.")
+  System(cortexReel, "CortexReel SPA", "Provides a web-based interface for screenplay upload, configuration, and analysis visualization.")
+  System_Ext(gemini, "Google Gemini AI", "The external Large Language Model used for performing the 27-section screenplay analysis via API calls.")
+
+  Rel(user, cortexReel, "Uploads screenplays, manages configuration, and views analysis results")
+  Rel(cortexReel, gemini, "Sends script text and prompts for analysis via secure API")
+```
+
 ## Podstawowe Informacje
 
 **Nazwa projektu:** CortexReel  

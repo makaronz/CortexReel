@@ -517,3 +517,108 @@ export default defineConfig({
 - **Real-time Collaboration** - WebSocket-based live updates
 - **Mobile Application** - React Native or PWA implementation
 - **Enterprise Features** - Advanced security and compliance features 
+
+## Development Containerization (Docker Definition)
+
+This section defines the mandatory Docker-based development environment to ensure consistency and ease of setup, as required by the project's technical guidelines. The following `docker-compose.yml` structure outlines the services that constitute the full local development stack for CortexReel.
+
+### `docker-compose.yml` Structure
+```yaml
+version: '3.8'
+
+services:
+  # Frontend Service (Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
+      - VITE_API_BASE_URL=http://api:3001
+    depends_on:
+      - api
+
+  # Backend API (Fastify/Node.js)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./src/backend:/app/src/backend
+    environment:
+      - NODE_ENV=development
+      - REDIS_HOST=redis
+      - WEAVIATE_HOST=weaviate
+      - MONGODB_URI=mongodb://mongodb:27017/cortexreel
+    depends_on:
+      - redis
+      - weaviate
+      - mongodb
+
+  # Analysis Worker (BullMQ/Node.js)
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend # Can reuse backend image
+    command: npm run start:worker
+    volumes:
+      - ./src/backend:/app/src/backend
+    environment:
+      - NODE_ENV=development
+      - REDIS_HOST=redis
+      - WEAVIATE_HOST=weaviate
+      - MONGODB_URI=mongodb://mongodb:27017/cortexreel
+    depends_on:
+      - redis
+      - weaviate
+      - mongodb
+
+  # Vector Database
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.24.1
+    ports:
+      - "8080:8080"
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    environment:
+      - QUERY_DEFAULTS_LIMIT=25
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=none
+      - CLUSTER_HOSTNAME=node1
+
+  # Job Queue & Cache
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
+      - "8001:8001" # Redis Insight
+    volumes:
+      - redis_data:/data
+
+  # Structured Data Storage
+  mongodb:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  weaviate_data:
+  redis_data:
+  mongodb_data:
+```
+
+### Required `.env` file for Docker
+```bash
+# Used by frontend and backend services
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+``` 

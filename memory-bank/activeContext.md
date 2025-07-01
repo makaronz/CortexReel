@@ -308,4 +308,25 @@ File Validation  OCR Fallback  27 Sections  Progress Track  Persist  Charts
 - Follow established component patterns for consistency
 - Prioritize user experience and professional aesthetics
 - Admin dashboard uses localStorage keys: cortexreel_admin_config_*
-- Configuration service prepared for future backend integration 
+- Configuration service prepared for future backend integration
+
+## Current Phase File/Module Boundaries
+
+This section defines the exact source file and module boundaries involved in the current development phase, which is the **Backend Implementation (Phase 1)**.
+
+- **Primary Directory:** `src/backend/`
+- **Key Service Files:**
+  - `src/backend/server.ts`: The main Fastify server entry point.
+  - `src/backend/services/LangChainRAGService.ts`: Core service for orchestrating the Retrieval-Augmented Generation pipeline.
+  - `src/backend/services/ChatOrchestratorService.ts`: Manages chat interactions and memory.
+- **Worker & Queue Logic:**
+  - `src/backend/workers/analysisProcessor.ts`: The BullMQ worker that processes analysis jobs.
+  - `src/backend/pipelines/rag.ts`: Defines the steps of the RAG pipeline.
+  - `src/constants/bullmqQueues.ts`: Defines BullMQ queue names and constants.
+- **API Routes:**
+  - `src/backend/plugins/analysisRoutes.ts`: Defines the API endpoints for analysis.
+- **Supporting Types:**
+  - `src/types/jobs.ts`: TypeScript definitions for job payloads and results.
+- **Future Infrastructure Files:**
+  - `docker-compose.yml` (root): Will define the containerized services (API, worker, DBs, etc.).
+  - `.env.backend`: Environment variables specific to the backend services. 

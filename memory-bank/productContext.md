@@ -89,3 +89,29 @@ Profesjonaliści branży filmowej (reżyserzy, producenci, operatorzy kamery, ko
 - StudioBinder (breakdown sheets, ale ręczne)
 - MovieMagic Scheduling (scheduling, nie analiza)
 - **Nasza przewaga:** Jedyny kompleksowy AI-powered analyzer scenariuszy 
+
+## User Input/Output Surface Mapping
+
+This section outlines all known points of interaction with the CortexReel system, fulfilling the mandatory requirement for a user I/O surface map.
+
+### UI Endpoints (Client-Side Routes)
+- **`/` (Login Screen):**
+  - **Input:** User password.
+  - **Output:** Authentication state change, redirects to `/upload`.
+- **`/upload` (File Upload View):**
+  - **Input:** Drag-and-drop or file selection of a PDF file.
+  - **Output:** Initiates parsing and analysis, displays progress, redirects to `/analysis/:id`.
+- **`/analysis/:id` (Analysis Dashboard):**
+  - **Input:** User selection of role (Director, Producer, etc.), interaction with charts and data tables.
+  - **Output:** Displays 27 sections of analysis results in role-specific dashboards and visualizations.
+- **`/admin` (Admin Dashboard):**
+  - **Input:** Changes to LLM configuration, prompts, and application settings.
+  - **Output:** Saves configuration to `localStorage`, provides real-time feedback via UI notifications.
+
+### API Call Entry Points (External Integrations)
+- **`Google Gemini AI API`:**
+  - **Input:**
+    - `scriptText`: The full text of the screenplay.
+    - `llmConfig`: Dynamic configuration object (model, temperature, maxTokens, etc.).
+    - `promptConfig`: The specific prompt for one of the 27 analysis sections.
+  - **Output:** A structured JSON response containing the analysis for the requested section. This is the primary external output of the system. 
