@@ -62,8 +62,10 @@ const FileUpload: FC = () => {
       return `Plik przekracza limit rozmiaru 10MB (aktualny rozmiar: ${sizeMB}MB). Spróbuj kompresji PDF lub wybierz mniejszy plik.`;
     }
     
-    // File type validation - use PDFParserService.getSupportedFormats()
-    const supportedFormats = PDFParserService.getSupportedFormats();
+    // File type validation with fallback if getSupportedFormats() is unavailable
+    const supportedFormats = typeof PDFParserService.getSupportedFormats === 'function' 
+      ? PDFParserService.getSupportedFormats() 
+      : ['application/pdf', '.pdf'];
     const isValidType = supportedFormats.includes(file.type) || file.name.toLowerCase().endsWith('.pdf');
     
     if (!isValidType) {

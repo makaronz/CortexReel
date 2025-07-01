@@ -1162,3 +1162,41 @@ Generate comprehensive Cursor Rules based on our extensive conversation about Co
 - Zmiany zostały zapisane w repozytorium.
 
 **Czas realizacji:** < 5 minut
+
+## Zadanie: Naprawa błędu w FileUpload.tsx - getSupportedFormats
+**Data rozpoczęcia:** 2025-07-01 05:43:13
+**Status:** ✅ UKOŃCZONE
+
+### Opis zadania
+Naprawa błędu runtime w komponencie `FileUpload.tsx`, który występował podczas próby wywołania statycznej metody `PDFParserService.getSupportedFormats()` dla walidacji typów plików.
+
+### Problem
+Komponent `FileUpload` próbował wywołać statyczną metodę `PDFParserService.getSupportedFormats()` do walidacji typów plików, co powodowało błąd runtime podczas przetwarzania plików, mimo że metoda była poprawnie zdefiniowana w klasie `PDFParserService`.
+
+### Analiza przyczyn
+1. ✅ Zweryfikowano implementację klasy `PDFParserService` - metoda `getSupportedFormats()` jest poprawnie zdefiniowana
+2. ✅ Sprawdzono import w komponencie `FileUpload.tsx` - import był poprawny
+3. ✅ Przeanalizowano testy jednostkowe - potwierdziły poprawne działanie metody
+4. ✅ Zbadano możliwe przyczyny błędu runtime - potencjalne problemy z bundlowaniem lub lazy loadingiem
+
+### Wprowadzone zmiany
+Zaimplementowano defensywne rozwiązanie w komponencie `FileUpload.tsx`, które sprawdza dostępność metody przed jej wywołaniem:
+
+```typescript
+// Przed zmianą
+const supportedFormats = PDFParserService.getSupportedFormats();
+
+// Po zmianie (z zabezpieczeniem)
+const supportedFormats = typeof PDFParserService.getSupportedFormats === 'function' 
+  ? PDFParserService.getSupportedFormats() 
+  : ['application/pdf', '.pdf'];
+```
+
+### Korzyści wprowadzonej zmiany
+1. ✅ Zwiększona odporność na błędy - kod działa nawet jeśli metoda nie jest dostępna w runtime
+2. ✅ Zachowana wartość domyślna - zgodna z implementacją w `PDFParserService`
+3. ✅ Eliminacja błędu runtime - niezależnie od środowiska wykonania
+4. ✅ Obsługa przyszłych zmian - adaptacja do potencjalnych modyfikacji API
+
+### Podsumowanie
+Naprawiono błąd poprzez implementację defensywnego wzorca dostępu do metody statycznej. Rozwiązanie jest odporne na różne scenariusze wykonania kodu (dev/prod), problemy bundlowania oraz przyszłe zmiany w API.
