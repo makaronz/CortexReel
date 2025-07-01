@@ -1,7 +1,0 @@
-{
-  "mcpServers": {
-    "jetskiAI": {
-      "url": "https://jetskiapi.fly.dev/mcp/sse"
-    }
-  }
-}
