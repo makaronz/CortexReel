@@ -1,0 +1,156 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# MCP Code Analysis Setup and Troubleshooting
+
+## Overview
+Model Context Protocol (MCP) servers provide enhanced code analysis capabilities. This project has a local MCP Code Analysis server configured but requires proper setup and troubleshooting knowledge.
+
+## Local MCP Configuration
+
+### Installation Location
+- **MCP Server Path**: `/Users/arkadiuszfudali/mcp-servers/code-analysis-mcp/`
+- **Configuration File**: `~/.cursor/mcp.json`
+- **Python Environment**: UV-managed virtual environment
+- **Documentation**: `/Users/arkadiuszfudali/mcp-servers/code-analysis-mcp/INSTRUKCJA_OBSLUGI.md`
+
+### MCP Configuration in Cursor
+The MCP is configured in `~/.cursor/mcp.json`:
+```json
+"Code Analysis MCP": {
+  "type": "stdio",
+  "command": "uv",
+  "args": [
+    "--directory",
+    "/Users/arkadiuszfudali/mcp-servers/code-analysis-mcp",
+    "run",
+    "code_analysis.py"
+  ],
+  "env": {
+    "PATH": "/Users/arkadiuszfudali/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  }
+}
+```
+
+## Available MCP Functions
+
+### Core Analysis Functions
+1. **`initialize_repository`** - Initialize a code repository for analysis
+   - **Usage**: `initialize_repository("/Users/arkadiuszfudali/Git/CortexReel")`
+   - **Purpose**: Set up repository for subsequent analysis
+
+2. **`get_repo_info`** - Retrieve basic repository information
+   - **Returns**: Path existence, directory status, .gitignore presence
+
+3. **`get_repo_structure`** - Show project file structure
+   - **Parameters**: `depth` (default: 3 levels)
+   - **Output**: Tree-like directory structure
+
+4. **`read_file`** - Read and analyze specific files
+   - **Parameters**: File path relative to repository root
+   - **Limitations**: Max 1MB file size, 1000 lines per file
+
+### Technical Limitations
+- **File Size**: Maximum 1MB per file
+- **Line Limit**: Maximum 1000 lines per file
+- **Scan Depth**: Default 3 directory levels
+- **Scope**: Respects .gitignore, local file system only
+
+## Troubleshooting Guide
+
+### Common Issues
+
+#### MCP Not Available in Cursor
+**Symptoms**: MCP tools not appearing in Cursor interface
+**Solutions**:
+1. **Restart Cursor** - Most common fix for MCP recognition
+2. Verify configuration in `~/.cursor/mcp.json`
+3. Check UV installation: `which uv`
+4. Test MCP manually: `uv --directory /path/to/mcp run code_analysis.py`
+
+#### UV Environment Issues
+**Error**: `uv not found` or path issues
+**Solutions**:
+1. Ensure UV is installed: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+2. Verify PATH includes `/Users/arkadiuszfudali/.local/bin`
+3. Restart shell/terminal after UV installation
+
+#### JSON-RPC Communication Errors
+**Error**: Validation errors or connection issues
+**Cause**: MCP servers expect proper JSON-RPC client communication
+**Note**: Direct terminal testing will show errors - this is expected behavior
+
+#### Repository Access Issues
+**Error**: "Path does not exist" for valid paths
+**Solutions**:
+1. Use absolute paths: `/Users/arkadiuszfudali/Git/CortexReel`
+2. Verify file permissions
+3. Ensure repository is accessible to UV environment
+
+## Development Workflow
+
+### Initial Setup Verification
+1. **Check MCP Configuration**: Verify entry in `~/.cursor/mcp.json`
+2. **Test UV Environment**: `uv --version`
+3. **Verify MCP Directory**: `ls -la /Users/arkadiuszfudali/mcp-servers/code-analysis-mcp/`
+4. **Restart Cursor**: Essential after configuration changes
+
+### Using MCP for CortexReel Analysis
+1. **Initialize Repository**: 
+   ```
+   initialize_repository("/Users/arkadiuszfudali/Git/CortexReel")
+   ```
+2. **Get Project Structure**:
+   ```
+   get_repo_structure(depth=3)
+   ```
+3. **Analyze Key Files**:
+   ```
+   read_file("src/App.tsx")
+   read_file("src/services/AdminConfigService.ts")
+   ```
+
+### Alternative Analysis Methods
+If MCP is unavailable:
+1. Use standard Cursor file reading tools
+2. Leverage Memory Bank documentation in [memory-bank/](mdc:memory-bank)
+3. Manual code analysis with grep and file system tools
+4. Use other available MCP servers (Code Context Provider, etc.)
+
+## Expected Behavior
+
+### Successful MCP Usage
+- MCP appears in Cursor tools interface
+- Functions execute without JSON-RPC errors
+- Repository analysis returns structured data
+- File reading respects size and line limitations
+
+### Fallback Strategies
+When MCP is unavailable:
+1. **Memory Bank Analysis** - Comprehensive project documentation
+2. **Standard File Reading** - Direct file access through Cursor
+3. **Grep Search** - Pattern-based code analysis
+4. **Manual Architecture Review** - Based on key file analysis
+
+## Integration with Project Analysis
+
+### CortexReel-Specific Usage
+- **Repository Root**: `/Users/arkadiuszfudali/Git/CortexReel`
+- **Key Analysis Targets**:
+  - [src/App.tsx](mdc:src/App.tsx) - Main application structure
+  - [src/views/AdminDashboard.tsx](mdc:src/views/AdminDashboard.tsx) - Admin interface
+  - [src/services/AdminConfigService.ts](mdc:src/services/AdminConfigService.ts) - Configuration management
+  - [src/backend/](mdc:src/backend) - Backend infrastructure
+  - [memory-bank/](mdc:memory-bank) - Project documentation
+
+### Complementary Tools
+Use MCP Code Analysis alongside:
+- Memory Bank documentation review
+- Standard Cursor code navigation
+- Project-specific tooling (npm scripts, tests)
+- Architecture diagrams in [diagrams/](mdc:diagrams)
+
+**Note**: MCP Code Analysis is designed for exploration and understanding, not as a replacement for specialized development tools like Aider or Copilot.
+

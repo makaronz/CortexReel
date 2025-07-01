@@ -1,0 +1,169 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Admin Dashboard Integration Architecture
+
+## Overview
+The Admin Dashboard is a **critical component** of CortexReel that provides comprehensive configuration management through a professional three-tab Material-UI interface. This pattern represents full integration between configuration UI and the analysis pipeline.
+
+## Core Integration Pattern
+**Admin Dashboard → Analysis Pipeline Integration** (FULLY IMPLEMENTED):
+```
+AdminDashboard → AdminConfigService → GeminiService → Worker → Analysis
+     ↓                   ↓                ↓             ↓           ↓
+Polish UI        localStorage     postMessage()    config    Dynamic Processing
+```
+
+## Key Components
+
+### 1. Admin Dashboard UI
+**File**: [src/views/AdminDashboard.tsx](mdc:src/views/AdminDashboard.tsx) (729 lines)
+- **Three-tab interface**: LLM Configuration, Prompts Management, App Settings
+- **Polish UI language** for user preference and professional appearance
+- **Material-UI components** with film industry appropriate dark theme
+- **Real-time configuration** with immediate feedback via Snackbar notifications
+
+### 2. Configuration Service Layer
+**File**: [src/services/AdminConfigService.ts](mdc:src/services/AdminConfigService.ts) (734 lines)
+- **Centralized configuration management** with CRUD operations
+- **localStorage persistence** with prefixed keys: `cortexreel_admin_config_*`
+- **Default configuration strategy** with automatic initialization
+- **TypeScript interfaces**: LLMConfig, PromptConfig, AppConfig
+- **Future backend preparation** with service abstraction layer
+
+### 3. Analysis Pipeline Integration
+**Files**: 
+- [src/services/geminiService.ts](mdc:src/services/geminiService.ts) - LLM integration
+- [src/workers/geminiAnalysis.worker.ts](mdc:src/workers/geminiAnalysis.worker.ts) - Background processing
+
+## Configuration Domains
+
+### LLM Configuration Tab
+- **API Key Management**: Secure storage for multiple providers (Gemini/GPT/Claude)
+- **Model Selection**: Dynamic switching between AI models
+- **Parameter Tuning**: Temperature, topP, topK, presence penalty controls
+- **Token Limits**: Max tokens configuration (65,536 for Gemini 2.5 Flash)
+
+### Prompts Management Tab
+- **MEGA PROMPT v7.0**: 27-section film analysis system
+- **Editable Prompts**: Accordion interface with expandable sections
+- **Version Control**: Track prompt changes and descriptions
+- **Reset Functionality**: Restore default prompts with professional focus
+- **Six Default Sections**: sceneStructure, characters, locations, themes, emotionalArcs, safety
+
+### App Settings Tab
+- **Application Configuration**: Name, file limits, supported formats
+- **Feature Toggles**: Debug mode, OCR, advanced charts, export, collaboration
+- **Development Settings**: Log levels and diagnostic options
+- **UI Preferences**: Theme switching and interface options
+
+## Storage Architecture
+
+### localStorage Persistence Strategy
+- **Keys Pattern**: `cortexreel_admin_config_[domain]`
+  - `_llm`: LLM configuration and API settings
+  - `_prompts`: Custom analysis prompts with versions
+  - `_app`: Application settings and feature flags
+  - `_env`: Environment variable overrides
+
+### Configuration Flow
+```typescript
+// Save Configuration
+AdminConfigService.saveLLMConfig(config) → localStorage
+
+// Load Configuration  
+AdminConfigService.getLLMConfig() → Default Fallback → UI Display
+
+// Apply to Analysis
+GeminiService.analyzeScreenplay() → Load Config → Pass to Worker
+```
+
+## Integration Verification
+
+### Automated Testing Confirmation
+- **MCP Playwright Testing**: Complete end-to-end verification
+- **Configuration Reset**: "🎬 Reset do Nowych Domyślnych" functionality tested
+- **Model Switching**: Dynamic model change to google/gemini-2.5-flash verified
+- **Token Limits**: 65,536 max tokens configuration validated
+- **Prompt Loading**: MEGA PROMPT v7.0 availability confirmed
+
+### Real-world Usage Pattern
+1. User opens Admin Dashboard (`/admin` route)
+2. Modifies LLM model or parameters in Configuration tab
+3. Updates analysis prompts in Prompts Management tab
+4. Changes saved to localStorage with immediate feedback
+5. Next analysis automatically uses updated configuration
+6. Worker receives dynamic configuration and applies changes
+
+## Professional UI Design
+
+### Polish Language Implementation
+- **User Interface**: Complete Polish translation for professional comfort
+- **Technical Terms**: Film industry appropriate terminology
+- **Error Messages**: User-friendly Polish error handling
+- **Navigation**: Intuitive three-tab design with clear labels
+
+### Material-UI Integration
+- **Custom Theme**: Film industry dark mode with professional gradients
+- **Component Consistency**: Accordion, Slider, Switch, TextField components
+- **Responsive Design**: Mobile-friendly layouts with proper breakpoints
+- **Accessibility**: ARIA labels and keyboard navigation support
+
+## Default Configuration
+
+### LLM Defaults (Gemini 2.5 Flash Optimized)
+```typescript
+{
+  model: 'google/gemini-2.5-flash',
+  temperature: 0.7,
+  maxTokens: 65536, // Maximum for Gemini 2.5 Flash
+  topP: 0.9,
+  topK: 40,
+  presencePenalty: 0,
+  frequencyPenalty: 0
+}
+```
+
+### MEGA PROMPT v7.0 Sections
+Default prompts for comprehensive film analysis:
+- **sceneStructure**: "MISTYCZNY ALTER EGO REŻYSERA" main prompt
+- **characters**: Character analysis and development
+- **locations**: Location mapping and requirements
+- **themes**: Thematic analysis and symbolism
+- **emotionalArcs**: Emotional journey mapping
+- **safety**: BHP and risk assessment protocols
+
+## Migration Strategy
+
+### Current: localStorage Implementation
+- **Development Ready**: Immediate configuration persistence
+- **User Preference**: Settings survive browser sessions
+- **Type Safety**: Full TypeScript interface validation
+- **Error Handling**: Graceful fallbacks for corrupted data
+
+### Future: Backend Integration
+- **API Proxy**: Secure LLM calls through backend
+- **Database Storage**: MongoDB configuration persistence
+- **Multi-user Support**: User-specific configuration management
+- **Enhanced Security**: API key encryption and rotation
+
+## Critical Success Factors
+
+### Integration Completeness
+- ✅ **Configuration UI**: Professional three-tab interface
+- ✅ **Service Layer**: Centralized AdminConfigService
+- ✅ **Pipeline Connection**: Dynamic configuration application
+- ✅ **Persistence**: Reliable localStorage with fallbacks
+- ✅ **Testing**: Automated verification through MCP Playwright
+
+### User Experience Excellence
+- ✅ **Polish UI**: Native language interface for professional users
+- ✅ **Immediate Feedback**: Real-time configuration updates
+- ✅ **Error Recovery**: Graceful handling of configuration issues
+- ✅ **Professional Aesthetics**: Film industry appropriate design
+- ✅ **Intuitive Navigation**: Clear three-tab organization
+
+**Result**: The Admin Dashboard represents a **production-ready configuration management system** that successfully bridges user preferences with the underlying AI analysis infrastructure, providing film industry professionals with complete control over their analysis workflow.
+

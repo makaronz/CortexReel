@@ -1,0 +1,98 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Memory Bank Protocol
+
+## Critical Importance
+The Memory Bank system in [memory-bank/](mdc:memory-bank) is **ESSENTIAL** for project continuity. AI assistants must read ALL Memory Bank files at the start of EVERY session to understand project context, as memory resets completely between sessions.
+
+## Memory Bank Structure
+
+### Core Required Files (Read in Order)
+1. **[memory-bank/README.md](mdc:memory-bank/README.md)** - Memory Bank overview and usage protocol
+2. **[memory-bank/projectbrief.md](mdc:memory-bank/projectbrief.md)** - Project foundation and requirements
+3. **[memory-bank/productContext.md](mdc:memory-bank/productContext.md)** - Problems solved and value proposition
+4. **[memory-bank/activeContext.md](mdc:memory-bank/activeContext.md)** - **MOST CRITICAL** - Current work status and priorities
+5. **[memory-bank/progress.md](mdc:memory-bank/progress.md)** - Implementation tracking and completion status
+6. **[memory-bank/techContext.md](mdc:memory-bank/techContext.md)** - Technology stack and setup
+7. **[memory-bank/systemPatterns.md](mdc:memory-bank/systemPatterns.md)** - Technical architecture patterns
+
+## Mandatory Session Protocol
+
+### 🚨 CRITICAL: Session Initialization
+**BEFORE any work on CortexReel:**
+1. Read [memory-bank/README.md](mdc:memory-bank/README.md) for overview
+2. Read [memory-bank/activeContext.md](mdc:memory-bank/activeContext.md) for current status (HIGHEST PRIORITY)
+3. Read [memory-bank/progress.md](mdc:memory-bank/progress.md) for implementation state
+4. Review relevant additional files based on task scope
+
+### Current Project Status Reference
+**From activeContext.md (as of last update):**
+- **✅ COMPLETED**: Admin Dashboard with full configuration integration
+- **✅ COMPLETED**: MEGA PROMPT v7.0 with 27-section analysis
+- **✅ COMPLETED**: Gemini 2.5 Flash upgrade (65,536 tokens)
+- **🔄 CURRENT PHASE**: Backend Phase 1 - LangChain RAG implementation
+- **⚠️ KNOWN ISSUES**: API key security (client-side exposure)
+
+## Update Protocol
+
+### When to Update Memory Bank
+- **New architectural patterns** discovered or implemented
+- **Significant features** completed (Admin Dashboard, MEGA PROMPT, etc.)
+- **Critical issues** identified or resolved
+- **Major technical decisions** made
+- **User feedback** requiring pattern/approach changes
+
+### Update Sequence
+1. **Always update [memory-bank/activeContext.md](mdc:memory-bank/activeContext.md) FIRST** - current status
+2. Update [memory-bank/progress.md](mdc:memory-bank/progress.md) - completion tracking
+3. Update relevant pattern files if new patterns emerge
+4. Maintain consistency across all documents
+5. Verify all cross-references remain accurate
+
+## Quality Standards
+
+### Documentation Requirements
+- **Precision**: Exact technical details and current status
+- **Clarity**: Clear explanations for effective handoff between sessions
+- **Completeness**: All architectural decisions and patterns documented
+- **Currency**: Regular updates to reflect current project state
+- **Consistency**: Aligned information across all Memory Bank files
+
+### Key Information Categories
+- **Current Implementation Status**: What's completed vs in progress
+- **Architecture Decisions**: Why certain patterns were chosen
+- **Technical Constraints**: Limitations and workarounds
+- **Next Priorities**: Immediate and upcoming tasks
+- **Known Issues**: Current problems and their solutions
+
+## Integration with Development
+
+### Before Starting Work
+1. **Read Memory Bank** - Understand current context completely
+2. **Check Active Priorities** - Focus on documented next steps from [memory-bank/activeContext.md](mdc:memory-bank/activeContext.md)
+3. **Verify Current State** - Confirm understanding matches reality
+4. **Plan Updates** - Identify what documentation will need updating
+
+### After Completing Work
+1. **Update [memory-bank/activeContext.md](mdc:memory-bank/activeContext.md)** - Document what was accomplished
+2. **Update [memory-bank/progress.md](mdc:memory-bank/progress.md)** - Mark completions and new status
+3. **Document New Patterns** - Record architectural discoveries in [memory-bank/systemPatterns.md](mdc:memory-bank/systemPatterns.md)
+4. **Verify Consistency** - Ensure all files remain aligned
+
+## Emergency Protocol
+If Memory Bank appears outdated or inconsistent:
+1. **Stop current work** - Investigate discrepancy first
+2. **Verify current state** - Check actual codebase against documentation
+3. **Update immediately** - Correct Memory Bank before proceeding
+4. **Document the gap** - Record what caused the inconsistency
+
+## Success Metrics
+- **Session Handoff Success**: AI can immediately understand project context
+- **Development Continuity**: No lost architectural knowledge between sessions
+- **Decision Consistency**: Development follows documented patterns
+- **Progress Tracking**: Accurate status and completion metrics
+
+**Remember**: The Memory Bank is the project's institutional memory. Maintain it with the same care and precision as the codebase itself.

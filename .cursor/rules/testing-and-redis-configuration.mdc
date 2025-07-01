@@ -1,0 +1,102 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Testing and Redis Configuration Guide
+
+## Redis Configuration Requirements
+
+### Local Development Setup
+For local development, Redis must be installed and running:
+```bash
+brew install redis
+brew services start redis
+redis-cli ping  # Should return PONG
+```
+
+### Redis Connection Configuration
+The project uses [src/backend/utils/queueFactory.ts](mdc:src/backend/utils/queueFactory.ts) for Redis connection:
+- **Default**: `redis://localhost:6379` for local development
+- **Configuration**: Uses `REDIS_URL` environment variable if provided
+- **Dependencies**: IORedis client with BullMQ for job queues
+
+### Environment Variables
+Configure Redis in [.env.local](mdc:.env.local):
+```
+REDIS_URL=redis://localhost:6379
+```
+
+For external Redis clusters, use format:
+```
+REDIS_URL=redis://username:password@host:port/database
+```
+
+## Testing Infrastructure
+
+### Integration Tests
+Key integration test: [src/__tests__/pdfUpload.integration.test.ts](mdc:src/__tests__/pdfUpload.integration.test.ts)
+- **Purpose**: Tests complete PDF upload → 27-section analysis pipeline
+- **Requirements**: Redis connection, backend server on port 3002
+- **Timeout**: 120 seconds for complete analysis
+
+### Test Execution Commands
+```bash
+npm test                                    # Run all tests
+npm test src/__tests__/pdfUpload.integration.test.ts  # Specific integration test
+npm run backend:build                       # Build backend before tests
+npm run backend:start                       # Start backend server
+```
+
+### Common Test Failures
+
+#### Redis Connection Errors
+**Error**: `Error: connect ECONNREFUSED 127.0.0.1:6379`
+**Solution**:
+1. Ensure Redis is installed and running
+2. Check Redis connection: `redis-cli ping`
+3. Verify REDIS_URL in environment
+
+#### TypeScript Build Errors
+**Error**: Unused parameter warnings
+**Solution**: Prefix unused parameters with `_` (e.g., `_filepath`)
+**Location**: [src/backend/services/LangChainRAGService.ts](mdc:src/backend/services/LangChainRAGService.ts)
+
+#### Backend Port Conflicts
+**Error**: Port 3002 already in use
+**Solution**: Kill existing processes or change port in test configuration
+
+## Test Results Interpretation
+
+### Successful Test Output
+- Server listening messages on port 3002
+- Job ID generation and status polling
+- 27-section analysis completion
+- All expected sections present in result
+
+### Expected Test Sections
+The integration test validates presence of all 27 analysis sections:
+```javascript
+const expectedSections = [
+  'metadata', 'scenes', 'characters', 'locations', 'themes', 'emotionalArcs',
+  'safety', 'budget', 'technical', 'production', 'visualStyle', 'dialogue',
+  // ... additional 16 sections
+];
+```
+
+## Development Workflow
+
+### Before Running Tests
+1. Install Redis: `brew install redis`
+2. Start Redis: `brew services start redis` 
+3. Build backend: `npm run backend:build`
+4. Verify environment: Check [.env.local](mdc:.env.local) exists
+
+### Debugging Test Failures
+1. Check Redis status: `redis-cli ping`
+2. Verify backend compilation: `npm run backend:build`
+3. Check port availability: `lsof -i :3002`
+4. Review test logs for specific error messages
+
+## Mock Configuration
+Tests use mocked file system operations but require real Redis connection for job queue functionality. The [src/backend/services/LangChainRAGService.ts](mdc:src/backend/services/LangChainRAGService.ts) includes mock Weaviate client for testing.
