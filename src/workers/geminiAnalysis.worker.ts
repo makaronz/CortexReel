@@ -409,7 +409,7 @@ ${chunks[i]}
 
 Please respond with ONLY valid JSON, no additional text or formatting.`;
 
-        const shouldRetry: ShouldRetryFn = (error) => shouldRetryLLMCall(error, 1);
+        const shouldRetry: ShouldRetryFn = (error, attemptNumber) => shouldRetryLLMCall(error, attemptNumber);
         const result = await retryAsync(
           async () => {
             const response = await model.generateContent(chunkPrompt);
@@ -434,7 +434,7 @@ ${scriptText}
 
 Please respond with ONLY valid JSON, no additional text or formatting.`;
 
-      const shouldRetry: ShouldRetryFn = (error) => shouldRetryLLMCall(error, 1);
+      const shouldRetry: ShouldRetryFn = (error, attemptNumber) => shouldRetryLLMCall(error, attemptNumber);
       const result = await retryAsync(
         async () => {
           const response = await model.generateContent(fullPrompt);
