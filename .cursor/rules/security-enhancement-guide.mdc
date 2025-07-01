@@ -3,3 +3,351 @@ description:
 globs:
 alwaysApply: false
 ---
+# Security Enhancement Guide - API Key Management
+
+## 🔐 HIGH PRIORITY SECURITY ISSUE (2025-01-15)
+
+With the Admin Dashboard and Configuration Integration **COMPLETED**, the most critical security vulnerability is API key exposure in the client-side application. This guide provides the roadmap for implementing secure backend-proxied API access.
+
+## 🚨 Current Security Risks
+
+### Critical Vulnerabilities
+1. **Client-Side API Key Exposure** 
+   - Gemini API keys visible in browser bundle (CRITICAL)
+   - Admin dashboard stores API keys in localStorage (HIGH)
+   - Network inspector shows API calls with exposed keys (HIGH)
+   - Source code inspection reveals API endpoints (MEDIUM)
+
+2. **Data Storage Security**
+   - localStorage stores sensitive configuration data (MEDIUM)
+   - Analysis results contain potentially sensitive content (MEDIUM)
+   - No encryption for client-side data persistence (LOW)
+
+3. **Application Security**
+   - No input sanitization for user uploads (MEDIUM)
+   - Missing CORS protection in production (MEDIUM)
+   - No rate limiting for API calls (LOW)
+
+## 🏗️ Security Architecture Solution
+
+### Backend Proxy Pattern (PRIMARY SOLUTION)
+```typescript
+Frontend → Backend API → LLM Services
+    ↓         ↓            ↓
+  User UI   Secure Proxy  Gemini/GPT/Claude
+    ↓         ↓            ↓
+localStorage  Database   Protected Keys
+```
+
+### Multi-Layer Security Approach
+1. **Backend API Proxy** - Secure LLM calls through protected backend
+2. **Environment Variables** - Server-side API key storage
+3. **Database Encryption** - Encrypted storage for user data
+4. **Authentication** - User access control and session management
+5. **Input Validation** - Sanitization and type checking
+6. **Rate Limiting** - API abuse prevention
+
+## 🔧 Implementation Roadmap
+
+### Phase 1: Backend Proxy Setup (IMMEDIATE)
+```typescript
+// Backend API proxy structure
+export class SecureLLMProxy {
+  private geminiKey: string;
+  private openaiKey: string;
+  private claudeKey: string;
+  
+  constructor() {
+    // Load from secure environment variables
+    this.geminiKey = process.env.GEMINI_API_KEY!;
+    this.openaiKey = process.env.OPENAI_API_KEY!;
+    this.claudeKey = process.env.CLAUDE_API_KEY!;
+  }
+  
+  async proxyGeminiRequest(request: AnalysisRequest): Promise<AnalysisResponse> {
+    // 1. Validate request
+    // 2. Call Gemini API with server-side key
+    // 3. Process and sanitize response
+    // 4. Return to frontend
+  }
+}
+```
+
+### Phase 2: Frontend Integration (NEXT)
+```typescript
+// Secure frontend service
+export class SecureAnalysisService {
+  private baseUrl = process.env.REACT_APP_BACKEND_URL;
+  
+  async analyzeScreenplay(file: File, config: LLMConfig): Promise<string> {
+    // 1. Upload file to secure backend
+    // 2. Submit analysis job
+    // 3. Poll for results (no API keys in frontend)
+    const response = await fetch(`${this.baseUrl}/api/analysis`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.getAuthToken()}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ config })
+    });
+    
+    return response.json();
+  }
+}
+```
+
+### Phase 3: Data Protection (FUTURE)
+```typescript
+// Encrypted configuration storage
+export class SecureConfigService {
+  async saveConfiguration(config: LLMConfig): Promise<void> {
+    // 1. Encrypt sensitive data
+    // 2. Store in backend database
+    // 3. Return encrypted reference
+  }
+  
+  async loadConfiguration(): Promise<LLMConfig> {
+    // 1. Authenticate user
+    // 2. Retrieve encrypted config
+    // 3. Decrypt and return
+  }
+}
+```
+
+## 🛡️ Security Implementation Details
+
+### Environment Variables Management
+```bash
+# .env.example (for backend)
+# API Keys - Keep these secure and never commit
+GEMINI_API_KEY=your_gemini_key_here
+OPENAI_API_KEY=your_openai_key_here
+CLAUDE_API_KEY=your_claude_key_here
+
+# Database
+MONGODB_CONNECTION_STRING=mongodb://localhost:27017/cortexreel
+REDIS_URL=redis://localhost:6379
+
+# Security
+JWT_SECRET=your_jwt_secret_here
+ENCRYPTION_KEY=your_encryption_key_here
+ALLOWED_ORIGINS=http://localhost:5173,https://cortexreel.com
+
+# Rate Limiting
+MAX_REQUESTS_PER_HOUR=100
+MAX_FILE_SIZE_MB=50
+```
+
+### Backend Security Middleware
+```typescript
+// Security middleware stack
+export const securityMiddleware = [
+  helmet(), // Security headers
+  cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(','),
+    credentials: true
+  }),
+  rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: parseInt(process.env.MAX_REQUESTS_PER_HOUR || '100')
+  }),
+  authenticateToken,
+  validateInput,
+  sanitizeUploads
+];
+
+// Authentication middleware
+async function authenticateToken(req: Request, res: Response, next: NextFunction) {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: 'Invalid token' });
+  }
+}
+```
+
+### Input Validation & Sanitization
+```typescript
+import { z } from 'zod';
+
+// Request validation schemas
+const AnalysisRequestSchema = z.object({
+  config: z.object({
+    model: z.enum(['gemini-2.5-flash', 'gpt-4o', 'claude-3-opus']),
+    temperature: z.number().min(0).max(2),
+    maxTokens: z.number().min(1).max(65536),
+    topP: z.number().min(0).max(1),
+    topK: z.number().min(1).max(100)
+  }),
+  options: z.object({
+    language: z.enum(['polish', 'english']).default('polish'),
+    analysisDepth: z.enum(['basic', 'detailed', 'comprehensive']).default('comprehensive')
+  }).optional()
+});
+
+// File upload validation
+const FileUploadSchema = z.object({
+  filename: z.string().regex(/\.(pdf|txt|docx)$/i),
+  size: z.number().max(50 * 1024 * 1024), // 50MB limit
+  mimeType: z.enum(['application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
+});
+```
+
+## 🔄 Migration Strategy
+
+### Phase 1: Parallel Implementation
+- Keep existing client-side functionality working
+- Implement backend proxy alongside current system
+- Add environment toggle for testing: `USE_BACKEND_PROXY=true`
+
+### Phase 2: Gradual Migration
+```typescript
+// Feature flag approach
+export class AnalysisService {
+  async analyzeScreenplay(file: File, config: LLMConfig): Promise<AnalysisResult> {
+    if (process.env.REACT_APP_USE_BACKEND_PROXY === 'true') {
+      return this.secureAnalysisService.analyze(file, config);
+    } else {
+      // Legacy client-side analysis
+      return this.legacyAnalysisService.analyze(file, config);
+    }
+  }
+}
+```
+
+### Phase 3: Complete Migration
+- Remove client-side API keys entirely
+- Update admin dashboard to manage backend configuration
+- Migrate localStorage to authenticated backend storage
+
+## 📊 Security Metrics & Monitoring
+
+### Security Indicators
+```typescript
+interface SecurityMetrics {
+  apiKeyExposure: 'CRITICAL' | 'MEDIUM' | 'SECURE';
+  dataEncryption: 'NONE' | 'PARTIAL' | 'FULL';
+  authenticationStatus: 'DISABLED' | 'BASIC' | 'ADVANCED';
+  inputValidation: 'MISSING' | 'BASIC' | 'COMPREHENSIVE';
+  rateLimit: boolean;
+  corsProtection: boolean;
+}
+```
+
+### Monitoring Implementation
+```typescript
+// Security event logging
+export class SecurityMonitor {
+  logSecurityEvent(event: SecurityEvent) {
+    console.log(`[SECURITY] ${event.level}: ${event.message}`, {
+      timestamp: new Date().toISOString(),
+      source: event.source,
+      userAgent: event.userAgent,
+      ip: event.ip
+    });
+    
+    // Send to monitoring service in production
+    if (process.env.NODE_ENV === 'production') {
+      this.sendToMonitoring(event);
+    }
+  }
+}
+```
+
+## 🎯 Implementation Priorities
+
+### Week 1: Backend Proxy Foundation
+- [ ] **FastAPI Security Setup** - Basic auth and middleware
+- [ ] **Environment Configuration** - Secure API key storage
+- [ ] **Proxy Endpoints** - `/api/llm/gemini`, `/api/llm/openai`, `/api/llm/claude`
+- [ ] **Request Validation** - Zod schemas and sanitization
+
+### Week 2: Frontend Integration
+- [ ] **Secure Service Layer** - Replace direct API calls
+- [ ] **Authentication Flow** - Token-based auth
+- [ ] **Configuration Migration** - Backend config management
+- [ ] **Error Handling** - Secure error responses
+
+### Week 3: Data Protection
+- [ ] **Database Encryption** - Encrypted user data storage
+- [ ] **Session Management** - Secure session handling
+- [ ] **Rate Limiting** - API abuse prevention
+- [ ] **Audit Logging** - Security event tracking
+
+### Week 4: Testing & Hardening
+- [ ] **Penetration Testing** - Security vulnerability assessment
+- [ ] **Load Testing** - Performance under attack
+- [ ] **Monitoring Setup** - Real-time security monitoring
+- [ ] **Documentation** - Security procedures and incident response
+
+## 🔗 Integration with Existing System
+
+### Admin Dashboard Security
+```typescript
+// Secure admin configuration
+export class SecureAdminConfigService {
+  async saveSecureConfiguration(config: LLMConfig): Promise<void> {
+    // 1. Validate admin permissions
+    // 2. Encrypt sensitive data
+    // 3. Store in backend database
+    // 4. Invalidate frontend cache
+  }
+  
+  async loadSecureConfiguration(): Promise<LLMConfig> {
+    // 1. Authenticate user
+    // 2. Load from backend
+    // 3. Return sanitized config (no API keys)
+  }
+}
+```
+
+### MEGA PROMPT v7.0 Security
+```typescript
+// Secure prompt execution
+export class SecureMegaPromptService {
+  async executeSecureAnalysis(
+    promptSection: string, 
+    content: string,
+    userContext: UserContext
+  ): Promise<AnalysisResult> {
+    // 1. Validate user permissions
+    // 2. Sanitize input content
+    // 3. Execute via secure backend proxy
+    // 4. Validate and sanitize output
+    // 5. Audit log the operation
+  }
+}
+```
+
+## 🏆 Security Success Criteria
+
+### Vulnerability Elimination
+- ✅ **Zero client-side API key exposure** - All keys secured in backend
+- ✅ **Encrypted data storage** - User data and configurations encrypted
+- ✅ **Authenticated access** - All API operations require valid authentication
+- ✅ **Input validation** - All user inputs validated and sanitized
+- ✅ **Rate limiting active** - API abuse prevention implemented
+
+### Compliance & Best Practices
+- ✅ **HTTPS enforcement** - All communications encrypted in transit
+- ✅ **CORS protection** - Restricted cross-origin access
+- ✅ **Security headers** - Comprehensive security header implementation
+- ✅ **Audit logging** - Complete security event tracking
+- ✅ **Incident response** - Documented security incident procedures
+
+### Performance Impact
+- **Response Time**: <200ms additional latency for proxy calls
+- **Throughput**: No significant impact on analysis performance
+- **Reliability**: >99.9% uptime for secure backend services
+- **Scalability**: Support for 100+ concurrent secure sessions
+
+This security enhancement eliminates the most critical vulnerabilities while maintaining the professional user experience and powerful analysis capabilities that make CortexReel valuable to film industry professionals.

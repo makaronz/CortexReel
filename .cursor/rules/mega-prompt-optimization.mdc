@@ -3,3 +3,294 @@ description:
 globs:
 alwaysApply: false
 ---
+# MEGA PROMPT v7.0 Optimization Guide
+
+## 🎬 CURRENT ACTIVE PRIORITY (2025-01-15)
+
+The MEGA PROMPT v7.0 system is the core of CortexReel's competitive advantage - a comprehensive 27-section analysis engine specifically designed for Polish film industry professionals. With Gemini 2.5 Flash integration **COMPLETED**, focus shifts to optimization and real-world validation.
+
+## 🎯 System Overview
+
+### "MISTYCZNY ALTER EGO REŻYSERA" Architecture
+The MEGA PROMPT v7.0 implements a sophisticated film analysis persona that serves as a "mystical alter ego of the director" - combining artistic vision with technical precision for comprehensive screenplay analysis.
+
+### Technical Specifications
+- **Model**: Google Gemini 2.5 Flash (upgraded from 1.5 Pro)
+- **Max Tokens**: 65,536 (increased from 8,192)
+- **Language**: Polish with film industry terminology
+- **Sections**: 27 comprehensive analysis categories
+- **Scene Detection**: Advanced WN./ZN./PL. (interior/exterior/location) recognition
+
+## 📋 27-Section Analysis Structure
+
+### Core Creative Analysis (Sections 1-8)
+1. **projectGenesis** - Concept and vision foundation
+2. **filmicVisionSensibility** - Artistic direction and sensibility
+3. **sceneStructure** - Scene-by-scene breakdown with WN./ZN./PL.
+4. **characterMonographs** - Deep character studies and development
+5. **thematicResonance** - Themes and symbolic motifs
+6. **worldBuildingElements** - Setting and universe construction
+7. **emotionalJourney** - Emotional arc mapping and pacing
+8. **dialogueAnalysis** - Language patterns and authenticity
+
+### Technical Production (Sections 9-16)
+9. **cinematicLanguage** - Visual storytelling techniques
+10. **productionDesign** - Art department requirements
+11. **locationRequirements** - Setting specifications and logistics
+12. **castingConsiderations** - Character casting profiles
+13. **technicalRequirements** - Equipment and crew specifications
+14. **soundscapeDesign** - Audio landscape and music integration
+15. **editingRhythm** - Pacing and montage considerations
+16. **visualEffectsNeeds** - VFX requirements and integration
+
+### Business & Safety (Sections 17-24)
+17. **budgetConsiderations** - Cost analysis and financial planning
+18. **schedulingLogistics** - Production timeline and logistics
+19. **riskAssessment** - Safety protocols and risk mitigation
+20. **marketingHooks** - Commercial appeal and audience targeting
+21. **distributionStrategy** - Release and distribution planning
+22. **legalConsiderations** - Rights, permissions, and compliance
+23. **sustainabilityFactors** - Environmental and social responsibility
+24. **accessibilityFeatures** - Inclusive design and accessibility
+
+### Enhancement & Meta (Sections 25-27)
+25. **collaborationOpportunities** - Partnership and co-production potential
+26. **innovationAspects** - Technical and creative innovation opportunities
+27. **legacyPotential** - Cultural impact and lasting significance
+
+## 🎨 Polish Film Industry Specialization
+
+### Language Integration
+- **Professional Terminology**: Film industry Polish vocabulary
+- **Scene Formatting**: WN. (wnętrze/interior), ZN. (zewnętrze/exterior), PL. (plener/location)
+- **Cultural Context**: Polish film traditions and contemporary trends
+- **Industry Standards**: Polish Film Institute guidelines and practices
+
+### Output Format Optimization
+```json
+{
+  "sceneStructure": {
+    "scenes": [
+      {
+        "sceneNumber": "1",
+        "location": "WN. MIESZKANIE JANA - SALON - DZIEŃ",
+        "description": "Detailed scene analysis in Polish",
+        "characters": ["JAN", "MARIA"],
+        "emotions": ["tension", "curiosity"],
+        "technicalNotes": "Intimate framing, natural lighting"
+      }
+    ]
+  }
+}
+```
+
+## 🔧 Current Optimization Focus
+
+### Real-World Validation
+- **Test Screenplays**: Validate with actual Polish film scripts
+- **Industry Feedback**: Collect feedback from film professionals
+- **Accuracy Metrics**: Measure scene detection and analysis quality
+- **Performance Monitoring**: Track response time and token usage
+
+### Prompt Engineering Refinements
+- **Context Efficiency**: Optimize prompt length vs. output quality
+- **Instruction Clarity**: Improve AI understanding and consistency
+- **Output Structure**: Standardize JSON format for reliable parsing
+- **Error Handling**: Add robustness for edge cases and malformed scripts
+
+## 📊 Optimization Targets
+
+### Quality Metrics
+- **Scene Detection Accuracy**: >95% correct WN./ZN./PL. identification
+- **Character Recognition**: >90% accurate character extraction
+- **Thematic Analysis Depth**: Comprehensive cultural and artistic insights
+- **Technical Precision**: Detailed production requirements
+
+### Performance Metrics
+- **Response Time**: <5 minutes for full 27-section analysis
+- **Token Efficiency**: Optimize 65,536 token usage
+- **Consistency**: Reliable output format across different scripts
+- **Error Rate**: <2% parsing or processing errors
+
+### User Experience Metrics
+- **Professional Relevance**: Industry-appropriate analysis depth
+- **Actionable Insights**: Practical production guidance
+- **Cultural Sensitivity**: Polish film industry context awareness
+- **Visual Presentation**: Clear, professional result formatting
+
+## 🔄 Active Optimization Areas
+
+### 1. Scene Structure Enhancement
+**Current Priority**: Improve WN./ZN./PL. detection accuracy
+```typescript
+// Enhanced scene detection pattern
+const sceneStructurePrompt = `
+Analizuj strukturę scenową scenariusza z szczególnym uwzględnieniem:
+- Poprawna identyfikacja WN. (wnętrze), ZN. (zewnętrze), PL. (plener)
+- Dokładne określenie lokacji i czasu akcji
+- Identyfikacja postaci obecnych w każdej scenie
+- Analiza emocjonalna i narracyjna każdej sekwencji
+`;
+```
+
+### 2. Character Monograph Depth
+**Focus**: Enhanced psychological and dramatic analysis
+```typescript
+const characterAnalysisPrompt = `
+Stwórz głębokie monografie postaci uwzględniające:
+- Psychologiczny profil i motywacje
+- Łuk transformacji przez cały film
+- Relacje z innymi postaciami
+- Wymagania castingowe i aktorskie
+`;
+```
+
+### 3. Technical Production Precision
+**Goal**: More detailed production requirements
+```typescript
+const technicalRequirementsPrompt = `
+Określ precyzyjne wymagania techniczne:
+- Sprzęt filmowy i specjalistyczne narzędzia
+- Wymagania lokalizacyjne i scenograficzne
+- Potrzeby kadrowe (ekipa, statyści)
+- Harmonogram i logistyka produkcji
+`;
+```
+
+## 🔧 Implementation Patterns
+
+### Dynamic Prompt Loading
+```typescript
+// From AdminConfigService.ts
+export class AdminConfigService {
+  static getPromptConfig(): PromptConfig {
+    const saved = localStorage.getItem('cortexreel_admin_config_prompts');
+    return saved ? JSON.parse(saved) : this.getDefaultPrompts();
+  }
+  
+  private static getDefaultPrompts(): PromptConfig {
+    return {
+      sceneStructure: {
+        id: 'scene-structure-v7',
+        name: 'Struktura Sceniczna',
+        prompt: 'MISTYCZNY ALTER EGO REŻYSERA v7.0 - analiza struktury...',
+        version: '7.0',
+        description: 'Zaawansowana analiza struktury scenicznej'
+      }
+      // ... other 26 sections
+    };
+  }
+}
+```
+
+### Worker Integration
+```typescript
+// In geminiAnalysis.worker.ts
+async function analyzeWithMegaPrompt(section: string, scriptText: string, config: LLMConfig) {
+  const promptConfig = AdminConfigService.getPromptConfig();
+  const sectionPrompt = promptConfig[section];
+  
+  if (!sectionPrompt) {
+    console.warn(`Section ${section} not found, using default`);
+    return await fallbackAnalysis(section, scriptText, config);
+  }
+  
+  return await executeAnalysis(sectionPrompt.prompt, scriptText, config);
+}
+```
+
+## 📈 Optimization Workflow
+
+### Real-Time Testing Process
+1. **Load Test Script** - Use representative Polish screenplay
+2. **Execute Analysis** - Run full 27-section analysis
+3. **Measure Performance** - Track time, tokens, accuracy
+4. **Review Output** - Validate quality and format
+5. **Iterate Prompts** - Refine based on results
+
+### A/B Testing Framework
+```typescript
+interface PromptTest {
+  version: string;
+  prompt: string;
+  metrics: {
+    accuracy: number;
+    responseTime: number;
+    tokenUsage: number;
+    userSatisfaction: number;
+  };
+}
+
+// Test different prompt versions
+const testResults = await comparePromptVersions(['v7.0', 'v7.1', 'v7.2']);
+```
+
+## 🎯 Immediate Optimization Tasks
+
+### Week 1: Quality Enhancement
+- [ ] **Test with Real Scripts** - Validate against 5+ Polish screenplays
+- [ ] **Scene Detection Audit** - Measure WN./ZN./PL. accuracy
+- [ ] **Character Recognition** - Improve character extraction
+- [ ] **Output Validation** - Ensure consistent JSON structure
+
+### Week 2: Performance Optimization
+- [ ] **Token Usage Analysis** - Optimize prompt efficiency
+- [ ] **Response Time Monitoring** - Track analysis speed
+- [ ] **Memory Usage** - Optimize for 65,536 token output
+- [ ] **Error Rate Reduction** - Improve robustness
+
+### Week 3: User Experience
+- [ ] **Professional Feedback** - Collect industry input
+- [ ] **Interface Improvements** - Enhance result presentation
+- [ ] **Export Optimization** - Improve PDF/CSV output
+- [ ] **Mobile Adaptation** - Responsive analysis display
+
+### Week 4: Advanced Features
+- [ ] **Prompt Versioning** - Implement A/B testing
+- [ ] **Custom Templates** - Genre-specific analysis
+- [ ] **Performance Analytics** - Dashboard for optimization
+- [ ] **Quality Scoring** - Automated quality assessment
+
+## 🔗 Integration Points
+
+### Backend RAG Enhancement
+When backend is implemented, MEGA PROMPT v7.0 will be enhanced with:
+- **Context Retrieval** - Similar screenplay references
+- **Industry Database** - Polish film industry knowledge
+- **Historical Analysis** - Comparative analysis with past films
+- **Collaborative Input** - Multi-expert analysis aggregation
+
+### Configuration Management
+```typescript
+// Admin dashboard integration
+const optimizedConfig = {
+  model: 'google/gemini-2.5-flash',
+  maxTokens: 65536,
+  temperature: 0.7, // Balanced creativity/consistency
+  megaPromptVersion: '7.0',
+  polishOptimization: true,
+  sceneDetectionMode: 'enhanced'
+};
+```
+
+## 🏆 Success Indicators
+
+### Quality Achievement
+- Professional film industry professionals confirm analysis utility
+- >95% accurate scene structure detection
+- Comprehensive character and thematic analysis depth
+- Technical requirements suitable for actual production
+
+### Performance Achievement  
+- Full analysis completion in <5 minutes
+- Efficient 65,536 token usage
+- Consistent, parseable JSON output
+- <2% error rate across diverse scripts
+
+### User Satisfaction
+- Film professionals prefer CortexReel analysis over manual methods
+- Analysis insights directly applicable to production decisions
+- Polish language output natural and professional
+- Export formats suitable for production workflows
+
+This optimization work ensures MEGA PROMPT v7.0 maintains its position as the most comprehensive and culturally-appropriate screenplay analysis system for Polish film industry professionals.
