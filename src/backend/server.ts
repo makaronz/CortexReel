@@ -3,6 +3,7 @@ import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import { registerAnalysisRoutes } from './plugins/analysisRoutes';
+import monitoringRoutes from './plugins/monitoringRoutes';
 import '../backend/workers/analysisProcessor';
 
 // BullMQ & Redis will be configured in their own modules
@@ -20,6 +21,7 @@ export async function buildServer() {
 
   // Domain-specific routes
   await app.register(registerAnalysisRoutes, { prefix: '/analysis' });
+  await app.register(monitoringRoutes, { prefix: '/api/monitoring' });
 
   // Health-check
   app.get('/healthz', async () => ({ status: 'ok' }));

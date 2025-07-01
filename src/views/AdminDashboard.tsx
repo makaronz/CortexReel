@@ -156,12 +156,24 @@ const AdminDashboard: React.FC = () => {
       switch (type) {
         case 'llm':
           await configService.saveLLMConfig(llmConfig);
+          // Track configuration change
+          if ((window as any).cortexreel_track_config_change) {
+            (window as any).cortexreel_track_config_change('llm', 'config_saved', llmConfig, llmConfig);
+          }
           break;
         case 'prompts':
           await configService.savePromptConfig(promptConfig);
+          // Track configuration change
+          if ((window as any).cortexreel_track_config_change) {
+            (window as any).cortexreel_track_config_change('prompts', 'config_saved', promptConfig, promptConfig);
+          }
           break;
         case 'app':
           await configService.saveAppConfig(appConfig);
+          // Track configuration change
+          if ((window as any).cortexreel_track_config_change) {
+            (window as any).cortexreel_track_config_change('app', 'config_saved', appConfig, appConfig);
+          }
           break;
       }
       

@@ -45,6 +45,10 @@ export class PDFParserService {
     // Enhanced validation before processing
     this.validateFile(file);
     
+    // Start monitoring PDF processing
+    const pdfId = (window as any).cortexreel_track_pdf_start ? 
+      (window as any).cortexreel_track_pdf_start(file.name) : null;
+    
     const startTime = Date.now();
     const warnings: string[] = [];
     let metadata: ParsedContent['metadata'] = {
@@ -77,6 +81,11 @@ export class PDFParserService {
         );
         
         if (directResult && this.isExtractionSuccessful(directResult.text, file.size)) {
+          // Track successful PDF processing
+          if (pdfId && (window as any).cortexreel_track_pdf_complete) {
+            (window as any).cortexreel_track_pdf_complete(pdfId, true);
+          }
+          
           return {
             text: directResult.text,
             pageCount: directResult.pageCount,
@@ -102,6 +111,12 @@ export class PDFParserService {
         // If we have both direct and OCR results, combine them
         if (directResult && directResult.text.trim()) {
           const combinedText = this.combineExtractionResults(directResult.text, ocrResult.text);
+          
+          // Track successful PDF processing
+          if (pdfId && (window as any).cortexreel_track_pdf_complete) {
+            (window as any).cortexreel_track_pdf_complete(pdfId, true);
+          }
+          
           return {
             text: combinedText,
             pageCount: Math.max(directResult.pageCount, ocrResult.pageCount),
@@ -111,6 +126,11 @@ export class PDFParserService {
             warnings: warnings.length > 0 ? warnings : undefined,
             metadata
           };
+        }
+        
+        // Track successful OCR processing
+        if (pdfId && (window as any).cortexreel_track_pdf_complete) {
+          (window as any).cortexreel_track_pdf_complete(pdfId, true);
         }
         
         return {
@@ -128,6 +148,11 @@ export class PDFParserService {
       
     } catch (error) {
       console.error('PDF parsing error:', error);
+      
+      // Track failed PDF processing
+      if (pdfId && (window as any).cortexreel_track_pdf_complete) {
+        (window as any).cortexreel_track_pdf_complete(pdfId, false, error instanceof Error ? error.message : 'Unknown error');
+      }
       
       // Enhanced error classification
       let errorMessage = 'Failed to parse PDF file';
