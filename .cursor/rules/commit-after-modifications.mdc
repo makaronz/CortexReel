@@ -1,5 +1,163 @@
 ---
-description:
-globs:
-alwaysApply: false
+description: 
+globs: 
+alwaysApply: true
 ---
+# Obowiązkowe Commity Po Modyfikacjach
+
+## 🚨 KRYTYCZNA ZASADA: Commit Po Każdej Udanej Modyfikacji
+
+### Protokół Obowiązkowy
+
+**ZAWSZE wykonuj commit po każdej udanej modyfikacji kodu, konfiguracji lub plików projektu.**
+
+### Kiedy Commitować
+
+1. **Po każdej zmianie w kodzie źródłowym**
+   - Modyfikacje plików `.ts`, `.tsx`, `.js`, `.jsx`
+   - Zmiany w [src/](mdc:src) directory
+   - Aktualizacje komponentów React
+
+2. **Po zmianach konfiguracyjnych**
+   - Modyfikacje [package.json](mdc:package.json)
+   - Zmiany w [vite.config.ts](mdc:vite.config.ts)
+   - Aktualizacje [tsconfig.json](mdc:tsconfig.json)
+
+3. **Po aktualizacjach dokumentacji**
+   - Zmiany w [memory-bank/](mdc:memory-bank) filach
+   - Modyfikacje [README.md](mdc:README.md)
+   - Aktualizacje w [TASK_log.md](mdc:TASK_log.md)
+
+4. **Po zmianach w plikach systemowych**
+   - Modyfikacje [.gitignore](mdc:.gitignore)
+   - Zmiany w strukturze projektu
+   - Aktualizacje skryptów
+
+### Format Commit Messages
+
+#### Obowiązkowa struktura:
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+#### Przykłady:
+```bash
+# Zmiany w kodzie
+feat(components): add AdminDashboard configuration panel
+fix(services): resolve API key exposure in geminiService
+refactor(store): optimize analysisStore persistence
+
+# Zmiany w dokumentacji  
+docs(memory-bank): update activeContext with admin dashboard status
+docs(readme): add installation instructions for backend
+
+# Zmiany konfiguracyjne
+config(vite): add proxy configuration for backend API
+config(package): update dependencies to latest versions
+
+# Naprawki błędów
+fix(git): resolve corrupted rebase state
+fix(types): correct TypeScript interface definitions
+```
+
+### Workflow Commitowania
+
+#### 1. Po każdej modyfikacji:
+```bash
+git add .
+git status  # Sprawdź co zostało zmienione
+git commit -m "type(scope): description"
+```
+
+#### 2. Przed większymi zmianami:
+```bash
+git status  # Upewnij się że working tree jest czysty
+# Wykonaj modyfikacje
+git add .
+git commit -m "descriptive message"
+```
+
+#### 3. Po wieloplikowych zmianach:
+```bash
+# Grupuj logicznie związane zmiany
+git add src/components/AdminDashboard.tsx
+git commit -m "feat(admin): implement configuration tabs"
+
+git add src/services/AdminConfigService.ts  
+git commit -m "feat(admin): add configuration persistence service"
+```
+
+### Wyjątki (Bardzo Rzadkie)
+
+**NIE commituj tylko gdy:**
+- Zmiany są eksperymentalne i niestabilne
+- Pracujesz nad większą funkcją wymagającą wielu kroków
+- Modyfikacje łamią kompilację TypeScript
+
+**W takich przypadkach:**
+- Użyj `git stash` do tymczasowego przechowania
+- Dokończ funkcjonalność do stabilnego stanu
+- Wykonaj commit gdy kod jest funkcjonalny
+
+### Korzyści Częstego Commitowania
+
+1. **🔄 Historia Zmian**: Każda modyfikacja jest udokumentowana
+2. **🚨 Łatwość Rollback**: Możliwość szybkiego cofnięcia błędnych zmian  
+3. **🔍 Debugging**: Łatwiejsze odnajdywanie momentu wprowadzenia błędu
+4. **👥 Współpraca**: Przejrzysta historia dla innych developerów
+5. **📊 Progress Tracking**: Widoczny postęp prac nad projektem
+
+### Integration z CortexReel Workflow
+
+#### Memory Bank Updates:
+Po modyfikacjach w [memory-bank/](mdc:memory-bank):
+```bash
+git add memory-bank/
+git commit -m "docs(memory-bank): update project context after admin dashboard implementation"
+```
+
+#### Backend Changes:
+Po zmianach w [src/backend/](mdc:src/backend):
+```bash  
+git add src/backend/
+git commit -m "feat(backend): implement LangChain RAG service"
+```
+
+#### Frontend Updates:
+Po modyfikacjach komponentów w [src/components/](mdc:src/components):
+```bash
+git add src/components/
+git commit -m "feat(ui): add role-based visualization filtering"
+```
+
+### ⚠️ Ważne Przypomnienia
+
+- **Working tree powinien być czysty** przed rozpoczęciem nowych zmian
+- **Każdy commit powinien reprezentować logiczną jednostkę pracy**
+- **Commit messages po angielsku** (kod i komentarze)
+- **Polish tylko dla user-facing UI** w aplikacji
+
+### Automatyzacja (Opcjonalna)
+
+Rozważ dodanie git hooks dla automatycznego commitowania:
+
+```bash
+# .git/hooks/pre-commit
+#!/bin/sh
+echo "Checking if changes need commit..."
+if [ -n "$(git status --porcelain)" ]; then
+    echo "✅ Changes staged for commit"
+else  
+    echo "⚠️  No changes to commit"
+fi
+```
+
+## Podsumowanie
+
+**Commit early, commit often** - to kluczowa zasada dla utrzymania stabilności i przejrzystości w projekcie CortexReel. Każda udana modyfikacja zasługuje na własny commit z opisową wiadomością.
+
+**Następnym razem: ZAWSZE commit po udanej modyfikacji!** 🚀
