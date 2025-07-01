@@ -1130,3 +1130,35 @@ Generate comprehensive Cursor Rules based on our extensive conversation about Co
 
 ## [2025-07-01 03:12:00] Zakończenie zadania: Usunięcie folderu .kilocode z historii Git i ponowne wypchnięcie gałęzi lang-v2
 - Status: Powodzenie, gałąź lang-v2 została wypchnięta bez blokujących tajnych danych.
+
+## [2025-07-01 21:10:00] Rozpoczęcie zadania: Odświeżenie README.md z popkulturowym twistem
+- Opis: Aktualizacja README.md w celu odzwierciedlenia nowej architektury LangChain RAG backend oraz pełnej integracji Admin Dashboard. Styl: elegancki, zabawny, z metaforami i odniesieniami do klasyków kinematografii (1995-2022).
+
+## [2025-07-01 21:12:00] Zakończenie zadania: Odświeżenie README.md
+- Status: ✅ Ukończone
+- Zmiany: Dodano popkulturowy akapit z cytatem Orsona Wellesa oraz odniesieniami do *The Matrix* (1999), *Mad Max: Fury Road* (2015) i *The Batman* (2022). Dodano bullet **Full-Stack Muscle** opisujący LangChain RAG backend z MongoDB, Weaviate i BullMQ. README odzwierciedla aktualny stan projektu z backendem i integracją panelu administracyjnego oraz zachowuje profesjonalny ton.
+
+## 2025-07-01 04:27:46 - Ujednolicenie formatowania bulletów w memory-bank.mdc - ✅ UKOŃCZONE
+
+**Opis zadania:** Poprawa formatowania w pliku `.cursor/rules/memory-bank.mdc` poprzez ujednolicenie znaków wypunktowania z niestandardowych symboli (`•`, `▸`) na standardowe myślniki (`-`) zgodne z Markdown. Celem było zapewnienie spójnego wyglądu dokumentacji i poprawnej interpretacji przez renderery Markdown.
+
+**Status:** ✅ Zadanie ukończone pomyślnie
+
+### 🛠️ Wykonane działania
+1. Wyszukano i zastąpiono wszystkie wystąpienia znaków `•` oraz `▸` w `.cursor/rules/memory-bank.mdc` na `-` przy użyciu polecenia:
+   ```bash
+   sed -i.bak -e 's/•/-/g' -e 's/▸/-/g' .cursor/rules/memory-bank.mdc
+   ```
+2. Zweryfikowano brak pozostałości niestandardowych znaków wypunktowania.
+3. Dodano zmodyfikowany plik do stage'a: `git add .cursor/rules/memory-bank.mdc`.
+4. Wykonano commit z wiadomością:
+   ```bash
+   docs(memory-bank): unify bullet list formatting for markdown consistency
+   ```
+
+### ✅ Wynik końcowy
+- Ujednolicono 100% wypunktowań w `.cursor/rules/memory-bank.mdc`.
+- Poprawiono czytelność i spójność dokumentacji.
+- Zmiany zostały zapisane w repozytorium.
+
+**Czas realizacji:** < 5 minut
