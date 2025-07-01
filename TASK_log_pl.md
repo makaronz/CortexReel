@@ -1162,6 +1162,7 @@ Generate comprehensive Cursor Rules based on our extensive conversation about Co
 - Zmiany zostały zapisane w repozytorium.
 
 **Czas realizacji:** < 5 minut
+<<<<<<< HEAD
 
 ## Zadanie: Naprawa błędu w FileUpload.tsx - getSupportedFormats
 **Data rozpoczęcia:** 2025-07-01 05:43:13
@@ -1200,3 +1201,5 @@ const supportedFormats = typeof PDFParserService.getSupportedFormats === 'functi
 
 ### Podsumowanie
 Naprawiono błąd poprzez implementację defensywnego wzorca dostępu do metody statycznej. Rozwiązanie jest odporne na różne scenariusze wykonania kodu (dev/prod), problemy bundlowania oraz przyszłe zmiany w API.
+=======
+>>>>>>> 27d4b8dfb4d51ef783c99115157fcd0a4eab6790

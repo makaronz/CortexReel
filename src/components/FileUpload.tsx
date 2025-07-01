@@ -54,36 +54,6 @@ const FileUpload: FC = () => {
     stage: string;
   } | null>(null);
 
-  // Enhanced validation function using PDFParserService methods
-  const validateFile = (file: File): string | null => {
-    // File size validation - use PDFParserService.validateFileSize()
-    if (!PDFParserService.validateFileSize(file)) {
-      const sizeMB = (file.size / 1024 / 1024).toFixed(1);
-      return `Plik przekracza limit rozmiaru 10MB (aktualny rozmiar: ${sizeMB}MB). Spróbuj kompresji PDF lub wybierz mniejszy plik.`;
-    }
-    
-    // File type validation with fallback if getSupportedFormats() is unavailable
-    const supportedFormats = typeof PDFParserService.getSupportedFormats === 'function' 
-      ? PDFParserService.getSupportedFormats() 
-      : ['application/pdf', '.pdf'];
-    const isValidType = supportedFormats.includes(file.type) || file.name.toLowerCase().endsWith('.pdf');
-    
-    if (!isValidType) {
-      return `Nieobsługiwany format pliku. Obsługiwane formaty: PDF. Aktualny typ: ${file.type || 'nieznany'}`;
-    }
-
-    // Additional validations
-    if (file.size === 0) {
-      return 'Plik jest pusty. Wybierz prawidłowy plik PDF.';
-    }
-
-    if (file.name.length > 255) {
-      return 'Nazwa pliku jest zbyt długa (max 255 znaków).';
-    }
-
-    return null; // File is valid
-  };
-
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;

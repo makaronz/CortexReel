@@ -428,7 +428,6 @@ Please respond with ONLY valid JSON, no additional text or formatting.`;
     } else {
       // Single chunk processing
       const fullPrompt = `${prompt}
-
 Script text to analyze:
 ${scriptText}
 
