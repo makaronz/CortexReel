@@ -2,22 +2,23 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import AdminDashboard from '../views/AdminDashboard';
 import { AdminConfigService } from '../services/AdminConfigService';
 
 // Mock the AdminConfigService
-jest.mock('../services/AdminConfigService');
-const MockedAdminConfigService = AdminConfigService as jest.MockedClass<typeof AdminConfigService>;
+vi.mock('../services/AdminConfigService');
+const MockedAdminConfigService = AdminConfigService as vi.MockedClass<typeof AdminConfigService>;
 
 // Mock LoadingOverlay component
-jest.mock('../components/LoadingOverlay', () => {
+vi.mock('../components/LoadingOverlay', () => {
   return function MockLoadingOverlay({ loading }: { loading: boolean }) {
     return loading ? <div data-testid="loading-overlay">Loading...</div> : null;
   };
 });
 
 describe('AdminDashboard', () => {
-  let mockConfigService: jest.Mocked<AdminConfigService>;
+  let mockConfigService: vi.Mocked<AdminConfigService>;
 
   const mockLLMConfig = {
     apiKey: 'test-api-key',
@@ -60,18 +61,18 @@ describe('AdminDashboard', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     
     // Create mock instance
     mockConfigService = {
-      getLLMConfig: jest.fn().mockResolvedValue(mockLLMConfig),
-      getPromptConfig: jest.fn().mockResolvedValue(mockPromptConfig),
-      getAppConfig: jest.fn().mockResolvedValue(mockAppConfig),
-      saveLLMConfig: jest.fn().mockResolvedValue(undefined),
-      savePromptConfig: jest.fn().mockResolvedValue(undefined),
-      saveAppConfig: jest.fn().mockResolvedValue(undefined),
-      resetToNewDefaults: jest.fn().mockResolvedValue(undefined),
-      getDefaultPrompts: jest.fn().mockReturnValue(mockPromptConfig)
+      getLLMConfig: vi.fn().mockResolvedValue(mockLLMConfig),
+      getPromptConfig: vi.fn().mockResolvedValue(mockPromptConfig),
+      getAppConfig: vi.fn().mockResolvedValue(mockAppConfig),
+      saveLLMConfig: vi.fn().mockResolvedValue(undefined),
+      savePromptConfig: vi.fn().mockResolvedValue(undefined),
+      saveAppConfig: vi.fn().mockResolvedValue(undefined),
+      resetToNewDefaults: vi.fn().mockResolvedValue(undefined),
+      getDefaultPrompts: vi.fn().mockReturnValue(mockPromptConfig)
     } as any;
 
     // Mock the constructor to return our mock instance
@@ -581,7 +582,7 @@ describe('AdminDashboard', () => {
     });
 
     test('auto-hides snackbar after timeout', async () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
       
       render(<AdminDashboard />);
       
@@ -591,18 +592,18 @@ describe('AdminDashboard', () => {
       
       // Fast forward time
       act(() => {
-        jest.advanceTimersByTime(6000);
+        vi.advanceTimersByTime(6000);
       });
       
       await waitFor(() => {
         expect(screen.queryByText('Konfiguracja załadowana pomyślnie')).not.toBeInTheDocument();
       });
       
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 });
