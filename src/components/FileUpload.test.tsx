@@ -15,7 +15,7 @@ vi.mock('react-dropzone');
 // Mock react-dropzone
 const mockUseDropzone = vi.fn();
 vi.mock('react-dropzone', () => ({
-  useDropzone: () => mockUseDropzone(),
+  useDropzone: (options) => mockUseDropzone(options),
 }));
 
 // Mock the analysis store
