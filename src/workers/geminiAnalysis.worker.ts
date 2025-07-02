@@ -414,7 +414,7 @@ Please respond with ONLY valid JSON, no additional text or formatting.`;
           async () => {
             const callStart = Date.now();
             const response = await model.generateContent(chunkPrompt);
-            const text = response.response.text();
+            const text = await response.response.text();
             const duration = Date.now() - callStart;
             fetch('/api/monitoring/frontend-log', {
               method: 'POST',
