@@ -302,29 +302,45 @@
             startAutoRefresh();
         });
 
-        async function loadStats() {
+        function loadStats() {
             try {
-                const response = await fetch('/api/monitoring/stats');
-                if (response.ok) {
-                    const data = await response.json();
-                    updateStats(data.stats);
+                // Use frontend-only API from monitoring script
+                if (window.cortexreel_get_monitoring_stats) {
+                    const stats = window.cortexreel_get_monitoring_stats();
+                    updateStats(stats);
+                } else {
+                    // Fallback if monitoring script not loaded
+                    addLog('WARN', 'CortexReel monitoring script not loaded');
+                    updateStats({
+                        total_requests: 0,
+                        avg_response_time: 0,
+                        error_rate: 0,
+                        gemini_calls: 0,
+                        pdf_processed: 0,
+                        analysis_completed: 0,
+                        active_sessions: 0
+                    });
                 }
             } catch (error) {
                 console.error('Failed to load stats:', error);
-                addLog('ERROR', 'Failed to load monitoring statistics');
+                addLog('ERROR', 'Failed to load monitoring statistics: ' + error.message);
             }
         }
 
-        async function loadLogs() {
+        function loadLogs() {
             try {
-                const response = await fetch('/api/monitoring/logs?limit=50');
-                if (response.ok) {
-                    const data = await response.json();
-                    updateLogs(data.logs);
+                // Use frontend-only API from monitoring script
+                if (window.cortexreel_get_monitoring_logs) {
+                    const logs = window.cortexreel_get_monitoring_logs(50);
+                    updateLogs(logs);
+                } else {
+                    // Fallback if monitoring script not loaded
+                    addLog('WARN', 'CortexReel monitoring script not loaded');
+                    updateLogs([]);
                 }
             } catch (error) {
                 console.error('Failed to load logs:', error);
-                addLog('ERROR', 'Failed to load monitoring logs');
+                addLog('ERROR', 'Failed to load monitoring logs: ' + error.message);
             }
         }
 
@@ -382,20 +398,46 @@
         }
 
         function formatLogMessage(log) {
-            if (log.type === 'request_complete') {
-                return `${log.data.method} ${log.data.url} - ${log.data.status} (${log.data.duration_ms}ms)`;
-            } else if (log.type === 'gemini_api_call') {
-                return `Gemini API call - ${log.data.status} (${log.data.duration_ms}ms)`;
+            if (log.type === 'gemini_api_call' || log.type === 'backend_api_call') {
+                return `${log.type === 'gemini_api_call' ? 'Gemini' : 'Backend'} API call: ${log.method || 'GET'} ${log.url || ''} - ${log.status} (${log.duration_ms}ms)`;
             } else if (log.type === 'pdf_processing') {
-                return `PDF processing: ${log.data.filename} - ${log.data.success ? 'Success' : 'Failed'} (${log.data.duration_ms}ms)`;
+                return `PDF processing: ${log.filename} - ${log.success ? 'Success' : 'Failed'} (${log.duration_ms}ms)`;
             } else if (log.type === 'analysis_complete') {
-                return `Analysis completed: ${log.data.filename} - ${log.data.completed_sections}/${log.data.total_sections} sections (${log.data.total_time_ms}ms)`;
+                return `Analysis completed: ${log.filename} - ${log.completed_sections}/${log.total_sections} sections (${log.total_time_ms}ms, avg: ${Math.round(log.avg_time_per_section)}ms/section)`;
             } else if (log.type === 'js_error') {
-                return `JavaScript Error: ${log.data.message} at ${log.data.filename}:${log.data.lineno}`;
-            } else if (log.type === 'frontend_event') {
-                return `Frontend Event: ${log.data.type} - ${JSON.stringify(log.data.data || {})}`;
+                return `JavaScript Error: ${log.message} at ${log.filename}:${log.lineno}`;
+            } else if (log.type === 'promise_rejection') {
+                return `Promise Rejection: ${log.reason}`;
+            } else if (log.type === 'console_error') {
+                return `Console Error: ${log.message}`;
+            } else if (log.type === 'admin_dashboard_action') {
+                return `Admin Dashboard: ${log.action} - ${JSON.stringify(log.data)}`;
+            } else if (log.type === 'role_change') {
+                return `Role Change: ${log.old_role} → ${log.new_role}`;
+            } else if (log.type === 'visualization_interaction') {
+                return `Visualization: ${log.component} - ${log.interaction}`;
+            } else if (log.type === 'config_change') {
+                return `Config Change: ${log.section}.${log.key} = ${log.new_value}`;
+            } else if (log.type === 'page_load_performance') {
+                return `Page Load: ${log.load_time_ms}ms (DOM: ${log.dom_ready_ms}ms, DNS: ${log.dns_lookup_ms}ms)`;
+            } else if (log.type === 'heartbeat') {
+                const memory = log.memory_usage;
+                const memoryStr = memory ? ` Memory: ${memory.used}MB/${memory.total}MB` : '';
+                return `Heartbeat: Session ${Math.round(log.session_duration_ms / 1000)}s${memoryStr}`;
+            } else if (log.type === 'custom_event') {
+                return `Custom Event: ${log.event_name} - ${JSON.stringify(log.data)}`;
             } else {
-                return JSON.stringify(log.data || {});
+                // Generic fallback - handle any log format
+                const data = { ...log };
+                delete data.id;
+                delete data.timestamp;
+                delete data.session_id;
+                delete data.user_agent;
+                delete data.viewport;
+                delete data.type;
+                delete data.level;
+                
+                return JSON.stringify(data);
             }
         }
 
@@ -454,39 +496,23 @@
         }
 
         function clearLogs() {
+            // Clear from localStorage
+            try {
+                localStorage.removeItem('cortexreel_monitoring_logs');
+                console.log('Cleared monitoring logs from localStorage');
+            } catch (error) {
+                console.warn('Failed to clear logs from localStorage:', error);
+            }
+
+            // Clear from UI
             document.getElementById('logs-container').innerHTML = `
                 <div class="log-entry info">
                     <span class="log-timestamp">${new Date().toLocaleString()}</span>
                     <span class="log-type">INFO</span>
-                    <div class="log-message">Logs cleared</div>
+                    <div class="log-message">Logs cleared from localStorage and display</div>
                 </div>
             `;
         }
-
-        // WebSocket connection for real-time updates (if available)
-        function connectWebSocket() {
-            try {
-                const ws = new WebSocket(`ws://${window.location.host}/api/monitoring/ws`);
-                
-                ws.onmessage = function(event) {
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'stats_update') {
-                        updateStats(data.stats);
-                    } else if (data.type === 'log_update') {
-                        loadLogs();
-                    }
-                };
-                
-                ws.onerror = function(error) {
-                    console.log('WebSocket connection failed, using polling instead');
-                };
-            } catch (error) {
-                console.log('WebSocket not available, using polling');
-            }
-        }
-
-        // Try WebSocket connection
-        connectWebSocket();
     </script>
 </body>
 </html> 
