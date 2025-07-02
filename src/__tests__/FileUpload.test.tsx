@@ -2,12 +2,13 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 import FileUpload from '../components/FileUpload';
 
 // Mock file reader and other browser APIs
 const mockFileReader = {
-  readAsDataURL: jest.fn(),
-  readAsText: jest.fn(),
+  readAsDataURL: vi.fn(),
+  readAsText: vi.fn(),
   result: 'data:image/png;base64,mockbase64data',
   onload: null as any,
   onerror: null as any,
@@ -18,12 +19,12 @@ const mockFileReader = {
   DONE: 2,
 };
 
-const mockCreateObjectURL = jest.fn(() => 'mock-object-url');
-const mockRevokeObjectURL = jest.fn();
+const mockCreateObjectURL = vi.fn(() => 'mock-object-url');
+const mockRevokeObjectURL = vi.fn();
 
 // Setup global mocks
 beforeAll(() => {
-  global.FileReader = jest.fn(() => mockFileReader) as any;
+  global.FileReader = vi.fn(() => mockFileReader) as any;
   Object.defineProperty(URL, 'createObjectURL', {
     writable: true,
     value: mockCreateObjectURL,
@@ -37,7 +38,7 @@ beforeAll(() => {
 describe('FileUpload Component', () => {
   // Reset mocks before each test
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockFileReader.readAsDataURL.mockClear();
     mockFileReader.readAsText.mockClear();
   });
@@ -81,7 +82,7 @@ describe('FileUpload Component', () => {
 
   describe('File Selection via Input', () => {
     test('handles single file selection correctly', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
@@ -95,7 +96,7 @@ describe('FileUpload Component', () => {
     });
 
     test('handles multiple file selection when multiple prop is true', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} multiple={true} />);
@@ -112,7 +113,7 @@ describe('FileUpload Component', () => {
     });
 
     test('calls onChange callback when provided', async () => {
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onChange={mockOnChange} />);
@@ -128,7 +129,7 @@ describe('FileUpload Component', () => {
 
   describe('Drag and Drop Functionality', () => {
     test('handles file drop correctly', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
       
@@ -190,7 +191,7 @@ describe('FileUpload Component', () => {
       const dropZone = screen.getByText(/drag.*drop|drop.*here/i).closest('div');
       
       const dragOverEvent = new Event('dragover', { bubbles: true });
-      const preventDefaultSpy = jest.spyOn(dragOverEvent, 'preventDefault');
+      const preventDefaultSpy = vi.spyOn(dragOverEvent, 'preventDefault');
       Object.defineProperty(dragOverEvent, 'dataTransfer', {
         value: { types: ['Files'] },
       });
@@ -201,7 +202,7 @@ describe('FileUpload Component', () => {
     });
 
     test('ignores non-file drag events', () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
       
       const dropZone = screen.getByText(/drag.*drop|drop.*here/i).closest('div');
@@ -219,7 +220,7 @@ describe('FileUpload Component', () => {
 
   describe('File Validation', () => {
     test('validates file size when maxSize is set', async () => {
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onError={mockOnError} maxSize={100} />);
@@ -239,8 +240,8 @@ describe('FileUpload Component', () => {
     });
 
     test('validates file types with MIME types', async () => {
-      const mockOnError = jest.fn();
-      const mockOnFileSelect = jest.fn();
+      const mockOnError = vi.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(
@@ -261,7 +262,7 @@ describe('FileUpload Component', () => {
       expect(mockOnFileSelect).toHaveBeenCalledWith([validFile]);
       
       // Clear previous calls
-      jest.clearAllMocks();
+      vi.clearAllMocks();
       
       // Test invalid file
       await user.upload(fileInput, invalidFile);
@@ -275,7 +276,7 @@ describe('FileUpload Component', () => {
     });
 
     test('validates file extensions', async () => {
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onError={mockOnError} accept=".pdf,.doc,.docx" />);
@@ -293,7 +294,7 @@ describe('FileUpload Component', () => {
     });
 
     test('validates maximum number of files', async () => {
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onError={mockOnError} multiple={true} maxFiles={2} />);
@@ -316,7 +317,7 @@ describe('FileUpload Component', () => {
     });
 
     test('validates minimum number of files', async () => {
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onError={mockOnError} multiple={true} minFiles={2} />);
@@ -335,8 +336,8 @@ describe('FileUpload Component', () => {
     });
 
     test('allows files that pass all validations', async () => {
-      const mockOnFileSelect = jest.fn();
-      const mockOnError = jest.fn();
+      const mockOnFileSelect = vi.fn();
+      const mockOnError = vi.fn();
       const user = userEvent.setup();
       
       render(
@@ -361,7 +362,7 @@ describe('FileUpload Component', () => {
 
   describe('File Preview Generation', () => {
     test('generates preview for image files', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} showPreview={true} />);
@@ -382,7 +383,7 @@ describe('FileUpload Component', () => {
     });
 
     test('handles FileReader errors gracefully', async () => {
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onError={mockOnError} showPreview={true} />);
@@ -406,7 +407,7 @@ describe('FileUpload Component', () => {
     });
 
     test('skips preview generation for non-image files', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} showPreview={true} />);
@@ -553,7 +554,7 @@ describe('FileUpload Component', () => {
     });
 
     test('handles multiple errors appropriately', async () => {
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       const user = userEvent.setup();
       
       render(
@@ -597,7 +598,7 @@ describe('FileUpload Component', () => {
     });
 
     test('allows removing files from the list', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(
@@ -656,8 +657,8 @@ describe('FileUpload Component', () => {
     });
 
     test('cleans up event listeners on unmount', () => {
-      const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
-      const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
+      const addEventListenerSpy = vi.spyOn(document, 'addEventListener');
+      const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
       
       const { unmount } = render(<FileUpload />);
       
@@ -684,7 +685,7 @@ describe('FileUpload Component', () => {
 
   describe('Edge Cases and Error Conditions', () => {
     test('handles empty file selection gracefully', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
       
@@ -702,7 +703,7 @@ describe('FileUpload Component', () => {
     });
 
     test('handles files with no extension', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
@@ -716,7 +717,7 @@ describe('FileUpload Component', () => {
     });
 
     test('handles extremely long filenames', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
@@ -731,7 +732,7 @@ describe('FileUpload Component', () => {
     });
 
     test('handles special characters in filenames', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
@@ -746,7 +747,7 @@ describe('FileUpload Component', () => {
     });
 
     test('handles zero-byte files', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
@@ -760,7 +761,7 @@ describe('FileUpload Component', () => {
     });
 
     test('handles files with unusual MIME types', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
@@ -774,7 +775,7 @@ describe('FileUpload Component', () => {
     });
 
     test('handles rapid successive file selections', async () => {
-      const mockOnFileSelect = jest.fn();
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(<FileUpload onFileSelect={mockOnFileSelect} />);
@@ -795,14 +796,14 @@ describe('FileUpload Component', () => {
 
   describe('Custom Validation Functions', () => {
     test('applies custom validation function', async () => {
-      const customValidator = jest.fn((file: File) => {
+      const customValidator = vi.fn((file: File) => {
         if (file.name.includes('invalid')) {
           return { isValid: false, message: 'Filename contains invalid text' };
         }
         return { isValid: true };
       });
       
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       const user = userEvent.setup();
       
       render(
@@ -827,8 +828,8 @@ describe('FileUpload Component', () => {
     });
 
     test('allows files that pass custom validation', async () => {
-      const customValidator = jest.fn(() => ({ isValid: true }));
-      const mockOnFileSelect = jest.fn();
+      const customValidator = vi.fn(() => ({ isValid: true }));
+      const mockOnFileSelect = vi.fn();
       const user = userEvent.setup();
       
       render(

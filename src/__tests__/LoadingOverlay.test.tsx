@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import LoadingOverlay from '../LoadingOverlay';
 
 // Note: Using Jest and React Testing Library based on common React testing patterns
@@ -337,6 +338,6 @@ describe('LoadingOverlay', () => {
 
   // Cleanup
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 });
