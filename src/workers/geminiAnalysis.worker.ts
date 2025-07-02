@@ -412,8 +412,20 @@ Please respond with ONLY valid JSON, no additional text or formatting.`;
         const shouldRetry: ShouldRetryFn = (error, attemptNumber) => shouldRetryLLMCall(error, attemptNumber);
         const result = await retryAsync(
           async () => {
+            const callStart = Date.now();
             const response = await model.generateContent(chunkPrompt);
-            return response.response.text();
+            const text = response.response.text();
+            const duration = Date.now() - callStart;
+            fetch('/api/monitoring/frontend-log', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'gemini_api_call',
+                timestamp: Date.now(),
+                data: { duration_ms: duration, status: 200 }
+              })
+            }).catch(() => {});
+            return text;
           },
           3,
           2000, // 2 second base delay for chunked requests
@@ -436,8 +448,20 @@ Please respond with ONLY valid JSON, no additional text or formatting.`;
       const shouldRetry: ShouldRetryFn = (error, attemptNumber) => shouldRetryLLMCall(error, attemptNumber);
       const result = await retryAsync(
         async () => {
+          const callStart = Date.now();
           const response = await model.generateContent(fullPrompt);
-          return response.response.text();
+          const text = response.response.text();
+          const duration = Date.now() - callStart;
+          fetch('/api/monitoring/frontend-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'gemini_api_call',
+              timestamp: Date.now(),
+              data: { duration_ms: duration, status: 200 }
+            })
+          }).catch(() => {});
+          return text;
         },
         3,
         1000, // 1 second base delay for single requests

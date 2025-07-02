@@ -2,18 +2,19 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import FileUpload from './FileUpload';
 
 // Mock the external dependencies
-jest.mock('@/store/analysisStore');
-jest.mock('@/services/pdfParser');
-jest.mock('@/services/geminiService');
-jest.mock('@/services/AdminConfigService');
-jest.mock('react-dropzone');
+vi.mock('@/store/analysisStore');
+vi.mock('@/services/pdfParser');
+vi.mock('@/services/geminiService');
+vi.mock('@/services/AdminConfigService');
+vi.mock('react-dropzone');
 
 // Mock react-dropzone
-const mockUseDropzone = jest.fn();
-jest.mock('react-dropzone', () => ({
+const mockUseDropzone = vi.fn();
+vi.mock('react-dropzone', () => ({
   useDropzone: () => mockUseDropzone(),
 }));
 
@@ -22,50 +23,50 @@ const mockAnalysisStore = {
   currentFile: null,
   extractedText: '',
   extractionMethod: null,
-  setCurrentFile: jest.fn(),
-  setExtractedText: jest.fn(),
+  setCurrentFile: vi.fn(),
+  setExtractedText: vi.fn(),
   isProcessing: false,
   isAnalyzing: false,
-  startProcessing: jest.fn(),
-  stopProcessing: jest.fn(),
-  startAnalysis: jest.fn(),
-  updatePartialAnalysis: jest.fn(),
-  setAnalysisProgress: jest.fn(),
-  setAnalysisResult: jest.fn(),
-  setAnalysisError: jest.fn(),
+  startProcessing: vi.fn(),
+  stopProcessing: vi.fn(),
+  startAnalysis: vi.fn(),
+  updatePartialAnalysis: vi.fn(),
+  setAnalysisProgress: vi.fn(),
+  setAnalysisResult: vi.fn(),
+  setAnalysisError: vi.fn(),
 };
 
-jest.mock('@/store/analysisStore', () => ({
+vi.mock('@/store/analysisStore', () => ({
   useAnalysisStore: () => mockAnalysisStore,
 }));
 
 // Mock PDF Parser Service
 const mockPDFParserService = {
-  parseFile: jest.fn(),
-  estimateProcessingTime: jest.fn(),
+  parseFile: vi.fn(),
+  estimateProcessingTime: vi.fn(),
 };
 
-jest.mock('@/services/pdfParser', () => ({
-  PDFParserService: jest.fn().mockImplementation(() => mockPDFParserService),
+vi.mock('@/services/pdfParser', () => ({
+  PDFParserService: vi.fn().mockImplementation(() => mockPDFParserService),
 }));
 
 // Mock Gemini Analysis Service
 const mockGeminiAnalysisService = {
-  analyzeScreenplay: jest.fn(),
+  analyzeScreenplay: vi.fn(),
 };
 
-jest.mock('@/services/geminiService', () => ({
-  GeminiAnalysisService: jest.fn().mockImplementation(() => mockGeminiAnalysisService),
+vi.mock('@/services/geminiService', () => ({
+  GeminiAnalysisService: vi.fn().mockImplementation(() => mockGeminiAnalysisService),
 }));
 
 // Mock Admin Config Service
 const mockAdminConfigService = {
-  getLLMConfig: jest.fn(),
-  getPromptConfig: jest.fn(),
+  getLLMConfig: vi.fn(),
+  getPromptConfig: vi.fn(),
 };
 
-jest.mock('@/services/AdminConfigService', () => ({
-  AdminConfigService: jest.fn().mockImplementation(() => mockAdminConfigService),
+vi.mock('@/services/AdminConfigService', () => ({
+  AdminConfigService: vi.fn().mockImplementation(() => mockAdminConfigService),
 }));
 
 // Helper function to create mock files
@@ -78,11 +79,11 @@ const createMockFile = (name: string, size: number, type: string = 'application/
 describe('FileUpload Component', () => {
   beforeEach(() => {
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     
     // Default mock implementations
     mockUseDropzone.mockReturnValue({
-      getRootProps: () => ({ onClick: jest.fn() }),
+      getRootProps: () => ({ onClick: vi.fn() }),
       getInputProps: () => ({ type: 'file' }),
       isDragActive: false,
     });
@@ -139,7 +140,7 @@ describe('FileUpload Component', () => {
 
     it('should display drag active state', () => {
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: true,
       });
@@ -152,10 +153,10 @@ describe('FileUpload Component', () => {
   describe('File Selection and Processing', () => {
     it('should handle file drop successfully', async () => {
       const mockFile = createMockFile('test.pdf', 1024 * 1024);
-      const mockOnDrop = jest.fn();
+      const mockOnDrop = vi.fn();
       
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: false,
         onDrop: mockOnDrop,
@@ -211,10 +212,10 @@ describe('FileUpload Component', () => {
   describe('File Validation', () => {
     it('should validate file size', async () => {
       const mockFile = createMockFile('large.pdf', 15 * 1024 * 1024); // 15MB - exceeds 10MB limit
-      const mockOnDrop = jest.fn();
+      const mockOnDrop = vi.fn();
       
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: false,
         onDrop: mockOnDrop,
@@ -234,10 +235,10 @@ describe('FileUpload Component', () => {
 
     it('should validate file type', async () => {
       const mockFile = createMockFile('document.txt', 1024, 'text/plain');
-      const mockOnDrop = jest.fn();
+      const mockOnDrop = vi.fn();
       
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: false,
         onDrop: mockOnDrop,
@@ -266,9 +267,9 @@ describe('FileUpload Component', () => {
       const mockFile = createMockFile('corrupt.pdf', 1024);
       mockPDFParserService.parseFile.mockRejectedValue(new Error('File size too large'));
       
-      const mockOnDrop = jest.fn();
+      const mockOnDrop = vi.fn();
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: false,
         onDrop: mockOnDrop,
@@ -283,12 +284,12 @@ describe('FileUpload Component', () => {
 
     it('should handle PDF parsing errors gracefully', async () => {
       const mockFile = createMockFile('corrupted.pdf', 1024);
-      const mockOnDrop = jest.fn();
+      const mockOnDrop = vi.fn();
       
       mockPDFParserService.parseFile.mockRejectedValue(new Error('invalid file type'));
       
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: false,
         onDrop: mockOnDrop,
@@ -438,10 +439,10 @@ describe('FileUpload Component', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty file selection', async () => {
-      const mockOnDrop = jest.fn();
+      const mockOnDrop = vi.fn();
       
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: false,
         onDrop: mockOnDrop,
@@ -457,10 +458,10 @@ describe('FileUpload Component', () => {
     });
 
     it('should handle null file parameter', async () => {
-      const mockOnDrop = jest.fn();
+      const mockOnDrop = vi.fn();
       
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: false,
         onDrop: mockOnDrop,
@@ -516,10 +517,10 @@ describe('FileUpload Component', () => {
 
     it('should call PDF parser with progress callback', async () => {
       const mockFile = createMockFile('test.pdf', 1024);
-      const mockOnDrop = jest.fn();
+      const mockOnDrop = vi.fn();
       
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: false,
         onDrop: mockOnDrop,
@@ -555,10 +556,10 @@ describe('FileUpload Component', () => {
   describe('Performance', () => {
     it('should handle large files efficiently', () => {
       const mockFile = createMockFile('large.pdf', 9 * 1024 * 1024); // 9MB - just under limit
-      const mockOnDrop = jest.fn();
+      const mockOnDrop = vi.fn();
       
       mockUseDropzone.mockReturnValue({
-        getRootProps: () => ({ onClick: jest.fn() }),
+        getRootProps: () => ({ onClick: vi.fn() }),
         getInputProps: () => ({ type: 'file' }),
         isDragActive: false,
         onDrop: mockOnDrop,

@@ -258,6 +258,14 @@
                 <div class="value" id="active-sessions">0</div>
             </div>
             <div class="stat-card">
+                <h3>Memory Usage</h3>
+                <div class="value" id="memory-usage">0<span class="unit">MB</span></div>
+            </div>
+            <div class="stat-card">
+                <h3>CPU Usage</h3>
+                <div class="value" id="cpu-usage">0<span class="unit">%</span></div>
+            </div>
+            <div class="stat-card">
                 <h3>System Status</h3>
                 <div class="value">
                     <span class="status-indicator status-healthy" id="status-indicator"></span>
@@ -336,6 +344,8 @@
             document.getElementById('pdf-processed').textContent = stats.pdf_processed || 0;
             document.getElementById('analysis-completed').textContent = stats.analysis_completed || 0;
             document.getElementById('active-sessions').textContent = stats.active_sessions || 0;
+            document.getElementById('memory-usage').textContent = (stats.memory_usage_mb || 0) + 'MB';
+            document.getElementById('cpu-usage').textContent = (stats.cpu_usage_percent || 0).toFixed(2) + '%';
 
             // Update status indicator
             const statusIndicator = document.getElementById('status-indicator');

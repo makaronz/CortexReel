@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
+import { initMonitoring } from './monitoring/client';
 
 // Error Boundary for better error handling
 class ErrorBoundary extends React.Component<
@@ -90,6 +91,9 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+
+// Set up frontend monitoring
+initMonitoring();
 
 root.render(
   <React.StrictMode>

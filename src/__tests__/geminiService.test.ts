@@ -1,10 +1,10 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, vi, beforeEach, afterEach, MockedClass } from 'vitest';
 import { GeminiAnalysisService } from '../services/geminiService';
 import { AdminConfigService } from '../services/AdminConfigService';
 import type { CompleteAnalysis, AnalysisProgress } from '../types/analysis';
 
 // Mock the AdminConfigService
-jest.mock('../services/AdminConfigService');
+vi.mock('../services/AdminConfigService');
 
 // Mock Worker
 class MockWorker {
@@ -26,16 +26,16 @@ class MockWorker {
 global.Worker = MockWorker as any;
 
 // Mock URL constructor for import.meta.url
-global.URL = jest.fn().mockImplementation((url: string, base?: string) => ({
+global.URL = vi.fn().mockImplementation((url: string, base?: string) => ({
   href: url,
   toString: () => url
 })) as any;
 
 describe('GeminiAnalysisService', () => {
   let geminiService: GeminiAnalysisService;
-  let mockAdminConfigService: jest.Mocked<AdminConfigService>;
-  let mockProgressCallback: jest.Mock;
-  let mockPartialResultCallback: jest.Mock;
+  let mockAdminConfigService: vi.Mocked<AdminConfigService>;
+  let mockProgressCallback: vi.Mock;
+  let mockPartialResultCallback: vi.Mock;
 
   const mockLLMConfig = {
     model: 'gemini-pro',
@@ -61,26 +61,26 @@ describe('GeminiAnalysisService', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     
-    mockProgressCallback = jest.fn();
-    mockPartialResultCallback = jest.fn();
+    mockProgressCallback = vi.fn();
+    mockPartialResultCallback = vi.fn();
     
     // Mock AdminConfigService
     mockAdminConfigService = {
-      getLLMConfig: jest.fn().mockResolvedValue(mockLLMConfig),
-      getPromptConfig: jest.fn().mockResolvedValue(mockPromptConfig)
+      getLLMConfig: vi.fn().mockResolvedValue(mockLLMConfig),
+      getPromptConfig: vi.fn().mockResolvedValue(mockPromptConfig)
     } as any;
     
-    (AdminConfigService as jest.MockedClass<typeof AdminConfigService>).mockImplementation(() => mockAdminConfigService);
+    (AdminConfigService as vi.MockedClass<typeof AdminConfigService>).mockImplementation(() => mockAdminConfigService);
     
     // Create console.log and console.error spies
-    jest.spyOn(console, 'log').mockImplementation();
-    jest.spyOn(console, 'error').mockImplementation();
+    vi.spyOn(console, 'log').mockImplementation();
+    vi.spyOn(console, 'error').mockImplementation();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('constructor', () => {
@@ -119,7 +119,7 @@ describe('GeminiAnalysisService', () => {
       const filename = 'test-script.fountain';
 
       const mockWorker = new MockWorker('test-url');
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay(scriptText, filename);
 
@@ -149,7 +149,7 @@ describe('GeminiAnalysisService', () => {
       const errorMessage = 'Analysis failed';
 
       const mockWorker = new MockWorker('test-url');
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay(scriptText, filename);
 
@@ -177,7 +177,7 @@ describe('GeminiAnalysisService', () => {
       };
 
       const mockWorker = new MockWorker('test-url');
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 
@@ -213,7 +213,7 @@ describe('GeminiAnalysisService', () => {
       const mockPartialData = [{ id: '1', title: 'Scene 1' }];
 
       const mockWorker = new MockWorker('test-url');
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 
@@ -250,7 +250,7 @@ describe('GeminiAnalysisService', () => {
 
     it('should handle worker onerror events', async () => {
       const mockWorker = new MockWorker('test-url');
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 
@@ -271,7 +271,7 @@ describe('GeminiAnalysisService', () => {
 
     it('should handle invalid worker message format', async () => {
       const mockWorker = new MockWorker('test-url');
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 
@@ -299,9 +299,9 @@ describe('GeminiAnalysisService', () => {
     it('should terminate previous worker before creating new one', async () => {
       const mockWorker1 = new MockWorker('test-url');
       const mockWorker2 = new MockWorker('test-url');
-      const terminateSpy1 = jest.spyOn(mockWorker1, 'terminate');
+      const terminateSpy1 = vi.spyOn(mockWorker1, 'terminate');
       
-      jest.spyOn(global, 'Worker')
+      vi.spyOn(global, 'Worker')
         .mockImplementationOnce(() => mockWorker1)
         .mockImplementationOnce(() => mockWorker2);
 
@@ -341,9 +341,9 @@ describe('GeminiAnalysisService', () => {
     it('should handle very large script text', async () => {
       const largeScript = 'FADE IN:\n'.repeat(10000);
       const mockWorker = new MockWorker('test-url');
-      const postMessageSpy = jest.spyOn(mockWorker, 'postMessage');
+      const postMessageSpy = vi.spyOn(mockWorker, 'postMessage');
       
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay(largeScript, 'large.fountain');
 
@@ -369,7 +369,7 @@ describe('GeminiAnalysisService', () => {
       const specialFilename = 'test-script_v2.0(final)!.fountain';
       const mockWorker = new MockWorker('test-url');
       
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', specialFilename);
 
@@ -389,7 +389,7 @@ describe('GeminiAnalysisService', () => {
       const serviceWithoutCallbacks = new GeminiAnalysisService();
       const mockWorker = new MockWorker('test-url');
       
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = serviceWithoutCallbacks.analyzeScreenplay('test', 'test.fountain');
 
@@ -430,9 +430,9 @@ describe('GeminiAnalysisService', () => {
 
     it('should cleanup worker on successful completion', async () => {
       const mockWorker = new MockWorker('test-url');
-      const terminateSpy = jest.spyOn(mockWorker, 'terminate');
+      const terminateSpy = vi.spyOn(mockWorker, 'terminate');
       
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 
@@ -452,9 +452,9 @@ describe('GeminiAnalysisService', () => {
 
     it('should cleanup worker on error', async () => {
       const mockWorker = new MockWorker('test-url');
-      const terminateSpy = jest.spyOn(mockWorker, 'terminate');
+      const terminateSpy = vi.spyOn(mockWorker, 'terminate');
       
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 
@@ -473,9 +473,9 @@ describe('GeminiAnalysisService', () => {
 
     it('should cleanup worker on unhandled error', async () => {
       const mockWorker = new MockWorker('test-url');
-      const terminateSpy = jest.spyOn(mockWorker, 'terminate');
+      const terminateSpy = vi.spyOn(mockWorker, 'terminate');
       
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 
@@ -500,7 +500,7 @@ describe('GeminiAnalysisService', () => {
       const mockScenesData = [{ id: '1', title: 'Scene 1' }, { id: '2', title: 'Scene 2' }];
       const mockWorker = new MockWorker('test-url');
       
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 
@@ -537,7 +537,7 @@ describe('GeminiAnalysisService', () => {
     it('should handle non-array scenes data', async () => {
       const mockWorker = new MockWorker('test-url');
       
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 
@@ -574,7 +574,7 @@ describe('GeminiAnalysisService', () => {
     it('should handle unknown message types gracefully', async () => {
       const mockWorker = new MockWorker('test-url');
       
-      jest.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
+      vi.spyOn(global, 'Worker').mockImplementation(() => mockWorker);
 
       const analysisPromise = geminiService.analyzeScreenplay('test', 'test.fountain');
 

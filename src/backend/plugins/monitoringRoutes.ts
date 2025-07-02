@@ -105,7 +105,9 @@ const monitoringRoutes: FastifyPluginAsync = async (fastify) => {
                 gemini_calls: { type: 'number' },
                 pdf_processed: { type: 'number' },
                 analysis_completed: { type: 'number' },
-                active_sessions: { type: 'number' }
+                active_sessions: { type: 'number' },
+                memory_usage_mb: { type: 'number' },
+                cpu_usage_percent: { type: 'number' }
               }
             },
             timestamp: { type: 'number' }

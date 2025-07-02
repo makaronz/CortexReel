@@ -2,25 +2,29 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { vi } from 'vitest';
 import LoginScreen from '../components/LoginScreen';
 
 // Mock the auth store
-const mockSetAuthenticated = jest.fn();
-const mockUseAuth = jest.fn();
+const mockSetAuthenticated = vi.fn();
+const mockUseAuth = vi.fn();
 
-jest.mock('@/store/analysisStore', () => ({
+vi.mock('@/store/analysisStore', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
 // Mock react-router-dom navigation
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
-}));
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 // Mock LoadingOverlay component
-jest.mock('../components/LoadingOverlay', () => {
+vi.mock('../components/LoadingOverlay', () => {
   return function MockLoadingOverlay({ loading }: { loading: boolean }) {
     return loading ? <div data-testid="loading-overlay">Loading...</div> : null;
   };
@@ -37,9 +41,9 @@ const renderWithRouter = (component: React.ReactElement) => {
 
 describe('LoginScreen', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.clearAllTimers();
-    jest.useFakeTimers();
+    vi.clearAllMocks();
+    vi.clearAllTimers();
+    vi.useFakeTimers();
     
     // Default mock return values
     mockUseAuth.mockReturnValue({
@@ -49,9 +53,9 @@ describe('LoginScreen', () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   describe('Component Rendering', () => {
@@ -105,7 +109,7 @@ describe('LoginScreen', () => {
 
   describe('Password Input Handling', () => {
     test('updates password value on user input', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -116,7 +120,7 @@ describe('LoginScreen', () => {
     });
 
     test('updates password length helper text as user types', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -127,7 +131,7 @@ describe('LoginScreen', () => {
     });
 
     test('enables login button when password is not empty', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -142,7 +146,7 @@ describe('LoginScreen', () => {
     });
 
     test('disables login button when password is only whitespace', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -155,7 +159,7 @@ describe('LoginScreen', () => {
     });
 
     test('clears error when user starts typing', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -167,7 +171,7 @@ describe('LoginScreen', () => {
       
       // Fast-forward the async delay
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -184,7 +188,7 @@ describe('LoginScreen', () => {
 
   describe('Form Submission and Authentication', () => {
     test('successfully authenticates with correct password', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -200,7 +204,7 @@ describe('LoginScreen', () => {
       
       // Fast-forward the async delay
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -209,7 +213,7 @@ describe('LoginScreen', () => {
     });
 
     test('shows error for incorrect password', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -220,7 +224,7 @@ describe('LoginScreen', () => {
       
       // Fast-forward the async delay
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -232,7 +236,7 @@ describe('LoginScreen', () => {
     });
 
     test('handles form submission via Enter key', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -243,7 +247,7 @@ describe('LoginScreen', () => {
       expect(screen.getByText(/logging in\.\.\./i)).toBeInTheDocument();
       
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -252,7 +256,7 @@ describe('LoginScreen', () => {
     });
 
     test('prevents form submission when password is empty', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const loginButton = screen.getByRole('button', { name: /login/i });
@@ -268,7 +272,7 @@ describe('LoginScreen', () => {
     });
 
     test('disables button during loading state', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -329,7 +333,7 @@ describe('LoginScreen', () => {
 
   describe('Loading States and UI Feedback', () => {
     test('shows loading overlay during authentication', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -343,7 +347,7 @@ describe('LoginScreen', () => {
     });
 
     test('updates button text during loading', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -358,7 +362,7 @@ describe('LoginScreen', () => {
     });
 
     test('shows processing alert during loading', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -371,7 +375,7 @@ describe('LoginScreen', () => {
     });
 
     test('updates debug information during loading', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -387,7 +391,7 @@ describe('LoginScreen', () => {
 
   describe('Error Handling and Recovery', () => {
     test('displays error alert with correct styling', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -397,7 +401,7 @@ describe('LoginScreen', () => {
       await user.click(loginButton);
       
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -408,7 +412,7 @@ describe('LoginScreen', () => {
     });
 
     test('clears loading state after failed authentication', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -421,7 +425,7 @@ describe('LoginScreen', () => {
       expect(screen.getByTestId('loading-overlay')).toBeInTheDocument();
       
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -431,7 +435,7 @@ describe('LoginScreen', () => {
     });
 
     test('allows retry after failed authentication', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -442,7 +446,7 @@ describe('LoginScreen', () => {
       await user.click(loginButton);
       
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -455,7 +459,7 @@ describe('LoginScreen', () => {
       await user.click(loginButton);
       
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -466,7 +470,7 @@ describe('LoginScreen', () => {
 
   describe('Edge Cases and Robustness', () => {
     test('handles rapid consecutive form submissions', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -483,7 +487,7 @@ describe('LoginScreen', () => {
       expect(loginButton).toBeDisabled();
       
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -492,7 +496,7 @@ describe('LoginScreen', () => {
     });
 
     test('handles extremely long passwords', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -505,7 +509,7 @@ describe('LoginScreen', () => {
     });
 
     test('handles special characters in password', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -535,7 +539,7 @@ describe('LoginScreen', () => {
     });
 
     test('handles empty string password correctly', async () => {
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -552,8 +556,8 @@ describe('LoginScreen', () => {
 
   describe('Console Logging (Integration)', () => {
     test('logs appropriate messages during authentication flow', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);
@@ -565,7 +569,7 @@ describe('LoginScreen', () => {
       expect(consoleSpy).toHaveBeenCalledWith('Login button clicked, password:', '[HIDDEN]');
       
       act(() => {
-        jest.advanceTimersByTime(250);
+        vi.advanceTimersByTime(250);
       });
       
       await waitFor(() => {
@@ -576,8 +580,8 @@ describe('LoginScreen', () => {
     });
 
     test('logs empty password attempts', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       renderWithRouter(<LoginScreen />);
       
       const passwordInput = screen.getByLabelText(/password/i);

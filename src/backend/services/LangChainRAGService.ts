@@ -5,6 +5,7 @@ import { BufferMemory } from "langchain/memory";
 import weaviate, { type WeaviateClient } from 'weaviate-ts-client';
 import { AdminConfigService } from '@/services/AdminConfigService';
 import { LLMConfig } from '@/types/analysis';
+import { getMonitoringService } from './MonitoringService';
 
 // MOCK IMPLEMENTATION - This would be replaced by actual backend logic
 const createMockWeaviateClient = (): WeaviateClient => {
@@ -126,62 +127,70 @@ export class LangChainRAGService {
         meta: { filename: string; userId?: string },
     ): Promise<{ pages: number; chunks: number; filename: string }> {
         console.log(`▶️  [RAG] Starting analysis for ${meta.filename}`);
-
-        // 1. Parse PDF (fallback to raw text if parsing fails)
-        let fullText = '';
-        let pageCount = 0;
-        try {
-            // Dynamically import to avoid bundling when not needed in frontend
-            const pdfParse = (await import('pdf-parse')).default;
-            const fs = await import('node:fs/promises');
-            const buffer = await fs.readFile(filepath);
-            const parsed = await pdfParse(buffer);
-            fullText = parsed.text;
-            pageCount = parsed.numpages || 0;
-        } catch (err) {
-            console.warn('[RAG] PDF parse failed, attempting raw read', err);
-            // fallback: read raw text file
-            const fs = await import('node:fs/promises');
-            fullText = await fs.readFile(filepath, 'utf-8');
-            pageCount = 1;
-        }
-
-        // 2. Chunk text for embeddings
-        const { RecursiveCharacterTextSplitter } = await import('langchain/text_splitter');
-        const splitter = new RecursiveCharacterTextSplitter({
-            chunkSize: 2000,
-            chunkOverlap: 200,
-        });
-        const chunks = await splitter.splitText(fullText);
-
-        if (!chunks.length) {
-            throw new Error('No text extracted from screenplay');
-        }
-
-        // 3. Ensure vectorStore initialised
-        if (!this.vectorStore) {
-            await this.initialize();
-            if (!this.vectorStore) throw new Error('Vector store not initialised');
-        }
-
-        // 4. Embed & store documents
-        const docs = chunks.map((text, idx) => ({
-            pageContent: text,
-            metadata: {
-                chunkIndex: idx,
-                filename: meta.filename,
-                userId: meta.userId,
-            },
-        }));
+        const monitoring = getMonitoringService();
+        const startTime = Date.now();
 
         try {
-            await this.vectorStore!.addDocuments(docs);
-            console.log(`[RAG] Stored ${docs.length} chunks in Weaviate`);
-        } catch (err) {
-            console.error('[RAG] Failed storing documents', err);
+            // 1. Parse PDF (fallback to raw text if parsing fails)
+            let fullText = '';
+            let pageCount = 0;
+            try {
+                const pdfParse = (await import('pdf-parse')).default;
+                const fs = await import('node:fs/promises');
+                const buffer = await fs.readFile(filepath);
+                const parsed = await pdfParse(buffer);
+                fullText = parsed.text;
+                pageCount = parsed.numpages || 0;
+            } catch (err) {
+                console.warn('[RAG] PDF parse failed, attempting raw read', err);
+                const fs = await import('node:fs/promises');
+                fullText = await fs.readFile(filepath, 'utf-8');
+                pageCount = 1;
+            }
+
+            // 2. Chunk text for embeddings
+            const { RecursiveCharacterTextSplitter } = await import('langchain/text_splitter');
+            const splitter = new RecursiveCharacterTextSplitter({
+                chunkSize: 2000,
+                chunkOverlap: 200,
+            });
+            const chunks = await splitter.splitText(fullText);
+
+            if (!chunks.length) {
+                throw new Error('No text extracted from screenplay');
+            }
+
+            // 3. Ensure vectorStore initialised
+            if (!this.vectorStore) {
+                await this.initialize();
+                if (!this.vectorStore) throw new Error('Vector store not initialised');
+            }
+
+            // 4. Embed & store documents
+            const docs = chunks.map((text, idx) => ({
+                pageContent: text,
+                metadata: {
+                    chunkIndex: idx,
+                    filename: meta.filename,
+                    userId: meta.userId,
+                },
+            }));
+
+            try {
+                await this.vectorStore!.addDocuments(docs);
+                console.log(`[RAG] Stored ${docs.length} chunks in Weaviate`);
+            } catch (err) {
+                console.error('[RAG] Failed storing documents', err);
+                throw err;
+            }
+
+            await monitoring.trackPdfProcessing(meta.filename, Date.now() - startTime, true);
+            await monitoring.trackAnalysis(meta.filename, docs.length, Date.now() - startTime, true);
+            return { pages: pageCount, chunks: docs.length, filename: meta.filename };
+        } catch (err: any) {
+            await monitoring.trackPdfProcessing(meta.filename, Date.now() - startTime, false, err?.message);
+            await monitoring.trackAnalysis(meta.filename, 0, Date.now() - startTime, false, err?.message);
             throw err;
         }
-
-        return { pages: pageCount, chunks: docs.length, filename: meta.filename };
     }
-} 
+}

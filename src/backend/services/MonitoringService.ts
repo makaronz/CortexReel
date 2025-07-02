@@ -25,6 +25,8 @@ export interface MonitoringStats {
   pdf_processed: number;
   analysis_completed: number;
   active_sessions: number;
+  memory_usage_mb: number;
+  cpu_usage_percent: number;
 }
 
 export class MonitoringService {
@@ -242,7 +244,7 @@ export class MonitoringService {
 
   // PDF processing tracking
   async trackPdfProcessing(filename: string, duration: number, success: boolean, error?: string, requestId?: string) {
-    await this.logEvent('pdf_processing_backend', {
+    await this.logEvent('pdf_processing', {
       filename,
       duration_ms: duration,
       success,
@@ -252,7 +254,7 @@ export class MonitoringService {
 
   // Analysis tracking
   async trackAnalysis(filename: string, sections: number, duration: number, success: boolean, error?: string, requestId?: string) {
-    await this.logEvent('analysis_backend', {
+    await this.logEvent('analysis_complete', {
       filename,
       sections,
       duration_ms: duration,
@@ -263,7 +265,7 @@ export class MonitoringService {
 
   // Gemini API tracking
   async trackGeminiCall(url: string, duration: number, status: number, tokenCount?: number, requestId?: string) {
-    await this.logEvent('gemini_api_backend', {
+    await this.logEvent('gemini_api_call', {
       url,
       duration_ms: duration,
       status,
@@ -273,13 +275,17 @@ export class MonitoringService {
 
   // Get monitoring statistics
   getStats(): MonitoringStats {
-    const avgResponseTime = this.stats.requests.count > 0 
-      ? this.stats.requests.totalTime / this.stats.requests.count 
+    const avgResponseTime = this.stats.requests.count > 0
+      ? this.stats.requests.totalTime / this.stats.requests.count
       : 0;
 
     const errorRate = this.stats.requests.count > 0 
       ? (this.stats.requests.errors / this.stats.requests.count) * 100 
       : 0;
+
+    const mem = process.memoryUsage().rss / (1024 * 1024);
+    const cpu = process.cpuUsage();
+    const cpuPercent = ((cpu.user + cpu.system) / 1000) / (process.uptime() * 1000);
 
     return {
       total_requests: this.stats.requests.count,
@@ -288,7 +294,9 @@ export class MonitoringService {
       gemini_calls: this.stats.geminiCalls,
       pdf_processed: this.stats.pdfProcessed,
       analysis_completed: this.stats.analysisCompleted,
-      active_sessions: this.stats.activeSessions.size
+      active_sessions: this.stats.activeSessions.size,
+      memory_usage_mb: Math.round(mem * 100) / 100,
+      cpu_usage_percent: Math.round(cpuPercent * 100) / 100
     };
   }
 
