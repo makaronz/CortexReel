@@ -285,7 +285,7 @@ export class MonitoringService {
 
     const mem = process.memoryUsage().rss / (1024 * 1024);
     const cpu = process.cpuUsage();
-    const cpuPercent = ((cpu.user + cpu.system) / 1000) / (process.uptime() * 1000);
+    const cpuPercent = (((cpu.user + cpu.system) / 1000) / (process.uptime() * 1000)) * 100;
 
     return {
       total_requests: this.stats.requests.count,
