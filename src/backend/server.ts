@@ -1,13 +1,6 @@
 import Fastify from 'fastify';
-import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
-import multipart from '@fastify/multipart';
-import { registerAnalysisRoutes } from './plugins/analysisRoutes';
-import monitoringRoutes from './plugins/monitoringRoutes';
-import '../backend/workers/analysisProcessor';
-
-// BullMQ & Redis will be configured in their own modules
-// eslint-disable-next-line import/no-extraneous-dependencies
+import monitoringRoutes from './plugins/monitoringRoutes.js';
 
 export async function buildServer() {
   const app = Fastify({
@@ -16,11 +9,8 @@ export async function buildServer() {
 
   // Register core plugins
   await app.register(cors, { origin: true });
-  await app.register(websocket);
-  await app.register(multipart, { limits: { fileSize: 1024 * 1024 * 50 } }); // 50 MB
 
-  // Domain-specific routes
-  await app.register(registerAnalysisRoutes, { prefix: '/analysis' });
+  // Only monitoring routes for now to isolate the issue
   await app.register(monitoringRoutes, { prefix: '/api/monitoring' });
 
   // Health-check
@@ -32,9 +22,13 @@ export async function buildServer() {
 if (process.env.NODE_ENV !== 'test') {
   buildServer()
     .then((app) => app.listen({ port: Number(process.env.PORT) || 3001, host: '0.0.0.0' }))
+    .then(() => {
+      // eslint-disable-next-line no-console
+      console.log('🎬 CortexReel Backend Server (Minimal) - STARTED on port 3001');
+    })
     .catch((err) => {
       // eslint-disable-next-line no-console
-      console.error(err);
+      console.error('Failed to start minimal server:', err);
       process.exit(1);
     });
 } 

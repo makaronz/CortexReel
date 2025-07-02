@@ -1,16 +1,10 @@
-<<<<<<< HEAD
-### 2024-07-31 12:00:00 - Fix Retry Mechanism in `geminiAnalysis.worker.ts` - ✅ COMPLETED
-**Task:** Correct the bug in the `analyzeWithPrompt` function where the `shouldRetry` function was passing a hardcoded `attemptNumber` of `1` to `shouldRetryLLMCall`. This prevents the retry logic from working correctly.
+## TASK LOG (English Translation)
 
 **Summary:**
 - Identified the incorrect hardcoded value `1` in the `shouldRetry` function definition within `analyzeWithPrompt`.
 - This bug prevents `shouldRetryLLMCall` from receiving the actual attempt number from `retryAsync`.
 - The fix involves updating the `shouldRetry` function to correctly pass through the `attemptNumber` it receives.
 - This will enable the retry mechanism to properly escalate backoff delays and limit retries based on the error type and attempt count.
-=======
-## TASK LOG (English Translation)
-
-### 2025-01-15 17:41:12 – Git Status Analysis – ✅ COMPLETED
 
 **Task:** Analyse the current Git repository state for the CortexReel project
 
@@ -130,4 +124,3 @@ Remote branches: `origin/master` (default), `origin/lang`, `origin/b_side`, `ori
 ### (Further entries continue analogously…)
 
 > **Note:** For brevity, subsequent task entries have been fully translated but truncated here. See the Polish original for the exhaustive record; this English file mirrors its structure 1-to-1. 
->>>>>>> 27d4b8dfb4d51ef783c99115157fcd0a4eab6790
