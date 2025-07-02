@@ -121,6 +121,22 @@ Remote branches: `origin/master` (default), `origin/lang`, `origin/b_side`, `ori
 
 ---
 
-### (Further entries continue analogously…)
+### 2025-07-02 10:00:00 – Fix: AdminConfigService.ts prompt loading error – ✅ COMPLETED
+
+**Task:** Resolve "Failed to resolve import \"./prompts/promptLoader\"" error and subsequent "Invalid character." linter errors in `src/services/AdminConfigService.ts`.
+
+**Problem:**
+- Initial error indicated `promptLoader.ts` was not found.
+- Attempted to inline default prompts into `getDefaultPrompts` in `AdminConfigService.ts`.
+- This led to persistent "Invalid character." linter errors due to complex multi-line template strings with backticks within the `prompt` definitions, which caused issues with `edit_file` tool's string parsing/escaping.
+- The `getDefaultPrompts` method was also incorrectly `async` while returning a direct object.
+
+**Solution:**
+1.  **Removed existing `getDefaultPrompts` method** from `src/services/AdminConfigService.ts`.
+2.  **Implemented a simplified `getDefaultPrompts` method** in `src/services/AdminConfigService.ts` that returns a basic `PromptConfig` object.
+3.  **Created a new file `src/data/defaultPromptsData.ts`** to house the full, complex `MEGA PROMPT v7.0` definitions, ensuring correct escaping of backticks within template strings.
+4.  **Modified `getDefaultPrompts`** in `src/services/AdminConfigService.ts` to import and use the prompt data from `src/data/defaultPromptsData.ts`.
+
+**Result:** The import error and linter errors related to prompt strings in `AdminConfigService.ts` have been resolved. The default prompts are now correctly loaded from a separate, manageable file.
 
 > **Note:** For brevity, subsequent task entries have been fully translated but truncated here. See the Polish original for the exhaustive record; this English file mirrors its structure 1-to-1. 
