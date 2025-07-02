@@ -12,7 +12,7 @@
 
 *Transforming script analysis with 27 comprehensive sections, real-time processing, and professional-grade insights*
 
-[🚀 Live Demo](https://github.com/makaronz/CortexReel) • [📖 Documentation](#-documentation) • [🎯 Features](#-features) • [⚡ Quick Start](#-quick-start)
+[🚀 Live Demo](https://github.com/makaronz/CortexReel) • [📖 Documentation](#-architecture-documentation) • [🎯 Features](#-features) • [⚡ Quick Start](#-quick-start)
 
 </div>
 
@@ -46,7 +46,7 @@
 
 > "No film is ever really finished; it merely escapes." — Orson Welles  
 >  
-> CortexReel is the red pill for beleaguered script departments. Imagine Neo dodging bullets in *The Matrix* (1999) — now swap bullets for page counts. Since **v3** we've bolted a LangChain-powered RAG engine onto the chassis à la *Mad Max: Fury Road* (2015). MongoDB, Weaviate and BullMQ roar behind the scenes while your Admin Dashboard feeds configurations straight into the pipeline faster than you can mutter "I am vengeance." (*The Batman*, 2022)
+> CortexReel is the red pill for beleaguered script departments. Imagine Neo dodging bullets in *The Matrix* (1999) — now swap bullets for page counts. Since [**v3**](#-roadmap) we've bolted a LangChain-powered RAG engine onto the chassis à la *Mad Max: Fury Road* (2015). MongoDB, Weaviate and BullMQ roar behind the scenes while your [Admin Dashboard](#admin-dashboard-configuration) feeds configurations straight into the pipeline faster than you can mutter "I am vengeance." (*The Batman*, 2022)
 
 ### 🎪 Why CortexReel?
 
@@ -206,27 +206,27 @@ graph TB
 ### 🚀 Installation
 
 #### 1. Clone the Repository
-   ```bash
+```bash
 git clone https://github.com/makaronz/CortexReel.git
-   cd CortexReel
-   ```
+cd CortexReel
+```
 
 #### 2. Install Dependencies
-   ```bash
+```bash
 # Using npm
-   npm install
+npm install
 
 # Using pnpm (recommended for faster installs)
-   pnpm install
+pnpm install
 
 # Using yarn
 yarn install
-   ```
+```
 
 #### 3. Environment Configuration
-   ```bash
+```bash
 # Copy the environment template
-   cp env.example .env.local
+cp env.example .env.local
    
 # Edit .env.local with your configuration
 nano .env.local
@@ -252,16 +252,16 @@ VITE_ENABLE_COLLABORATION=false
 ```
 
 #### 5. Start Development Server
-   ```bash
+```bash
 # Development mode with hot reload
-   npm run dev
+npm run dev
 
 # Or with pnpm
-   pnpm dev
+pnpm dev
 
 # Or with yarn
 yarn dev
-   ```
+```
 
 #### 6. Access the Application
 - Open your browser to `http://localhost:5173`
@@ -272,10 +272,10 @@ yarn dev
 
 1. **Login** with password `test123`
 2. **Upload** a screenplay PDF (max 10MB)
-3. **Select** analysis type (Full 27-section recommended)
-4. **Choose** your film industry role for customized view
-5. **Review** results in interactive sections
-6. **Export** data in your preferred format
+3. **Select** analysis type (Full 27-section recommended for the best experience)
+4. **Choose** your film industry role for a personalized view tailored to your needs
+5. **Review** results in interactive sections with detailed insights
+6. **Export** data in your preferred format for sharing with your team
 
 ### 📋 Manual QA Testing Guide
 
@@ -447,7 +447,7 @@ npm run test:coverage
 
 Create `.env.local` with required configuration:
 
-```env
+```properties
 # Required
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
 
@@ -476,14 +476,14 @@ Access admin panel at `/admin` to configure:
 
 ### Performance Debugging
 
-```bash
-# Enable debug mode for detailed logging
-localStorage.setItem('cortexreel_debug', 'true')
+```javascript
+// Enable debug mode for detailed logging
+localStorage.setItem('cortexreel_debug', 'true');
 
-# Monitor performance in browser dev tools
-# - Network tab: API call timings
-# - Memory tab: Memory usage patterns
-# - Console: Detailed processing logs
+// Monitor performance in browser dev tools
+// - Network tab: API call timings
+// - Memory tab: Memory usage patterns
+// - Console: Detailed processing logs
 ```
 
 ## 🛠️ Development Guidelines
@@ -497,14 +497,14 @@ localStorage.setItem('cortexreel_debug', 'true')
 
 ### Adding New Features
 
-1. **Read Memory Bank**: Always start by reading all files in `memory-bank/`
-2. **Follow Patterns**: Use established architectural patterns
-3. **Update Tests**: Add comprehensive test coverage
+1. **Read Memory Bank**: Always start by reading all files in [`memory-bank/`](#-architecture-documentation)
+2. **Follow Patterns**: Use established [architectural patterns](#-architecture)
+3. **Update Tests**: Add comprehensive [test coverage](#-testing)
 4. **Update Documentation**: Keep README and JSDoc current
 
 ### File Size and Format Guidelines
 
-- **Maximum PDF Size**: 10MB (configurable in Admin Panel)
+- **Maximum PDF Size**: 10MB (configurable in [Admin Panel](#admin-dashboard-configuration))
 - **Supported Formats**: PDF only (with .pdf extension)
 - **Processing Strategy**: Direct text extraction → OCR fallback
 - **Text Validation**: Minimum 50 characters, 25 words for successful extraction
@@ -514,51 +514,51 @@ localStorage.setItem('cortexreel_debug', 'true')
 ### Common Issues
 
 #### PDF Upload Failures
-```bash
-# Check file size and format
+```javascript
+// Check file size and format
 console.log('File size:', file.size / 1024 / 1024, 'MB');
 console.log('File type:', file.type);
 
-# Verify PDF parser service
+// Verify PDF parser service
 PDFParserService.validateFileSize(file);
 PDFParserService.getSupportedFormats();
 ```
 
 #### Analysis Failures
-```bash
-# Check API key configuration
+```javascript
+// Check API key configuration
 AdminConfigService.getLLMConfig().then(config => 
   console.log('API Key present:', !!config.apiKey)
 );
 
-# Monitor network requests
-# Look for 401 (unauthorized) or 429 (rate limit) errors
+// Monitor network requests
+// Look for 401 (unauthorized) or 429 (rate limit) errors
 ```
 
 #### Memory Issues
-```bash
-# Clear application state
+```javascript
+// Clear application state
 localStorage.clear();
 location.reload();
 
-# Monitor memory usage
+// Monitor memory usage
 console.log('Memory usage:', performance.memory?.usedJSHeapSize / 1024 / 1024, 'MB');
 ```
 
 ### Support Information
 
 For additional support:
-- Review Memory Bank documentation in `memory-bank/`
+- Review Memory Bank documentation in [`memory-bank/`](#-development-guidelines)
 - Check browser console for detailed error messages
-- Verify Admin Panel configuration
+- Verify [Admin Panel configuration](#admin-dashboard-configuration)
 - Test with smaller PDF files first
 
 ## 📖 Architecture Documentation
 
 Detailed technical documentation available in:
-- `memory-bank/systemPatterns.md` - Technical architecture
-- `memory-bank/productContext.md` - Product requirements
-- `diagrams/` - System architecture diagrams
+- [`memory-bank/systemPatterns.md`](#-development-guidelines) - Technical architecture
+- [`memory-bank/productContext.md`](#-development-guidelines) - Product requirements
+- [`diagrams/`](#-architecture) - System architecture diagrams
 
 ---
 
@@ -606,7 +606,7 @@ const theme = createTheme({
 ```
 
 ### Role-Based Views
-Add new film industry roles in `src/types/analysis.ts`:
+Add new film industry roles in [`src/types/analysis.ts`](#-customization):
 
 ```typescript
 export enum FilmRole {
@@ -617,7 +617,7 @@ export enum FilmRole {
 ```
 
 ### Analysis Sections
-Extend or modify analysis sections in `src/services/geminiService.ts`:
+Extend or modify analysis sections in [`src/services/geminiService.ts`](#-customization):
 
 ```typescript
 // Add new analysis method
@@ -630,7 +630,7 @@ private async analyzeYourSection(scriptText: string) {
 ## 🔧 Configuration
 
 ### Environment Variables
-```bash
+```properties
 # Required
 VITE_GEMINI_API_KEY=your_gemini_api_key
 
@@ -750,9 +750,9 @@ MIT License - see LICENSE file for details.
 - **Memory**: Close other browser tabs for large screenplay files
 
 ### Getting Help
-- Check the documentation in `/docs` folder
+- Check the documentation in [`/docs`](#-architecture-documentation) folder
 - Review error messages in browser console
-- Ensure all dependencies are properly installed
+- Ensure all [dependencies are properly installed](#-installation)
 - Test with different screenplay samples
 
 ## 🎯 Roadmap
